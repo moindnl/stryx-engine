@@ -57,8 +57,3 @@ npm run dev
 
 MIT
 
-## References
-
-- [Nike Design System - DESIGN.md](https://getdesign.md/nike/design-md)
-- [Svelte](https://svelte.dev/)
-- [Tabler Icons](https://tabler-icons.io/)

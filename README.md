@@ -33,20 +33,6 @@ The styling follows Nike's design tokens for colors, typography, spacing, and co
 5. View your recommended carbohydrate and fluid intake per hour
 6. See your average speed with a clickable animal badge that links to Wikipedia
 
-## Speed Slogans
-
-The app displays fun animal-themed slogans based on your speed:
-
-| Speed Range | Animal Slogan | Wikipedia Link |
-|-------------|---------------|----------------|
-| < 10 km/h | Turtle pace | [Turtle](https://en.wikipedia.org/wiki/Turtle) |
-| 10-15 km/h | Penguin cruise | [Penguin](https://en.wikipedia.org/wiki/Penguin) |
-| 15-20 km/h | Gazelle pace | [Gazelle](https://en.wikipedia.org/wiki/Gazelle) |
-| 20-25 km/h | Cheetah chase | [Cheetah](https://en.wikipedia.org/wiki/Cheetah) |
-| 25-30 km/h | Falcon flight | [Falcon](https://en.wikipedia.org/wiki/Falcon) |
-| 30-40 km/h | Peregrine speed | [Peregrine falcon](https://en.wikipedia.org/wiki/Peregrine_falcon) |
-| 40+ km/h | Greyhound sprint | [Greyhound](https://en.wikipedia.org/wiki/Greyhound) |
-
 ## Project Structure
 
 ```

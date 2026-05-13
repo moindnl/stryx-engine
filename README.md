@@ -51,46 +51,53 @@ pnpm preview  # serve dist/ locally
 
 ## Install as PWA
 
-### Test from localhost on your phone
+### Before you start — serve the production build
 
-The service worker only runs in the **production build** (not `pnpm dev`).
+`pnpm dev` does **not** activate the service worker. You must build first:
 
 ```bash
 pnpm build
-pnpm preview --host   # exposes on local network, e.g. http://192.168.1.x:4173
+pnpm preview --host
+# → Network: http://192.168.x.x:4173
 ```
 
-Find your machine's IP:
-- Mac: `ipconfig getifaddr en0`
-- Windows: `ipconfig` → look for IPv4 under your WiFi adapter
+Your phone and computer must be on the **same WiFi network**. Open the `http://192.168.x.x:4173` URL on your phone.
 
-Open `http://<your-ip>:4173` in Safari (iOS) or Chrome (Android) — phone must be on the same WiFi.
+Find your IP if it's not shown:
+- **Mac**: `ipconfig getifaddr en0`
+- **Windows**: `ipconfig` → look for IPv4 Address under your WiFi adapter
 
-### iOS (Safari only)
+---
 
-> Chrome and Firefox on iOS cannot install PWAs. Use Safari.
+### iPhone / iPad (Safari only)
 
-1. Open the app in **Safari**
-2. Tap the **Share** button (box with arrow, bottom of screen)
-3. Scroll down → tap **Add to Home Screen**
-4. Tap **Add** — app icon appears on home screen
-5. Launch from home screen — runs full-screen, no browser UI
+> **Must use Safari.** Chrome and Firefox on iOS cannot install PWAs.
+
+1. Open `http://192.168.x.x:4173` in **Safari**
+2. Tap the **Share** icon — box with an arrow pointing up (bottom toolbar)
+3. Scroll down the share sheet → tap **Add to Home Screen**
+4. Edit the name if you want → tap **Add**
+5. App icon appears on your home screen
+6. Launch from there — opens full-screen, no browser chrome
 
 ### Android (Chrome)
 
-1. Open the app in **Chrome**
-2. Tap **⋮** menu (top right) → **Add to Home screen**
-3. Tap **Add** — app icon appears on home screen
+1. Open the URL in **Chrome**
+2. Tap the **⋮** menu (top-right corner)
+3. Tap **Add to Home screen** → **Add**
+4. App icon appears on your home screen
 
-> You may also see an install prompt appear automatically at the bottom of the screen.
+> Chrome may also show an install banner at the bottom automatically — tap **Install**.
 
 ### Desktop (Chrome / Edge)
 
-1. Open the app
-2. Click the **install icon** (⊕) in the address bar
+1. Open the app URL
+2. Click the **⊕ install icon** in the address bar (right side)
 3. Click **Install**
 
-Once installed, the app works fully offline — all assets are precached by the service worker on first load.
+---
+
+Once installed, the app works fully **offline** — all assets are precached on first load by the service worker.
 
 ## Project Structure
 

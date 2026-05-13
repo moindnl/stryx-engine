@@ -32,15 +32,6 @@
     @apply bg-[--color-canvas] text-[--color-ink] min-h-screen;
   }
 
-  /* Fade-in animation */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .fade-in {
-    animation: fadeIn 0.5s ease-out 0.1s forwards;
-  }
-
   /* Banana — pendulum swing from stem */
   @keyframes bananaPendulum {
     from { transform: rotate(-13deg); }
@@ -89,8 +80,6 @@
   .card-enter-6 { animation-delay: 0.40s; }
   .card-enter-7 { animation-delay: 0.47s; }
 
-
-  
   /* Base form styling */
   input, select, button {
     font-family: var(--font-sans);
@@ -218,63 +207,7 @@
   .filter-chip:hover {
     background: var(--color-soft-cloud);
   }
-  .filter-chip-active {
-    background: var(--color-ink);
-    color: var(--color-on-primary);
-    border-color: var(--color-ink);
-  }
-  
-  /* Button Primary - black pill */
-  .button-primary {
-    background: var(--color-ink);
-    color: var(--color-on-primary);
-    padding: 16px 32px;
-    height: 48px;
-    border-radius: var(--rounded-lg, 30px);
-    font: var(--text-button-md);
-    cursor: pointer;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-  .button-primary:active {
-    transform: scale(0.95);
-    opacity: 0.9;
-  }
-  .button-primary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  /* Button Secondary - soft-cloud pill */
-  .button-secondary {
-    background: var(--color-soft-cloud);
-    color: var(--color-ink);
-    padding: 16px 32px;
-    height: 48px;
-    border-radius: var(--rounded-lg, 30px);
-    font: var(--text-button-md);
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .button-secondary:hover {
-    background: var(--color-hairline-soft);
-  }
-  
-  /* Button Outline on Image */
-  .button-outline {
-    background: var(--color-canvas);
-    color: var(--color-ink);
-    padding: 12px 24px;
-    border-radius: var(--rounded-lg, 30px);
-    font: var(--text-button-md);
-    cursor: pointer;
-    border: 1px solid var(--color-ink);
-    transition: all 0.2s ease;
-  }
-  
+
   /* Product Card */
   .card {
     background: var(--color-canvas);
@@ -298,12 +231,6 @@
     background: var(--color-ink);
     color: var(--color-on-primary);
     border-radius: var(--rounded-sm, 18px);
-  }
-  
-  /* Divider */
-  .divider {
-    height: 1px;
-    background: var(--color-hairline);
   }
   
   /* Badge */
@@ -342,48 +269,6 @@
   .font-bold { font-weight: 700; }
   .font-heavy { font-weight: 850; font-size: 40px; }
   
-  /* Sale Badge */
-  .badge-sale {
-    color: var(--color-sale);
-    font: var(--text-caption-md);
-  }
-  
-  /* Success Badge */
-  .badge-success {
-    color: var(--color-success);
-    font: var(--text-caption-md);
-  }
-  
-  /* Icon Container */
-  .icon-sm {
-    width: 24px;
-    height: 24px;
-  }
-  .icon-md {
-    width: 32px;
-    height: 32px;
-  }
-  .icon-lg {
-    width: 48px;
-    height: 48px;
-  }
-  
-  /* Status Indicators */
-  .status-success {
-    color: var(--color-success);
-  }
-  .status-info {
-    color: var(--color-info);
-  }
-  .status-sale {
-    color: var(--color-sale);
-  }
-  
-  /* Utility classes */
-  .text-balance {
-    text-wrap: balance;
-  }
-  
   /* Responsive typography */
   @media (max-width: 768px) {
     .text-display-campaign {
@@ -394,14 +279,40 @@
     }
   }
   
-  /* Animations */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
+  /* Temperature range slider */
+  .temp-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(
+      to right,
+      var(--color-ink) var(--fill),
+      #e5e5e5 var(--fill)
+    );
+    outline: none;
+    cursor: pointer;
   }
-  .animate-fade-in {
-    animation: fadeIn 0.2s ease-out forwards;
+  .temp-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #efefef;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.22);
+    cursor: pointer;
   }
+  .temp-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #efefef;
+    border: none;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.22);
+    cursor: pointer;
+  }
+  .temp-slider::-webkit-slider-runnable-track { border-radius: 2px; }
+  .temp-slider::-moz-range-track { border-radius: 2px; }
 
   /* Liquid glass — iOS 26 / Apple inspired */
   .liquid-glass {

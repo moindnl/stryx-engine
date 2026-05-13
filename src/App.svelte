@@ -222,7 +222,7 @@
     </div>
 
     <!-- 3-step how-to — shown on first visit or on demand -->
-    {#if !(weight > 0 || ftp > 0) || showGuide}
+    {#if profileLoaded && (!(weight > 0 || ftp > 0) || showGuide)}
     <div transition:slide={{ duration: 260, easing: cubicOut }} class="card-soft rounded-sm p-lg md:p-xl mb-section card-enter card-enter-2">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-lg relative">
         <div class="hidden md:block absolute left-0 right-0 top-6 h-px" style="background:var(--color-hairline);"></div>
@@ -425,7 +425,8 @@
           <span class="text-caption-md font-bold text-[--color-ink]">{temperature}°C</span>
         </div>
         <input id="temperature" type="range" bind:value={temperature} min="0" max="45" step="1"
-          class="w-full accent-[--color-ink]" />
+          class="temp-slider w-full"
+          style="--fill:{(temperature / 45 * 100).toFixed(1)}%" />
         <p class="text-caption-sm mt-xs {heatBonus > 0 ? 'text-[--color-sale]' : 'text-[--color-mute]'}">
           {heatBonus > 0 ? `+${heatBonus.toFixed(1)} L/h heat adjustment applied` : 'Heat adjustment activates above 20°C'}
         </p>

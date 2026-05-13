@@ -9,7 +9,7 @@ export default defineConfig({
     svelte(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icon-192x192.png', 'icon-512x512.png'],
+      includeAssets: ['favicon.svg', 'icon-192x192.png', 'icon-512x512.png', 'icon-192x192-dark.png', 'icon-512x512-dark.png'],
       manifest: {
         name: 'BananaSprocket — Cycling Nutrition',
         short_name: 'BananaSprocket',
@@ -21,22 +21,12 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         icons: [
-          {
-            src: 'icon-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'icon-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-          {
-            src: 'icon-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
+          { src: 'icon-192x192.png',      sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512x512.png',      sizes: '512x512', type: 'image/png' },
+          { src: 'icon-512x512.png',      sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icon-192x192-dark.png', sizes: '192x192', type: 'image/png', media: '(prefers-color-scheme: dark)' },
+          { src: 'icon-512x512-dark.png', sizes: '512x512', type: 'image/png', media: '(prefers-color-scheme: dark)' },
+          { src: 'icon-512x512-dark.png', sizes: '512x512', type: 'image/png', media: '(prefers-color-scheme: dark)', purpose: 'maskable' },
         ],
       },
       workbox: {

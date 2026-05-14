@@ -15,7 +15,11 @@ Precision carbohydrate and fluid targets for endurance cyclists, calculated from
 - **Fueling schedule** — 20-min intake slots with gel/bar/chew picker; units per slot calculated automatically
 - **Bottle planner** — bottle count, ml per bottle, carb content; drink product (water/carb mix/isotonic) offsets solid food needs
 - **Collapsible input cards** — Rider Profile and Ride accordion; ride auto-collapses when all fields filled
+- **Natural duration entry** — accepts `1:30`, `1.30`, `1,30`, or `1.5` (all parse to 1h 30min)
+- **Desktop notice** — banner nudges desktop visitors to use on mobile; dismissible, remembered per session
+- **Privacy** — profile data stored in `localStorage` (weight, FTP, unit preference). No server, no tracking.
 - **Mobile sticky bar** — liquid glass overlay showing carbs/fluids/kcal per hour, always visible while scrolling
+- **Mobile scroll-to-input** — tapping any input field scrolls it into view above the keyboard
 - **Zone-reactive banana** — pendulum idle animation, color shifts yellow → red with intensity
 - **Universal PWA icon** — power arc design (dark background, amber gauge arc, banana), works on any wallpaper
 - **PWA** — installable on phone, full offline support via Workbox service worker

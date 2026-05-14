@@ -79,6 +79,8 @@
   let profileOpen = false;
   let rideOpen = false;
   let rideAutoCollapsed = false;
+  let neuralizer = false;        // easter egg F: neuralyzer flash
+  let holdTimer: ReturnType<typeof setTimeout> | null = null;
   let totalsTab: 'summary' | 'schedule' | 'bottles' = 'summary';
   let showGuide = false;
   let profileLoaded = false;
@@ -108,6 +110,12 @@
 
   // Restore profile from localStorage
   onMount(() => {
+    // Easter egg: console greeting
+    console.log(
+      '%cBananaSprocket — Cycling Nutrition Planner\n\nPsst. You\'re looking at the source.\nWhy are you not riding your bike?\n\nBuilt by Daniel Muschinski\nhttps://github.com/moindnl',
+      'color:#FFD700;background:#111111;font-family:monospace;font-size:12px;padding:16px 20px;border-radius:8px;line-height:1.6;'
+    );
+
     try {
       const p = JSON.parse(localStorage.getItem('bs-profile') || '{}');
       if (p.weight > 0) weight = p.weight;
@@ -136,6 +144,18 @@
     distance = 0; durationRaw = ''; power = 0; temperature = 20;
     rideOpen = true; rideAutoCollapsed = false;
     triggerBananaSpin();
+  }
+
+  // Easter egg F: hold Reset 3s → neuralyzer flash
+  function startHold() {
+    holdTimer = setTimeout(() => {
+      resetInputs();
+      neuralizer = true;
+      setTimeout(() => { neuralizer = false; }, 2900);
+    }, 3000);
+  }
+  function cancelHold() {
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
   }
 
   // Imperial ↔ metric: convert displayed values on toggle
@@ -171,13 +191,18 @@
   $: intensityFactor = ftp > 0 && power > 0 ? power / ftp : 0;
   $: powerDerived = intensityFactor > 0;
 
-  $: bananaColor = intensityFactor < 0.55 ? '#FFD700' :  // yellow
+  // 🥚 Easter egg B: Tadej mode at ≥500W
+  $: tadejMode = power >= 500;
+
+  $: bananaColor = tadejMode ? '#111111' :               // black banana
+    intensityFactor < 0.55 ? '#FFD700' :                 // yellow
     intensityFactor < 0.75 ? '#F59E0B' :                 // amber
     intensityFactor < 0.90 ? '#F97316' :                 // orange
     intensityFactor < 1.05 ? '#EF4444' :                 // red
     '#DC2626';                                            // deep red
 
   $: zoneLabel = intensityFactor === 0 ? '' :
+    tadejMode ? 'ARE YOU OKAY?!' :
     intensityFactor < 0.55 ? 'Recovery' :
     intensityFactor < 0.75 ? 'Endurance' :
     intensityFactor < 0.90 ? 'Tempo' :
@@ -185,12 +210,14 @@
     'VO₂max+';
 
   $: zoneBadgeStyle = intensityFactor === 0 ? '' :
-    `background:${
-      intensityFactor < 0.55 ? '#4b4b4d' :
-      intensityFactor < 0.75 ? '#1151ff' :
-      intensityFactor < 0.90 ? '#007d48' :
-      intensityFactor < 1.05 ? '#c2410c' : '#d30005'
-    };color:#ffffff;transition:background 0.35s ease,color 0.35s ease`;
+    tadejMode
+      ? 'background:#f0c000;color:#111111;transition:background 0.35s ease,color 0.35s ease'
+      : `background:${
+          intensityFactor < 0.55 ? '#4b4b4d' :
+          intensityFactor < 0.75 ? '#1151ff' :
+          intensityFactor < 0.90 ? '#007d48' :
+          intensityFactor < 1.05 ? '#c2410c' : '#d30005'
+        };color:#ffffff;transition:background 0.35s ease,color 0.35s ease`;
 
   $: intensity = (intensityFactor === 0 ? 'moderate' :
     intensityFactor < 0.65 ? 'low' :
@@ -238,13 +265,17 @@
   $: animatedKcalPerHour.set(kcalPerHour);
 
   const animalLinks: Record<string, string> = {
-    'Turtle pace':      'https://en.wikipedia.org/wiki/Turtle',
-    'Penguin cruise':   'https://en.wikipedia.org/wiki/Penguin',
-    'Gazelle pace':     'https://en.wikipedia.org/wiki/Gazelle',
-    'Cheetah chase':    'https://en.wikipedia.org/wiki/Cheetah',
-    'Falcon flight':    'https://en.wikipedia.org/wiki/Falcon',
-    'Peregrine speed':  'https://en.wikipedia.org/wiki/Peregrine_falcon',
-    'Greyhound sprint': 'https://en.wikipedia.org/wiki/Greyhound'
+    'Turtle pace':            'https://en.wikipedia.org/wiki/Turtle',
+    'Penguin cruise':         'https://en.wikipedia.org/wiki/Penguin',
+    'Gazelle pace':           'https://en.wikipedia.org/wiki/Gazelle',
+    'Cheetah chase':          'https://en.wikipedia.org/wiki/Cheetah',
+    'Falcon flight':          'https://en.wikipedia.org/wiki/Falcon',
+    'Peregrine speed':        'https://en.wikipedia.org/wiki/Peregrine_falcon',
+    'Greyhound sprint':       'https://en.wikipedia.org/wiki/Greyhound',
+    // 🥚 Easter egg E: beyond greyhound
+    'Downhill record':    'https://en.wikipedia.org/wiki/%C3%89ric_Barone',
+    'Motorcycle territory': 'https://en.wikipedia.org/wiki/Motorcycle',
+    'Please call an ambulance': 'https://en.wikipedia.org/wiki/Ambulance',
   };
 
   $: speedSlogan = speedKmh === 0 ? '' :
@@ -254,10 +285,12 @@
     speedKmh < 25 ? 'Cheetah chase' :
     speedKmh < 30 ? 'Falcon flight' :
     speedKmh < 40 ? 'Peregrine speed' :
-    'Greyhound sprint';
+    speedKmh < 55 ? 'Greyhound sprint' :
+    speedKmh < 75 ? 'Downhill record' :
+    speedKmh < 100 ? 'Motorcycle territory' :
+    'Please call an ambulance';
 
   $: multiCarbNote = intensityFactor >= 0.90;
-  $: sweatRateLabel = sweatRate[0].toUpperCase() + sweatRate.slice(1);
 
   // Auto-collapse ride card when focus leaves it and all fields are filled
   function handleRideCardFocusOut(e: FocusEvent) {
@@ -340,7 +373,7 @@
     <div class="text-center mb-section card-enter card-enter-1">
       <div class="flex items-center justify-center gap-md mb-sm">
         <Banana class="w-10 h-10 md:w-12 md:h-12 {bananaClass}" style="color:{bananaColor};transition:color 0.6s ease;" />
-        <h1 class="text-heading-xl md:text-display-campaign text-[--color-ink] font-heavy">
+        <h1 class="text-heading-xl md:text-display-campaign text-[--color-ink] font-extra-bold">
           BananaSprocket
         </h1>
       </div>
@@ -610,7 +643,10 @@
 
             <!-- Reset -->
             <div class="flex justify-end px-lg py-md">
-              <button class="filter-chip flex items-center gap-xs" on:click={resetInputs} aria-label="Reset ride inputs">
+              <button class="filter-chip flex items-center gap-xs" on:click={resetInputs}
+                on:mousedown={startHold} on:mouseup={cancelHold} on:mouseleave={cancelHold}
+                on:touchstart={startHold} on:touchend={cancelHold}
+                aria-label="Reset ride inputs">
                 <RotateCcw class="w-4 h-4" />
                 Reset ride
               </button>
@@ -760,7 +796,7 @@
 
       <!-- Summary tab -->
       {#if totalsTab === 'summary'}
-        <h2 class="text-heading-lg mb-lg text-[--color-on-primary]">Total needs for {duration > 0 ? formatDuration(duration) : '—'}</h2>
+        <h2 class="text-caption-md mb-lg text-[--color-on-primary]">Total needs for {duration > 0 ? formatDuration(duration) : '—'}</h2>
         <div class="grid grid-cols-3 gap-md">
           <div class="bg-[--color-on-primary] rounded-md p-md text-center">
             <div class="text-4xl md:text-5xl font-extra-bold text-[--color-ink] mb-xs">{Math.round($animatedTotalCarbs)}g</div>
@@ -950,6 +986,16 @@
           </div>
         </div>
       </div>
+    </div>
+  {/if}
+
+  <!-- Easter egg F: neuralyzer flash -->
+  {#if neuralizer}
+    <div class="fixed inset-0 z-[999] flex flex-col items-center justify-center"
+      style="background:rgba(0,0,0,0.88);animation:neuralizer-flash 2.9s ease forwards;">
+      <p style="font-size:clamp(14px,3vw,18px);font-weight:700;color:#ffffff;text-align:center;max-width:420px;padding:0 24px;line-height:1.6;opacity:0;animation:neuralizer-text 2.9s ease forwards;">
+        Hm? There was no ride. You've been watching Netflix. Have a nice day.
+      </p>
     </div>
   {/if}
 </main>

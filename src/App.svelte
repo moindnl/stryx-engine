@@ -248,10 +248,14 @@
   $: multiCarbNote = intensityFactor >= 0.90;
   $: sweatRateLabel = sweatRate[0].toUpperCase() + sweatRate.slice(1);
 
-  // Auto-collapse ride input once all core fields filled (once per session/reset)
-  $: if (distance > 0 && duration > 0 && power > 0 && !rideAutoCollapsed) {
-    rideOpen = false;
-    rideAutoCollapsed = true;
+  // Auto-collapse ride card when focus leaves it and all fields are filled
+  function handleRideCardFocusOut(e: FocusEvent) {
+    const related = e.relatedTarget as Node | null;
+    const card = e.currentTarget as Node;
+    if (!card.contains(related) && distance > 0 && duration > 0 && power > 0 && !rideAutoCollapsed) {
+      rideOpen = false;
+      rideAutoCollapsed = true;
+    }
   }
 
   // Active products
@@ -506,7 +510,8 @@
       {#if rideOpen}
         <div transition:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;">
           <div class="bg-[--color-canvas] rounded-sm overflow-hidden"
-            style="border:1px solid #e5e5e5;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+            style="border:1px solid #e5e5e5;box-shadow:0 2px 12px rgba(0,0,0,0.06);"
+            on:focusout={handleRideCardFocusOut}>
 
             <!-- Row 1: Distance / Duration -->
             <div class="grid grid-cols-1 md:grid-cols-2">

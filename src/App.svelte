@@ -1,9 +1,86 @@
 <script lang="ts">
-  import { Banana, Zap, Gauge, Droplet, ChevronDown, RotateCcw, User, Ruler, Scale, Wheat, CheckCircle, Info, X, Bike } from 'lucide-svelte';
+  import { Banana, Zap, Gauge, Droplet, ChevronDown, RotateCcw, User, Ruler, Scale, Wheat, CheckCircle, Info, X, Bike, ExternalLink } from 'lucide-svelte';
   import { tweened } from 'svelte/motion';
   import { linear, cubicOut } from 'svelte/easing';
   import { fly, fade, slide } from 'svelte/transition';
   import { onMount, onDestroy } from 'svelte';
+
+  // Named versions — women who shaped cycling
+  const VERSION = '1.0';
+  const BUILD_NAME = 'Marianne Vos';
+  const CHANGELOG_ITEMS = [
+    'Pack tab — gear checklist auto-generated from your ride',
+    'One-tap install on Android Chrome via native browser prompt',
+    'Swipe-to-dismiss on install sheet',
+    'Emergency gel only added on rides ≥ 2h',
+    'Contrast fixes across all dark cards (WCAG AA throughout)',
+  ];
+  let showWhatsNew = false;
+  let showChangelogSheet = false;
+  function dismissChangelog() {
+    showChangelogSheet = false;
+    showWhatsNew = false;
+    localStorage.setItem('bs-seen-build', BUILD_NAME);
+  }
+
+  type RiderInfo = { specialty: string; bio: string; wins: string[] };
+  const RIDER_INFO: Record<string, RiderInfo> = {
+    'Marianne Vos':              { specialty: 'All-rounder',    bio: 'The greatest women\'s cyclist of all time — world champion on road, track, and cyclo-cross.', wins: ['23× World Champion', '3× Olympic gold', '8× Giro Donne'] },
+    'Annemiek van Vleuten':      { specialty: 'Climber / TT',   bio: 'Dominant grand tour racer and Olympic champion who attacked relentlessly until her last race.', wins: ['Olympic TT gold 2020', '4× Giro Donne', 'Tour de France Femmes 2022'] },
+    'Anna van der Breggen':      { specialty: 'Climber',        bio: 'Six-time La Flèche Wallonne winner and Olympic champion, now shaping the next generation as a DS.', wins: ['Olympic gold 2016', '6× La Flèche Wallonne', 'World Champion 2018'] },
+    'Lizzie Deignan':            { specialty: 'Classics',       bio: 'Won the inaugural Paris–Roubaix Femmes in 2021 and is a former world champion.', wins: ['Paris–Roubaix 2021', 'World Champion 2015', 'La Flèche Wallonne 2016'] },
+    'Nicole Cooke':              { specialty: 'All-rounder',    bio: 'Won Olympic gold and the world title in the same year (2008), a feat never repeated.', wins: ['Olympic gold 2008', 'World Champion 2008', '2× Grande Boucle'] },
+    'Emma Pooley':               { specialty: 'Climber / TT',   bio: 'World TT champion and Olympic silver medallist — a tiny rider who punched far above her weight.', wins: ['World TT Champion 2010', 'Olympic silver 2008', 'La Flèche Wallonne 2010'] },
+    'Chantal van den Broek-Blaak': { specialty: 'Classics',    bio: '2018 world champion and winner of Strade Bianche and Paris–Roubaix Femmes.', wins: ['World Champion 2018', 'Paris–Roubaix 2022', 'Strade Bianche 2018'] },
+    'Amy Pieters':               { specialty: 'Track / Sprint', bio: 'World Madison champion whose comeback from a serious crash in 2021 has been an inspiration.', wins: ['World Madison Champion', 'Tour de Wallonie 2020', 'Omloop Het Nieuwsblad 2019'] },
+    'Ashleigh Moolman-Pasio':    { specialty: 'Climber',        bio: 'South Africa\'s greatest cyclist and a tireless advocate for growing women\'s professional racing.', wins: ['5× SA National Champion', 'Giro Donne stage wins', 'Commonwealth silver 2014'] },
+    'Demi Vollering':            { specialty: 'Climber',        bio: '2023 Tour de France Femmes winner and reigning world number one.', wins: ['Tour de France Femmes 2023', 'World Champion 2023', 'La Flèche Wallonne 2023'] },
+    'Lotte Kopecky':             { specialty: 'Classics',       bio: '2023–24 world champion, winner of Strade Bianche and Paris–Roubaix in the same season.', wins: ['World Champion 2023–24', 'Paris–Roubaix 2024', 'Strade Bianche 2022–23'] },
+    'Cecilie Uttrup Ludwig':     { specialty: 'Climber',        bio: 'Known for fearless mountain attacks and an expressive racing style that wins fans worldwide.', wins: ['La Flèche Wallonne 2021', 'Giro Donne stage wins', '4× Danish Champion'] },
+    'Elisa Longo Borghini':      { specialty: 'Classics',       bio: 'Paris–Roubaix winner and one of the most consistent podium riders of her generation.', wins: ['Paris–Roubaix 2021', 'Strade Bianche 2020', '3× Italian Champion'] },
+    'Pauline Ferrand-Prévot':    { specialty: 'All-terrain',    bio: 'The only rider to hold road, MTB, and cyclo-cross world titles simultaneously (2015).', wins: ['Road World Champion 2014', 'MTB World Champion 2015', 'CX World Champion 2015'] },
+    'Katarzyna Niewiadoma':      { specialty: 'Climber',        bio: '2024 Tour de France Femmes winner and Poland\'s greatest ever cyclist.', wins: ['Tour de France Femmes 2024', 'Vuelta Femenina podium', 'La Flèche Wallonne 2022'] },
+    'Grace Brown':               { specialty: 'TT / Classics',  bio: '2024 Olympic TT champion and a breakaway specialist who makes the race every time she starts.', wins: ['Olympic TT gold 2024', 'Paris–Roubaix 2023', 'Liège–Bastogne–Liège 2023'] },
+    'Elisa Balsamo':             { specialty: 'Sprinter',       bio: '2021 world champion and Paris–Roubaix winner with an explosive finish.', wins: ['World Champion 2021', 'Paris–Roubaix 2022', 'Tour de France Femmes stages'] },
+    'Lorena Wiebes':             { specialty: 'Sprinter',       bio: 'The most dominant sprinter of her era with an almost unbroken record in bunch finishes.', wins: ['30+ World Tour wins', 'Tour de France Femmes sprints', 'Scheldeprijs 2022–23'] },
+    'Ellen van Dijk':            { specialty: 'TT',             bio: 'Multiple world TT champion and former hour record holder — pure power on two wheels.', wins: ['4× World TT Champion', 'Hour record 2022', 'Olympic bronze 2020'] },
+    'Marlen Reusser':            { specialty: 'TT / Classics',  bio: 'Olympic TT silver medallist and multiple world TT medallist, late starter who made it count.', wins: ['Olympic TT silver 2020', '2× World TT silver', 'Paris–Roubaix 2022 podium'] },
+    'Kristen Faulkner':          { specialty: 'All-rounder',    bio: '2024 Olympic road race champion — a former Harvard rower who turned pro and took gold.', wins: ['Olympic road gold 2024', 'Giro Donne 2024', '2× US National Champion'] },
+    'Chloé Dygert':              { specialty: 'TT',             bio: 'The most dominant TT specialist of her generation, fighting back from a devastating crash.', wins: ['5× World TT Champion', 'Olympic silver 2020', 'Pan American gold 2019'] },
+    'Marta Cavalli':             { specialty: 'Climber',        bio: 'La Flèche Wallonne winner with a punchy, aggressive climbing style.', wins: ['La Flèche Wallonne 2022', 'Liège–Bastogne–Liège 2022', 'Giro Donne podium'] },
+    'Juliette Labous':           { specialty: 'Climber',        bio: 'France\'s most consistent grand tour climber, always close to the podium.', wins: ['Tour de France Femmes podium', 'Vuelta Femenina stage wins', '2× French Champion'] },
+    'Liane Lippert':             { specialty: 'Climber',        bio: 'German champion known for attacking racing and stage wins at the highest level.', wins: ['Strade Bianche 2021', '3× German Champion', 'Giro Donne stage wins'] },
+    'Leah Thomas':               { specialty: 'All-rounder',    bio: 'US national champion and grand tour stage winner with a smooth all-round skill set.', wins: ['2× US National Champion', 'Tour de France Femmes stage', 'Setmana Ciclista Valencia'] },
+    'Pfeiffer Georgi':           { specialty: 'Sprinter',       bio: 'British champion and rising sprint star making her mark on the World Tour.', wins: ['British National Champion', 'Tour de France Femmes stage 2024', 'Santos Women\'s Tour wins'] },
+    'Soraya Paladin':            { specialty: 'Classics',       bio: 'Breakaway specialist and Strade Bianche podium finisher with a fighter\'s mentality.', wins: ['Strade Bianche podium', 'Durango–Durango winner', 'Multiple WT stage wins'] },
+    'Marta Bastianelli':         { specialty: 'Sprinter',       bio: 'Veteran sprinter and former world champion still winning races after two decades as a pro.', wins: ['World Champion 2007', 'Multiple WT wins', 'Italian National Champion'] },
+    'Silvia Persico':            { specialty: 'All-rounder',    bio: 'Italian champion and one-day race specialist with a knack for the decisive move.', wins: ['Italian National Champion', 'Gran Piemonte winner', 'Giro Donne stage wins'] },
+    'Gaia Realini':              { specialty: 'Climber',        bio: 'Italy\'s brightest young climber — stage winner at the Vuelta Femenina before turning 23.', wins: ['Vuelta Femenina stage wins', 'Tour de Suisse Femmes', 'Italian U23 Champion'] },
+    'Puck Pieterse':             { specialty: 'All-terrain',    bio: 'Dutch superstar of the next generation dominating cross, MTB, and road alike.', wins: ['CX World Champion 2024', 'MTB World Cup wins', 'Amstel Gold Race 2024'] },
+    'Fem van Empel':             { specialty: 'Cyclo-cross',    bio: 'Dominant cyclo-cross world champion crossing over to road with the same ruthless efficiency.', wins: ['2× CX World Champion', 'CX World Cup overall', 'Tour de France Femmes stage 2024'] },
+    'Shirin van Anrooij':        { specialty: 'All-terrain',    bio: 'Cyclo-cross and road talent who is quietly building one of the most complete palmares in the peloton.', wins: ['CX World Champion 2023', 'Dutch CX Champion', 'Tour de France Femmes stage'] },
+    'Mischa Bredewold':          { specialty: 'Classics',       bio: '2023 Paris–Roubaix Femmes winner in only her second pro season.', wins: ['Paris–Roubaix 2023', 'Omloop Het Nieuwsblad 2024', 'Dutch National Champion'] },
+    'Niamh Fisher-Black':        { specialty: 'Climber',        bio: 'New Zealand\'s grand tour climber with a cool head in the hardest mountain finishes.', wins: ['NZ National Champion', 'Vuelta Femenina stage wins', 'Tour de Romandie podium'] },
+    'Riejanne Markus':           { specialty: 'All-rounder',    bio: 'Versatile rider who delivers as both a loyal domestique and a stage winner in her own right.', wins: ['Tour de France Femmes stage', 'Healthy Ageing Tour GC', 'Dutch CX podiums'] },
+    'Sara Martín':               { specialty: 'Climber',        bio: 'Spanish climbing talent pushing for a podium at her home race, La Vuelta Femenina.', wins: ['Vuelta Femenina stage wins', 'Spanish National Champion', 'Giro Donne stage'] },
+    'Brodie Chapman':            { specialty: 'All-rounder',    bio: 'Australian all-rounder who combines breakaway instinct with solid grand tour climbing.', wins: ['Tour de France Femmes stage 2022', 'Santos Women\'s Tour stage', 'Australian podiums'] },
+    'Laura Kenny':               { specialty: 'Track',          bio: 'Britain\'s most decorated female Olympian — six Olympic golds on the velodrome.', wins: ['6× Olympic gold', '14× World Champion', 'Commonwealth gold 2022'] },
+    'Katie Archibald':           { specialty: 'Track',          bio: 'Olympic and world champion on the track, and increasingly dangerous on the road too.', wins: ['Olympic gold 2020 & 2024', '10× World Champion', 'European Champion'] },
+    'Elinor Barker':             { specialty: 'Track',          bio: 'Multiple Olympic gold medallist on the track and a key part of Britain\'s team pursuit dynasty.', wins: ['Olympic gold 2016 & 2020', '5× World Champion', 'Commonwealth gold'] },
+    'Amanda Spratt':             { specialty: 'Climber',        bio: 'Australian climbing specialist and Strade Bianche winner who led the sport with quiet excellence.', wins: ['Strade Bianche 2019', '2× Oceania Champion', 'Giro Donne GC podium'] },
+    'Georgia Baker':             { specialty: 'Track / Sprint', bio: 'Australian track champion converting velodrome speed into road race wins.', wins: ['Olympic gold 2024', 'World Madison Champion', 'Australian National Champion'] },
+    'Alison Jackson':            { specialty: 'Sprinter',       bio: '2024 Paris–Roubaix Femmes winner — proof that anything can happen on the cobbles.', wins: ['Paris–Roubaix 2024', 'Tour de France Femmes stage 2023', 'Canadian National Champion'] },
+    'Neve Bradbury':             { specialty: 'Track',          bio: 'Australian track specialist with Olympic and world championship medals to her name.', wins: ['Olympic silver 2020', 'World Championship medals', 'Australian Track Champion'] },
+    'Clara Koppenburg':          { specialty: 'Climber',        bio: 'German climbing specialist who shines on the steepest gradients in women\'s racing.', wins: ['German National Champion', 'Tour de France Femmes stage', 'Giro Donne stage wins'] },
+    'Vittoria Bussi':            { specialty: 'TT / Hour record', bio: 'Hour record holder and TT specialist who combines athletic power with an academic\'s precision.', wins: ['Hour record 2018 & 2022', 'Italian TT Champion', 'World TT podiums'] },
+    'Leah Kirchmann':            { specialty: 'All-rounder',    bio: 'Canadian veteran and grand tour stage winner who helped build women\'s cycling in North America.', wins: ['Canadian National Champion', 'Giro Donne stage wins', 'Colorado Classic GC'] },
+    'Alexis Ryan':               { specialty: 'All-rounder',    bio: 'American stage race specialist known for smart racing and aggressive attacking from distance.', wins: ['Tour de Yorkshire stage', 'Setmana Ciclista Valencia stage', 'US podiums'] },
+    'Hannah Barnes':             { specialty: 'All-rounder',    bio: 'British veteran who combined a long pro career with advocacy for better conditions in women\'s cycling.', wins: ['British National Champion', 'Tour de Yorkshire stage', 'OVO Women\'s Tour stage'] },
+  };
+  let showRiderCard = false;
+  const currentRider = RIDER_INFO[BUILD_NAME];
+
+  const PCS_SLUG = BUILD_NAME.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
   // Piecewise linear carb oxidation by IF (Jeukendrup 2004 / ACSM guidelines)
   function carbsFromIF(if_val: number): number {
@@ -75,7 +152,7 @@
   let sweatRate: 'light' | 'moderate' | 'heavy' = 'moderate';
 
   // UI state
-  let howItWorksOpen = false;
+  let showMathSheet = false;
   let profileOpen = false;
   let rideOpen = false;
   let rideAutoCollapsed = false;
@@ -118,6 +195,8 @@
   let installPlatform: 'ios' | 'android' | null = null;
   let installSheetTimer: ReturnType<typeof setTimeout> | null = null;
   let deferredInstallPrompt: any = null;
+  const onBeforeInstallPrompt = (e: Event) => { e.preventDefault(); deferredInstallPrompt = e; };
+  const onAppInstalled = () => { installPlatform = null; };
   let sheetDragStartY = 0;
   let sheetDragOffsetY = 0;
   let sheetIsDragging = false;
@@ -134,7 +213,12 @@
   function onSheetDragEnd() {
     if (!sheetIsDragging) return;
     sheetIsDragging = false;
-    if (sheetDragOffsetY > 80) dismissInstallSheet();
+    if (sheetDragOffsetY > 80) {
+      if (installPlatform) dismissInstallSheet();
+      else if (showRiderCard) showRiderCard = false;
+      else if (showChangelogSheet) dismissChangelog();
+      else if (showMathSheet) showMathSheet = false;
+    }
     sheetDragOffsetY = 0;
   }
 
@@ -156,6 +240,7 @@
       // ignore parse errors
     }
     profileLoaded = true;
+    if (localStorage.getItem('bs-seen-build') !== BUILD_NAME) showWhatsNew = true;
     // Show desktop banner on md+ screens, unless dismissed this session
     const isMobile = window.innerWidth < 768;
     if (!isMobile && !sessionStorage.getItem('bs-desktop-dismissed')) {
@@ -170,15 +255,14 @@
       installSheetTimer = setTimeout(() => { installPlatform = isIos ? 'ios' : 'android'; }, 1200);
     }
 
-    window.addEventListener('beforeinstallprompt', (e: Event) => {
-      e.preventDefault();
-      deferredInstallPrompt = e;
-    });
-    window.addEventListener('appinstalled', () => { installPlatform = null; });
+    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
+    window.addEventListener('appinstalled', onAppInstalled);
   });
 
   onDestroy(() => {
     if (installSheetTimer) clearTimeout(installSheetTimer);
+    window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
+    window.removeEventListener('appinstalled', onAppInstalled);
   });
 
   function dismissDesktopBanner() {
@@ -368,7 +452,7 @@
   // Active products
   $: activeSolid = SOLID_PRODUCTS.find(p => p.id === solidProduct)!;
   $: activeDrink = DRINK_PRODUCTS.find(p => p.id === drinkProduct)!;
-  $: solidLabel  = solidLabel;
+  $: solidLabel = activeSolid.label.toLowerCase();
 
   // Bottle planner
   $: bottleCount        = weight > 0 && duration > 0 && totalFluid > 0 ? Math.ceil(totalFluid * 1000 / bottleSize) : 0;
@@ -432,16 +516,6 @@
     setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 180);
   }
 
-  let howItWorksEl: HTMLElement;
-
-  function toggleHowItWorks() {
-    howItWorksOpen = !howItWorksOpen;
-    if (howItWorksOpen) {
-      setTimeout(() => {
-        howItWorksEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 280);
-    }
-  }
 
   const HOW_TO_STEPS = [
     { n: '1', title: 'Set up your profile', body: 'Enter weight, FTP, and your preferences once — they save automatically.' },
@@ -482,15 +556,22 @@
         </h1>
       </div>
       <p class="text-caption-md text-[--color-mute] mb-xs">Precise carb & fluid targets from your FTP and power.</p>
-      {#if weight > 0 || ftp > 0}
-        <button class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone]" style="text-decoration:underline;text-underline-offset:3px;" on:click={() => (showGuide = !showGuide)}>
-          {#if showGuide}
-            <X class="w-3.5 h-3.5" />Hide guide
-          {:else}
-            <Info class="w-3.5 h-3.5" />Getting started
-          {/if}
-        </button>
-      {/if}
+      <div class="flex items-center justify-center gap-md flex-wrap">
+        {#if weight > 0 || ftp > 0}
+          <button class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone]" style="text-decoration:underline;text-underline-offset:3px;" on:click={() => (showGuide = !showGuide)}>
+            {#if showGuide}
+              <X class="w-3.5 h-3.5" />Hide guide
+            {:else}
+              <Info class="w-3.5 h-3.5" />Getting started
+            {/if}
+          </button>
+        {/if}
+        {#if showWhatsNew}
+          <button class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone]" style="text-decoration:underline;text-underline-offset:3px;" on:click={() => (showChangelogSheet = true)}>
+            What's new in {BUILD_NAME} →
+          </button>
+        {/if}
+      </div>
     </div>
 
     <!-- 3-step how-to — shown on first visit or on demand -->
@@ -921,7 +1002,7 @@
     </div>
 
     <!-- Totals + Fueling Schedule + Bottle Planner — tabbed dark card -->
-    <div class="card-campaign rounded-sm p-lg md:p-xl mb-section card-enter card-enter-7">
+    <div class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-7">
 
       <!-- Tab bar -->
       <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:20px;padding:3px;">
@@ -1081,57 +1162,87 @@
       {/if}
     </div>
 
-    <!-- How It Works — info only, no card shell -->
-    <div bind:this={howItWorksEl}>
-      <div style="height:1px;background:var(--color-hairline);margin-bottom:1.25rem;"></div>
-      <div class="text-center mb-lg">
-        <button
-          class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone]"
-          style="text-decoration:underline;text-underline-offset:3px;cursor:pointer;"
-          on:click={toggleHowItWorks}
-          aria-expanded={howItWorksOpen}
-        >
-          {howItWorksOpen ? 'Hide explanation' : 'How the math works'}
-          <ChevronDown class="w-3.5 h-3.5 transition-transform duration-200 {howItWorksOpen ? 'rotate-180' : ''}" />
-        </button>
+    <!-- Footer -->
+    <div class="text-center -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));padding-top:1.5rem;">
+      <div class="flex items-center justify-center gap-sm mb-lg">
+        <Banana class="w-4 h-4" style="color:{bananaColor};transition:color 0.6s ease;" />
+        <span class="text-caption-sm text-[--color-stone]" style="font-weight:600;">BananaSprocket</span>
       </div>
-      {#if howItWorksOpen}
-        <div transition:slide={{ duration: 260, easing: cubicOut }} class="mb-section">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
-
-              <div class="card-soft rounded-sm p-lg space-y-md">
-                <h3 class="text-body-strong font-bold text-[--color-ink]">Carbohydrate formula</h3>
-                <p class="text-body-md text-[--color-charcoal]">Carbs are driven by relative intensity (% of FTP), not absolute watts — two riders at 200W with different FTPs get different recommendations. Based on Jeukendrup / ACSM guidelines:</p>
-                <ul class="text-body-md text-[--color-charcoal] space-y-sm list-disc pl-5">
-                  <li>Recovery &lt;55% FTP — 0–20 g/h</li>
-                  <li>Endurance 55–75% — 20–40 g/h</li>
-                  <li>Tempo 75–90% — 40–60 g/h</li>
-                  <li>Threshold 90–105% — 60–90 g/h</li>
-                  <li>VO₂max+ &gt;105% — 90–120 g/h (requires glucose+fructose 2:1 blend)</li>
-                </ul>
-              </div>
-
-              <div class="card-soft rounded-sm p-lg space-y-md">
-                <h3 class="text-body-strong font-bold text-[--color-ink]">Fluid & FTP guidance</h3>
-                <p class="text-body-md text-[--color-charcoal]">Fluid needs scale with body weight — larger athletes sweat more. The sweat rate modifier adjusts targets for light or heavy sweaters. FTP is roughly the max power you can sustain for 1 hour. Rides under 1 hour rarely need exogenous carbs.</p>
-              </div>
-
-              <div class="card-soft rounded-sm p-lg space-y-md">
-                <h3 class="text-body-strong font-bold text-[--color-ink]">Regular intake</h3>
-                <p class="text-body-md text-[--color-charcoal]">Take ~15–25 g of carbohydrates every 15–20 minutes to keep blood sugar stable. Don't wait until you're hungry or thirsty.</p>
-              </div>
-
-              <div class="card-soft rounded-sm p-lg space-y-md">
-                <h3 class="text-body-strong font-bold text-[--color-ink]">Electrolytes</h3>
-                <p class="text-body-md text-[--color-charcoal]">On rides over 2 hours, supplement with electrolytes — sodium, magnesium, potassium. Plain water alone dilutes electrolyte balance on long efforts.</p>
-              </div>
-
-            </div>
-        </div>
-      {/if}
+      <div class="flex justify-center items-center gap-md">
+        <button on:click={() => showMathSheet = true}
+          class="text-caption-sm text-[--color-mute]"
+          style="padding:6px 16px;border-radius:9999px;border:1px solid var(--color-hairline);transition:background 0.2s ease;">How the math works</button>
+        <button on:click={() => showRiderCard = true}
+          class="text-caption-sm text-[--color-mute]"
+          style="padding:6px 16px;border-radius:9999px;border:1px solid var(--color-hairline);transition:background 0.2s ease;">v{VERSION} · {BUILD_NAME}</button>
+      </div>
     </div>
 
   </div>
+
+  <!-- Rider card -->
+  {#if showRiderCard && currentRider}
+    <div class="fixed inset-0 z-[995] bg-black/40" style="backdrop-filter:blur(2px);"
+      on:click={() => showRiderCard = false} role="presentation"
+      transition:fade={{ duration: 200 }}></div>
+    <div class="fixed bottom-0 left-0 right-0 z-[996] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto text-center"
+      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      on:touchstart={onSheetDragStart}
+      on:touchmove={onSheetDragMove}
+      on:touchend={onSheetDragEnd}
+      transition:fly={{ duration: 300, y: 80 }}>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
+      <p class="text-heading-md font-extra-bold mb-xs" style="color:#ffffff;">{BUILD_NAME}</p>
+      <span style="display:inline-block;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);padding:4px 14px;border-radius:9999px;font-size:13px;font-weight:500;">{currentRider.specialty}</span>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px;">
+        {#each currentRider.wins as win}
+          <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.65);padding:4px 12px;border-radius:9999px;font-size:12px;font-weight:500;">🏆 {win}</span>
+        {/each}
+      </div>
+      <p class="text-body-md mt-lg" style="color:rgba(255,255,255,0.75);">{currentRider.bio}</p>
+      <div class="mt-lg flex gap-sm">
+        <a href="https://www.procyclingstats.com/rider/{PCS_SLUG}" target="_blank" rel="noopener noreferrer"
+          class="flex-1 py-3 rounded-full text-button-md font-extra-bold text-center"
+          style="background:#FFD700;color:#111111;text-decoration:none;">
+          PCS profile <ExternalLink size={14} style="display:inline;vertical-align:middle;margin-left:4px;" />
+        </a>
+        <button on:click={() => showRiderCard = false}
+          class="flex-1 py-3 rounded-full text-button-md font-extra-bold"
+          style="background:rgba(255,255,255,0.12);color:#ffffff;">
+          Close
+        </button>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Changelog sheet -->
+  {#if showChangelogSheet}
+    <div class="fixed inset-0 z-[990] bg-black/40" style="backdrop-filter:blur(2px);"
+      on:click={dismissChangelog} role="presentation" transition:fade={{ duration: 200 }}></div>
+    <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
+      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      on:touchstart={onSheetDragStart}
+      on:touchmove={onSheetDragMove}
+      on:touchend={onSheetDragEnd}
+      transition:fly={{ duration: 300, y: 80 }}>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
+      <p class="text-heading-md font-extra-bold mb-xs" style="color:#ffffff;">What's new</p>
+      <p class="text-caption-md mb-lg" style="color:rgba(255,255,255,0.5);">v{VERSION} · {BUILD_NAME}</p>
+      <ul style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+        {#each CHANGELOG_ITEMS as item}
+          <li class="flex items-start gap-md">
+            <span style="color:#FFD700;font-size:16px;line-height:1.4;flex-shrink:0;">·</span>
+            <span style="font-size:15px;color:rgba(255,255,255,0.85);line-height:1.5;">{item}</span>
+          </li>
+        {/each}
+      </ul>
+      <button on:click={dismissChangelog}
+        class="w-full py-3 rounded-full text-button-md font-extra-bold"
+        style="background:#FFD700;color:#111111;">
+        Got it
+      </button>
+    </div>
+  {/if}
 
   <!-- PWA install bottom sheet -->
   {#if installPlatform}
@@ -1205,6 +1316,50 @@
       <p style="font-size:clamp(14px,3vw,18px);font-weight:700;color:#ffffff;text-align:center;max-width:420px;padding:0 24px;line-height:1.6;opacity:0;animation:neuralizer-text 2.9s ease forwards;">
         Hm? There was no ride. You've been watching Netflix. Have a nice day.
       </p>
+    </div>
+  {/if}
+
+  <!-- Math sheet -->
+  {#if showMathSheet}
+    <div class="fixed inset-0 z-[990] bg-black/40" style="backdrop-filter:blur(2px);"
+      on:click={() => showMathSheet = false} role="presentation"
+      transition:fade={{ duration: 200 }}></div>
+    <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
+      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      on:touchstart={onSheetDragStart}
+      on:touchmove={onSheetDragMove}
+      on:touchend={onSheetDragEnd}
+      transition:fly={{ duration: 300, y: 80 }}>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:#ffffff;">How the math works</p>
+
+      <div class="mb-lg" style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);">
+        <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:1fr auto auto;background:rgba(255,255,255,0.08);padding:8px 14px;color:rgba(255,255,255,0.45);letter-spacing:0.05em;">
+          <span>Zone</span><span class="text-right pr-4">% FTP</span><span class="text-right">Carbs</span>
+        </div>
+        {#each [
+          { zone: 'Recovery',  ftp: '<55%',    carbs: '0–20 g/h' },
+          { zone: 'Endurance', ftp: '55–75%',  carbs: '20–40 g/h' },
+          { zone: 'Tempo',     ftp: '75–90%',  carbs: '40–60 g/h' },
+          { zone: 'Threshold', ftp: '90–105%', carbs: '60–90 g/h' },
+          { zone: 'VO₂max+',   ftp: '>105%',   carbs: '90–120 g/h' },
+        ] as row, i}
+          <div class="grid text-caption-sm" style="grid-template-columns:1fr auto auto;padding:10px 14px;{i % 2 === 1 ? 'background:rgba(255,255,255,0.04);' : ''}border-top:1px solid rgba(255,255,255,0.07);">
+            <span style="color:#ffffff;">{row.zone}</span>
+            <span class="text-right pr-4" style="color:rgba(255,255,255,0.5);">{row.ftp}</span>
+            <span class="text-right" style="color:rgba(255,255,255,0.75);">{row.carbs}</span>
+          </div>
+        {/each}
+      </div>
+
+      <p class="text-caption-sm mb-sm" style="color:rgba(255,255,255,0.55);">Fluids scale with body weight — sweat modifier adjusts ±20–30%.</p>
+      <p class="text-caption-sm mb-lg" style="color:rgba(255,255,255,0.55);">Rides &gt;2h: add electrolytes — plain water dilutes sodium balance on long efforts.</p>
+
+      <button on:click={() => showMathSheet = false}
+        class="w-full py-3 rounded-full text-button-md font-extra-bold"
+        style="background:rgba(255,255,255,0.12);color:#ffffff;">
+        Close
+      </button>
     </div>
   {/if}
 </main>

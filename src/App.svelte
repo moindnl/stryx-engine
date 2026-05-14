@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Banana, Zap, Gauge, Droplet, ChevronDown, RotateCcw, User, Ruler, Scale, Wheat, CheckCircle, Info, X } from 'lucide-svelte';
+  import { Banana, Zap, Gauge, Droplet, ChevronDown, RotateCcw, User, Ruler, Scale, Wheat, CheckCircle, Info, X, Bike } from 'lucide-svelte';
   import { tweened } from 'svelte/motion';
   import { linear, cubicOut } from 'svelte/easing';
   import { fly, slide } from 'svelte/transition';
@@ -44,12 +44,32 @@
   // UI state
   let howItWorksOpen = false;
   let profileOpen = false;
+  let rideOpen = false;
+  let rideAutoCollapsed = false;
   let totalsTab: 'summary' | 'schedule' | 'bottles' = 'summary';
   let showGuide = false;
   let profileLoaded = false;
 
   // Bottle planner
   let bottleSize = 750; // ml
+
+  // Nutrition products
+  const SOLID_PRODUCTS = [
+    { id: 'gel',   label: 'Gel',   carbs: 22 },
+    { id: 'bar',   label: 'Bar',   carbs: 40 },
+    { id: 'chew',  label: 'Chew',  carbs: 10 },
+  ] as const;
+  type SolidId = typeof SOLID_PRODUCTS[number]['id'];
+
+  const DRINK_PRODUCTS = [
+    { id: 'water',    label: 'Water only',  carbsPer500: 0  },
+    { id: 'mix',      label: 'Carb mix',    carbsPer500: 36 },
+    { id: 'isotonic', label: 'Isotonic',    carbsPer500: 30 },
+  ] as const;
+  type DrinkId = typeof DRINK_PRODUCTS[number]['id'];
+
+  let solidProduct: SolidId = 'gel';
+  let drinkProduct: DrinkId = 'water';
 
   // Restore profile from localStorage
   onMount(() => {
@@ -70,6 +90,7 @@
   // Reset per-ride inputs only; profile persists
   function resetInputs() {
     distance = 0; duration = 0; power = 0; temperature = 20;
+    rideOpen = true; rideAutoCollapsed = false;
     triggerBananaSpin();
   }
 
@@ -194,28 +215,41 @@
   $: multiCarbNote = intensityFactor >= 0.90;
   $: sweatRateLabel = sweatRate[0].toUpperCase() + sweatRate.slice(1);
 
-  // Fueling schedule: 20-min intake slots
+  // Auto-collapse ride input once all core fields filled (once per session/reset)
+  $: if (distance > 0 && duration > 0 && power > 0 && !rideAutoCollapsed) {
+    rideOpen = false;
+    rideAutoCollapsed = true;
+  }
+
+  // Active products
+  $: activeSolid = SOLID_PRODUCTS.find(p => p.id === solidProduct)!;
+  $: activeDrink = DRINK_PRODUCTS.find(p => p.id === drinkProduct)!;
+
+  // Bottle planner
+  $: bottleCount        = weight > 0 && duration > 0 && totalFluid > 0 ? Math.ceil(totalFluid * 1000 / bottleSize) : 0;
+  $: mlPerBottle        = bottleCount > 0 ? Math.round(totalFluid * 1000 / bottleCount) : 0;
+  $: drinkCarbsPerHour  = fluidPerHour > 0 ? Math.round(activeDrink.carbsPer500 * (fluidPerHour * 1000 / 500)) : 0;
+  $: drinkCarbsPerBottle = bottleCount > 0 ? Math.round(activeDrink.carbsPer500 * mlPerBottle / 500) : 0;
+
+  // Solid food covers carbs not met by drink
+  $: solidCarbsPerHour = Math.max(0, carbsPerHour - drinkCarbsPerHour);
+  $: carbsPerBottle    = bottleCount > 0 ? Math.round((totalCarbs - drinkCarbsPerHour * duration) / bottleCount) : 0;
+  $: totalSolidUnits   = duration > 0 && activeSolid.carbs > 0 ? Math.ceil(solidCarbsPerHour * duration / activeSolid.carbs) : 0;
+
+  // Fueling schedule: 20-min intake slots (solid food only)
   $: fuelingEvents = (() => {
-    if (duration <= 0 || weight <= 0) return [] as { time: string; carbs: number; gels: number }[];
-    const events: { time: string; carbs: number; gels: number }[] = [];
+    if (duration <= 0 || weight <= 0) return [] as { time: string; carbs: number; units: number }[];
+    const events: { time: string; carbs: number; units: number }[] = [];
     const totalMins = Math.round(duration * 60);
-    const carbsPerSlot = Math.round(carbsPerHour / 3);
+    const carbsPerSlot = Math.round(solidCarbsPerHour / 3);
+    const units = carbsPerSlot > 0 ? Math.ceil(carbsPerSlot / activeSolid.carbs) : 0;
     for (let t = 20; t <= totalMins; t += 20) {
       const h = Math.floor(t / 60);
       const m = t % 60;
-      events.push({
-        time: `${h}:${String(m).padStart(2, '0')}`,
-        carbs: carbsPerSlot,
-        gels: carbsPerSlot > 0 ? Math.ceil(carbsPerSlot / 22) : 0,
-      });
+      events.push({ time: `${h}:${String(m).padStart(2, '0')}`, carbs: carbsPerSlot, units });
     }
     return events;
   })();
-
-  // Bottle planner
-  $: bottleCount   = weight > 0 && duration > 0 && totalFluid > 0 ? Math.ceil(totalFluid * 1000 / bottleSize) : 0;
-  $: carbsPerBottle = bottleCount > 0 ? Math.round(totalCarbs / bottleCount) : 0;
-  $: mlPerBottle   = bottleCount > 0 ? Math.round(totalFluid * 1000 / bottleCount) : 0;
 
   let howItWorksEl: HTMLElement;
 
@@ -286,7 +320,7 @@
     {/if}
 
     <!-- Rider Profile -->
-    <div class="card-soft rounded-sm mb-section card-enter card-enter-3" on:input={triggerBananaSpin}>
+    <div class="card-soft rounded-sm mb-lg card-enter card-enter-3" on:input={triggerBananaSpin}>
       <button
         class="w-full flex items-center justify-between p-lg text-left cursor-pointer"
         on:click={() => (profileOpen = !profileOpen)}
@@ -402,75 +436,120 @@
     </div>
 
     <!-- Ride Input Card -->
-    <div class="bg-[--color-canvas] border border-[var(--color-hairline)] rounded-sm p-lg md:p-xl mb-section card-enter card-enter-4" on:input={triggerBananaSpin}>
-
-      <!-- Row 1: Distance / Duration -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
-        <div class="space-y-sm">
-          <label for="distance" class="text-caption-md text-[--color-ink]">Distance</label>
-          <div class="flex items-center gap-sm">
-            <input id="distance" type="number" bind:value={distance} min="1" max="500" step="1" class="search-pill flex-1" />
-            <span class="text-caption-sm text-[--color-mute] whitespace-nowrap">{imperial ? 'mi' : 'km'}</span>
+    <div class="card-soft rounded-sm mb-section card-enter card-enter-4" on:input={triggerBananaSpin}>
+      <button
+        class="w-full flex items-center justify-between p-lg text-left cursor-pointer"
+        on:click={() => (rideOpen = !rideOpen)}
+        aria-expanded={rideOpen}
+      >
+        <div class="flex flex-wrap items-center gap-sm min-w-0">
+          <div class="flex items-center gap-sm flex-shrink-0">
+            <Bike class="w-5 h-5 text-[--color-ink]" />
+            <span class="text-heading-md font-bold text-[--color-ink]">Ride</span>
           </div>
-        </div>
-        <div class="space-y-sm">
-          <label for="duration" class="text-caption-md text-[--color-ink]">Duration</label>
-          <div class="flex items-center gap-sm">
-            <input id="duration" type="number" bind:value={duration} min="0.5" max="24" step="0.5" class="search-pill flex-1" />
-            <span class="text-caption-sm text-[--color-mute] whitespace-nowrap">h</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Row 2: Power / Zone -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-lg mt-lg">
-        <div class="space-y-sm">
-          <label for="power" class="text-caption-md text-[--color-ink]">Ride Power</label>
-          <div class="flex items-center gap-sm">
-            <input id="power" type="number" bind:value={power} min="0" max="600" step="1" class="search-pill flex-1" />
-            <span class="text-caption-sm text-[--color-mute] whitespace-nowrap">W</span>
-          </div>
-          <p class="text-caption-sm text-[--color-mute]">Planned average power for this ride</p>
-        </div>
-        <div class="space-y-sm">
-          <span class="text-caption-md text-[--color-ink] block">Zone</span>
-          <div class="flex items-center h-10">
-            {#if powerDerived && zoneLabel}
-              <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}%</span>
-            {:else if ftp === 0}
-              <span class="text-[--color-mute] text-caption-sm">Set FTP in Rider Profile ↑</span>
+          {#if !rideOpen}
+            {#if distance > 0 || duration > 0 || power > 0}
+              <div class="flex flex-wrap gap-xs">
+                {#if distance > 0}<span class="badge">{distance} {imperial ? 'mi' : 'km'}</span>{/if}
+                {#if duration > 0}<span class="badge">{duration} h</span>{/if}
+                {#if power > 0}<span class="badge">{power} W</span>{/if}
+                {#if temperature !== 20}<span class="badge">{temperature}°C</span>{/if}
+              </div>
             {:else}
-              <span class="text-[--color-mute] text-caption-sm">Enter ride power</span>
+              <span class="text-caption-sm text-[--color-sale]">Add ride details →</span>
             {/if}
+          {/if}
+        </div>
+        <ChevronDown class="w-5 h-5 text-[--color-ink] transition-transform duration-200 flex-shrink-0 ml-sm {rideOpen ? 'rotate-180' : ''}" />
+      </button>
+
+      {#if rideOpen}
+        <div transition:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;">
+          <div class="bg-[--color-canvas] rounded-sm overflow-hidden"
+            style="border:1px solid #e5e5e5;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+
+            <!-- Row 1: Distance / Duration -->
+            <div class="grid grid-cols-1 md:grid-cols-2">
+              <div class="flex items-center justify-between px-lg py-lg border-b md:border-b-0 md:border-r border-[var(--color-hairline)]">
+                <label for="distance" class="text-caption-md text-[--color-ink]">Distance</label>
+                <div class="flex items-center gap-xs">
+                  <input id="distance" type="number" bind:value={distance} min="1" max="500" step="1"
+                    class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
+                    style="height:36px;border-radius:20px;border:1px solid #cacacb;padding:0 12px;background:#fff;"
+                    on:focus={(e) => (e.target as HTMLInputElement).select()} />
+                  <span class="text-caption-sm text-[--color-mute] w-8">{imperial ? 'mi' : 'km'}</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between px-lg py-lg border-b border-[var(--color-hairline)]">
+                <label for="duration" class="text-caption-md text-[--color-ink]">Duration</label>
+                <div class="flex items-center gap-xs">
+                  <input id="duration" type="number" bind:value={duration} min="0.5" max="24" step="0.5"
+                    class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
+                    style="height:36px;border-radius:20px;border:1px solid #cacacb;padding:0 12px;background:#fff;"
+                    on:focus={(e) => (e.target as HTMLInputElement).select()} />
+                  <span class="text-caption-sm text-[--color-mute] w-8">h</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2: Power / Zone -->
+            <div class="grid grid-cols-1 md:grid-cols-2">
+              <div class="flex items-center justify-between px-lg py-lg border-b md:border-b-0 md:border-r border-[var(--color-hairline)]">
+                <div>
+                  <label for="power" class="text-caption-md text-[--color-ink] block">Ride Power</label>
+                  <span class="text-caption-sm text-[--color-mute]">Planned average</span>
+                </div>
+                <div class="flex items-center gap-xs">
+                  <input id="power" type="number" bind:value={power} min="0" max="600" step="1"
+                    class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
+                    style="height:36px;border-radius:20px;border:1px solid #cacacb;padding:0 12px;background:#fff;"
+                    on:focus={(e) => (e.target as HTMLInputElement).select()} />
+                  <span class="text-caption-sm text-[--color-mute] w-8">W</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between px-lg py-lg border-b border-[var(--color-hairline)]">
+                <span class="text-caption-md text-[--color-ink]">Zone</span>
+                <div class="flex items-center h-10">
+                  {#if powerDerived && zoneLabel}
+                    <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}%</span>
+                  {:else if ftp === 0}
+                    <span class="text-[--color-mute] text-caption-sm">Set FTP ↑</span>
+                  {:else}
+                    <span class="text-[--color-mute] text-caption-sm">Enter power</span>
+                  {/if}
+                </div>
+              </div>
+            </div>
+
+            <!-- Temperature -->
+            <div class="px-lg py-lg border-b border-[var(--color-hairline)]">
+              <div class="flex items-center justify-between mb-sm">
+                <label for="temperature" class="text-caption-md text-[--color-ink]">Temperature</label>
+                <span class="text-caption-md font-bold text-[--color-ink]">{temperature}°C</span>
+              </div>
+              <input id="temperature" type="range" bind:value={temperature} min="0" max="45" step="1"
+                class="temp-slider w-full"
+                style="--fill:{(temperature / 45 * 100).toFixed(1)}%" />
+              <p class="text-caption-sm mt-xs {heatBonus > 0 ? 'text-[--color-sale]' : 'text-[--color-mute]'}">
+                {heatBonus > 0 ? `+${heatBonus.toFixed(1)} L/h heat adjustment` : 'Heat adjustment activates above 20°C'}
+              </p>
+            </div>
+
+            <!-- Reset -->
+            <div class="flex justify-end px-lg py-md">
+              <button class="filter-chip flex items-center gap-xs" on:click={resetInputs} aria-label="Reset ride inputs">
+                <RotateCcw class="w-4 h-4" />
+                Reset ride
+              </button>
+            </div>
+
           </div>
         </div>
-      </div>
-
-      <!-- Temperature -->
-      <div class="mt-lg pt-lg border-t border-[var(--color-hairline)]">
-        <div class="flex items-center justify-between mb-sm">
-          <label for="temperature" class="text-caption-md text-[--color-ink]">Riding Temperature</label>
-          <span class="text-caption-md font-bold text-[--color-ink]">{temperature}°C</span>
-        </div>
-        <input id="temperature" type="range" bind:value={temperature} min="0" max="45" step="1"
-          class="temp-slider w-full"
-          style="--fill:{(temperature / 45 * 100).toFixed(1)}%" />
-        <p class="text-caption-sm mt-xs {heatBonus > 0 ? 'text-[--color-sale]' : 'text-[--color-mute]'}">
-          {heatBonus > 0 ? `+${heatBonus.toFixed(1)} L/h heat adjustment applied` : 'Heat adjustment activates above 20°C'}
-        </p>
-      </div>
-
-      <!-- Reset -->
-      <div class="flex justify-end mt-lg">
-        <button class="filter-chip flex items-center gap-xs" on:click={resetInputs} aria-label="Reset ride inputs">
-          <RotateCcw class="w-4 h-4" />
-          Reset ride
-        </button>
-      </div>
+      {/if}
     </div>
 
     <!-- Results Row 1: Speed + Power -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-section card-enter card-enter-5">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-5">
 
       <!-- Speed card -->
       <div class="card p-lg">
@@ -528,7 +607,7 @@
     </div>
 
     <!-- Results Row 2: Carbs + Fluids -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-section card-enter card-enter-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-6">
 
       <!-- Carbs card -->
       <div class="card p-lg">
@@ -628,10 +707,21 @@
 
       <!-- Schedule tab -->
       {:else if totalsTab === 'schedule'}
+        <!-- Solid product picker -->
+        <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
+          <span style="color:rgba(255,255,255,0.7);font-size:13px;">Solid food</span>
+          <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
+            {#each SOLID_PRODUCTS as p}
+              <button
+                style="{solidProduct === p.id ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;"
+                on:click={() => (solidProduct = p.id)}>{p.label} ({p.carbs}g)</button>
+            {/each}
+          </div>
+        </div>
         {#if fuelingEvents.length === 0}
           <p style="color:rgba(255,255,255,0.5);font-size:14px;">Enter weight and duration to generate schedule.</p>
         {:else if fuelingEvents[0].carbs === 0}
-          <p style="color:rgba(255,255,255,0.5);font-size:14px;">No carbs needed at this intensity. Stay hydrated.</p>
+          <p style="color:rgba(255,255,255,0.5);font-size:14px;">No solid food needed — drink covers all carbs.</p>
         {:else}
           <div style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);">
             {#each fuelingEvents as event, i}
@@ -639,11 +729,17 @@
                 style="{i < fuelingEvents.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.08);' : ''}">
                 <span style="color:rgba(255,255,255,0.5);font-size:13px;font-variant-numeric:tabular-nums;min-width:2.6rem;">{event.time}</span>
                 <span style="color:#ffffff;font-weight:700;font-size:15px;">{event.carbs}g</span>
-                <span style="color:rgba(255,255,255,0.4);font-size:12px;">{event.gels === 1 ? '1 gel' : `${event.gels} gels`}</span>
+                <span style="color:rgba(255,255,255,0.4);font-size:12px;">{event.units}× {activeSolid.label.toLowerCase()}</span>
               </div>
             {/each}
           </div>
-          <p style="color:rgba(255,255,255,0.35);font-size:12px;margin-top:10px;">Every 20 min · 1 gel ≈ 22g</p>
+          <div class="flex items-center justify-between mt-md">
+            <p style="color:rgba(255,255,255,0.35);font-size:12px;">Every 20 min</p>
+            <p style="color:rgba(255,255,255,0.5);font-size:12px;font-weight:600;">{totalSolidUnits} {activeSolid.label.toLowerCase()}s total</p>
+          </div>
+          {#if drinkCarbsPerHour > 0}
+            <p style="color:rgba(255,255,255,0.35);font-size:11px;margin-top:6px;">↑ reduced by {drinkCarbsPerHour}g/h from drink</p>
+          {/if}
         {/if}
 
       <!-- Bottles tab -->
@@ -651,19 +747,24 @@
         {#if bottleCount === 0}
           <p style="color:rgba(255,255,255,0.5);font-size:14px;">Enter weight and duration to plan bottles.</p>
         {:else}
+          <!-- Drink product picker -->
+          <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
+            <span style="color:rgba(255,255,255,0.7);font-size:13px;">In bottle</span>
+            <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
+              {#each DRINK_PRODUCTS as p}
+                <button
+                  style="{drinkProduct === p.id ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 12px;font-size:12px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                  on:click={() => (drinkProduct = p.id)}>{p.label}</button>
+              {/each}
+            </div>
+          </div>
           <!-- Bottle size selector -->
           <div class="flex items-center justify-between mb-lg flex-wrap gap-sm">
-            <span style="color:rgba(255,255,255,0.7);font-size:14px;">Bottle size</span>
+            <span style="color:rgba(255,255,255,0.7);font-size:13px;">Bottle size</span>
             <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
-              <button
-                style="{bottleSize === 500 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;"
-                on:click={() => (bottleSize = 500)}>500ml</button>
-              <button
-                style="{bottleSize === 750 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;"
-                on:click={() => (bottleSize = 750)}>750ml</button>
-              <button
-                style="{bottleSize === 1000 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;"
-                on:click={() => (bottleSize = 1000)}>1L</button>
+              <button style="{bottleSize === 500 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 500)}>500ml</button>
+              <button style="{bottleSize === 750 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 750)}>750ml</button>
+              <button style="{bottleSize === 1000 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 1000)}>1L</button>
             </div>
           </div>
           <div style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);">
@@ -672,34 +773,46 @@
               <span style="color:#fff;font-weight:700;font-size:15px;">{bottleCount}</span>
             </div>
             <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
-              <span style="color:rgba(255,255,255,0.6);font-size:14px;">Water per bottle</span>
+              <span style="color:rgba(255,255,255,0.6);font-size:14px;">Fluid per bottle</span>
               <span style="color:#fff;font-weight:700;font-size:15px;">{mlPerBottle} ml</span>
             </div>
+            {#if drinkCarbsPerBottle > 0}
+              <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
+                <span style="color:rgba(255,255,255,0.6);font-size:14px;">Carbs from drink</span>
+                <span style="color:#fff;font-weight:700;font-size:15px;">{drinkCarbsPerBottle} g/bottle</span>
+              </div>
+            {/if}
             <div class="flex items-center justify-between px-lg py-md">
-              <span style="color:rgba(255,255,255,0.6);font-size:14px;">Carbs per bottle</span>
-              <span style="color:#fff;font-weight:700;font-size:15px;">{carbsPerBottle} g</span>
+              <span style="color:rgba(255,255,255,0.6);font-size:14px;">Extra solid carbs</span>
+              <span style="color:#fff;font-weight:700;font-size:15px;">{Math.max(0, carbsPerBottle)} g/bottle</span>
             </div>
           </div>
-          <p style="color:rgba(255,255,255,0.35);font-size:12px;margin-top:10px;">Mix carbs evenly across all bottles.</p>
+          {#if drinkCarbsPerHour > 0}
+            <p style="color:rgba(255,255,255,0.35);font-size:11px;margin-top:10px;">Drink covers {drinkCarbsPerHour}g/h → less solid food needed. Check Schedule tab.</p>
+          {:else}
+            <p style="color:rgba(255,255,255,0.35);font-size:12px;margin-top:10px;">Water only — all carbs from solid food.</p>
+          {/if}
         {/if}
       {/if}
     </div>
 
-    <!-- How It Works collapsible -->
-    <div class="card-soft rounded-sm" bind:this={howItWorksEl}>
-      <button
-        class="w-full flex items-center justify-between p-lg text-left cursor-pointer"
-        on:click={toggleHowItWorks}
-        aria-expanded={howItWorksOpen}
-      >
-        <span class="text-heading-md font-bold text-[--color-ink]">How It Works</span>
-        <ChevronDown class="w-5 h-5 text-[--color-ink] transition-transform duration-200 {howItWorksOpen ? 'rotate-180' : ''}" />
-      </button>
+    <!-- How It Works — info only, no card shell -->
+    <div bind:this={howItWorksEl}>
+      <div style="height:1px;background:var(--color-hairline);margin-bottom:1.25rem;"></div>
+      <div class="text-center mb-lg">
+        <button
+          class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone]"
+          style="text-decoration:underline;text-underline-offset:3px;cursor:pointer;"
+          on:click={toggleHowItWorks}
+          aria-expanded={howItWorksOpen}
+        >
+          {howItWorksOpen ? 'Hide explanation' : 'How the math works'}
+          <ChevronDown class="w-3.5 h-3.5 transition-transform duration-200 {howItWorksOpen ? 'rotate-180' : ''}" />
+        </button>
+      </div>
       {#if howItWorksOpen}
-        <div transition:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;">
-          <div class="bg-[--color-canvas] rounded-sm overflow-hidden p-lg"
-            style="border:1px solid #e5e5e5;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+        <div transition:slide={{ duration: 260, easing: cubicOut }} class="mb-section">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
 
               <div class="card-soft rounded-sm p-lg space-y-md">
                 <h3 class="text-body-strong font-bold text-[--color-ink]">Carbohydrate formula</h3>
@@ -729,7 +842,6 @@
               </div>
 
             </div>
-          </div>
         </div>
       {/if}
     </div>

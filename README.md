@@ -12,8 +12,12 @@ Precision carbohydrate and fluid targets for endurance cyclists, calculated from
 - **Imperial / metric** — toggle converts all displayed values in place
 - **Energy expenditure** — kcal/h via `power × 3.6` (cycling mechanical efficiency standard)
 - **Speed + animal badge** — average pace with Wikipedia-linked animal comparison
+- **Fueling schedule** — 20-min intake slots with gel/bar/chew picker; units per slot calculated automatically
+- **Bottle planner** — bottle count, ml per bottle, carb content; drink product (water/carb mix/isotonic) offsets solid food needs
+- **Collapsible input cards** — Rider Profile and Ride accordion; ride auto-collapses when all fields filled
 - **Mobile sticky bar** — liquid glass overlay showing carbs/fluids/kcal per hour, always visible while scrolling
 - **Zone-reactive banana** — pendulum idle animation, color shifts yellow → red with intensity
+- **Universal PWA icon** — power arc design (dark background, amber gauge arc, banana), works on any wallpaper
 - **PWA** — installable on phone, full offline support via Workbox service worker
 - **Lighthouse 100/100** — Performance, Accessibility, Best Practices, SEO
 
@@ -34,6 +38,7 @@ Precision carbohydrate and fluid targets for endurance cyclists, calculated from
 - **Icons**: Lucide Svelte
 - **Animations**: `svelte/motion` tweened stores, CSS keyframes
 - **PWA**: `vite-plugin-pwa` + Workbox (generateSW mode)
+- **Icon generation**: Playwright (headless Chromium renders SVG → PNG)
 
 ## Dev Setup
 
@@ -48,6 +53,14 @@ pnpm dev
 pnpm build    # outputs to dist/
 pnpm preview  # serve dist/ locally
 ```
+
+## Regenerate App Icons
+
+```bash
+node scripts/gen-icons.mjs
+```
+
+Generates `public/icon-192x192.png` and `public/icon-512x512.png` — power arc design, universal (works on light and dark wallpapers).
 
 ## Install as PWA
 
@@ -104,14 +117,16 @@ Once installed, the app works fully **offline** — all assets are precached on 
 ```
 ├── public/
 │   ├── favicon.svg
-│   ├── icon-192x192.png   # PWA icon
-│   ├── icon-512x512.png   # PWA icon (maskable)
+│   ├── icon-192x192.png      # PWA icon (power arc, universal)
+│   ├── icon-512x512.png      # PWA icon (power arc, maskable)
 │   └── robots.txt
+├── scripts/
+│   └── gen-icons.mjs         # Playwright icon generator
 ├── src/
-│   ├── App.svelte          # Single-component app
-│   ├── app.css             # Nike design tokens + animations + liquid glass
-│   └── main.js             # Entry point
-├── vite.config.js          # Vite + PWA plugin config
+│   ├── App.svelte            # Single-component app
+│   ├── app.css               # Design tokens + animations + liquid glass
+│   └── main.js               # Entry point
+├── vite.config.js            # Vite + PWA plugin config
 └── index.html
 ```
 

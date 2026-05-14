@@ -37,7 +37,7 @@
 
   // Parse "1:30", "1.30" (dot = minutes when 2+ digits), or "1.5" → decimal hours
   function parseDuration(raw: string): number {
-    const s = raw.trim();
+    const s = raw.trim().replace(',', '.'); // normalize European comma separator
     if (!s) return 0;
     if (s.includes(':')) {
       const [hPart, mPart] = s.split(':');

@@ -81,7 +81,13 @@
   let rideAutoCollapsed = false;
   let neuralizer = false;        // easter egg F: neuralyzer flash
   let holdTimer: ReturnType<typeof setTimeout> | null = null;
-  let totalsTab: 'summary' | 'schedule' | 'bottles' = 'summary';
+  let totalsTab: 'summary' | 'schedule' | 'pack' = 'summary';
+  let checkedPack: Set<string> = new Set();
+  function togglePack(id: string) {
+    if (checkedPack.has(id)) checkedPack.delete(id); else checkedPack.add(id);
+    checkedPack = checkedPack;
+  }
+  function resetPack() { checkedPack.clear(); checkedPack = checkedPack; }
   let showGuide = false;
   let profileLoaded = false;
 
@@ -241,13 +247,6 @@
           intensityFactor < 1.05 ? '#c2410c' : '#d30005'
         };color:#ffffff;transition:background 0.35s ease,color 0.35s ease`;
 
-  $: zoneColor = tadejMode ? '#f0c000' :
-    intensityFactor < 0.55 ? '#4b4b4d' :
-    intensityFactor < 0.75 ? '#1151ff' :
-    intensityFactor < 0.90 ? '#007d48' :
-    intensityFactor < 1.05 ? '#c2410c' : '#d30005';
-
-  $: intensityBorderStyle = `border-left:${intensityFactor > 0 ? '3px solid ' + zoneColor : '1px solid var(--color-hairline)'};transition:border-color 0.35s ease,border-width 0.2s ease;`;
 
   $: intensity = (intensityFactor === 0 ? 'moderate' :
     intensityFactor < 0.65 ? 'low' :
@@ -335,6 +334,7 @@
   // Active products
   $: activeSolid = SOLID_PRODUCTS.find(p => p.id === solidProduct)!;
   $: activeDrink = DRINK_PRODUCTS.find(p => p.id === drinkProduct)!;
+  $: solidLabel  = solidLabel;
 
   // Bottle planner
   $: bottleCount        = weight > 0 && duration > 0 && totalFluid > 0 ? Math.ceil(totalFluid * 1000 / bottleSize) : 0;
@@ -345,7 +345,36 @@
   // Solid food covers carbs not met by drink
   $: solidCarbsPerHour = Math.max(0, carbsPerHour - drinkCarbsPerHour);
   $: carbsPerBottle    = bottleCount > 0 ? Math.round((totalCarbs - drinkCarbsPerHour * duration) / bottleCount) : 0;
-  $: totalSolidUnits   = duration > 0 && activeSolid.carbs > 0 ? Math.ceil(solidCarbsPerHour * duration / activeSolid.carbs) : 0;
+  $: totalSolidUnits = duration > 0 && activeSolid.carbs > 0 ? Math.ceil(solidCarbsPerHour * duration / activeSolid.carbs) : 0;
+
+  $: packItems = (() => {
+    if (!duration || !weight) return [] as { id: string; label: string }[];
+    const items: { id: string; label: string }[] = [];
+    if (totalSolidUnits > 0) {
+      const withEmergency = duration >= 2;
+      const count = withEmergency ? totalSolidUnits + 1 : totalSolidUnits;
+      const suffix = withEmergency ? ', +1 emergency' : '';
+      items.push({ id: 'fuel', label: `${count} × ${solidLabel} (${activeSolid.carbs}g each${suffix})` });
+    }
+    if (bottleCount > 0)
+      items.push({ id: 'bottles', label: `${bottleCount} × bottle (${bottleSize}ml)` });
+    if (drinkProduct !== 'water' && bottleCount > 0)
+      items.push({ id: 'carbdrink', label: `${activeDrink.label} mix — ${bottleCount} serving${bottleCount > 1 ? 's' : ''}` });
+    if (temperature >= 28)
+      items.push({ id: 'electrolytes', label: 'Electrolyte tabs / salt caps' });
+    if (duration >= 3)
+      items.push({ id: 'cash', label: 'Cash or card (café stop / emergency)' });
+    items.push({ id: 'computer', label: 'Bike computer charged' });
+    items.push({ id: 'phone', label: 'Phone charged' });
+    return items;
+  })();
+  // Prune checked state for items that no longer exist
+  $: {
+    const validIds = new Set(packItems.map(i => i.id));
+    let pruned = false;
+    checkedPack.forEach(id => { if (!validIds.has(id)) { checkedPack.delete(id); pruned = true; } });
+    if (pruned) checkedPack = checkedPack;
+  }
 
   // Fueling schedule: 20-min intake slots (solid food only)
   $: fuelingEvents = (() => {
@@ -767,7 +796,7 @@
       </div>
 
       <!-- Power card -->
-      <div class="card p-lg" style={intensityBorderStyle}>
+      <div class="card p-lg">
         <div class="flex items-start gap-md mb-lg">
           <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
             <Zap class="w-7 h-7 text-[--color-ink]" />
@@ -798,7 +827,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-6">
 
       <!-- Carbs card -->
-      <div class="card p-lg" style={intensityBorderStyle}>
+      <div class="card p-lg">
         <div class="flex items-start gap-md mb-lg">
           <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
             <Wheat class="w-7 h-7 text-[--color-ink]" />
@@ -869,8 +898,8 @@
           style={tabStyle('schedule', totalsTab)}
           on:click={() => (totalsTab = 'schedule')}>Schedule</button>
         <button
-          style={tabStyle('bottles', totalsTab)}
-          on:click={() => (totalsTab = 'bottles')}>Bottles</button>
+          style={tabStyle('pack', totalsTab)}
+          on:click={() => (totalsTab = 'pack')}>Pack</button>
       </div>
 
       <!-- Summary tab -->
@@ -920,23 +949,23 @@
                 style="{i < fuelingEvents.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.08);' : ''}">
                 <span style="color:rgba(255,255,255,0.5);font-size:13px;font-variant-numeric:tabular-nums;min-width:2.6rem;">{event.time}</span>
                 <span style="color:#ffffff;font-weight:700;font-size:15px;">{event.carbs}g</span>
-                <span style="color:rgba(255,255,255,0.4);font-size:12px;">{event.units}× {activeSolid.label.toLowerCase()}</span>
+                <span style="color:rgba(255,255,255,0.5);font-size:12px;">{event.units}× {solidLabel}</span>
               </div>
             {/each}
           </div>
           <div class="flex items-center justify-between mt-md">
-            <p style="color:rgba(255,255,255,0.35);font-size:12px;">First fuel at 20 min · every 20 min after</p>
-            <p style="color:rgba(255,255,255,0.5);font-size:12px;font-weight:600;">{totalSolidUnits} {activeSolid.label.toLowerCase()}s total</p>
+            <p style="color:rgba(255,255,255,0.45);font-size:12px;">First fuel at 20 min · every 20 min after</p>
+            <p style="color:rgba(255,255,255,0.5);font-size:12px;font-weight:600;">{totalSolidUnits} {solidLabel}s total</p>
           </div>
           {#if drinkCarbsPerHour > 0}
-            <p style="color:rgba(255,255,255,0.35);font-size:11px;margin-top:6px;">↑ reduced by {drinkCarbsPerHour}g/h from drink</p>
+            <p style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:6px;">↑ reduced by {drinkCarbsPerHour}g/h from drink</p>
           {/if}
         {/if}
 
         </div>
 
-      <!-- Bottles tab -->
-      {:else}
+      <!-- Pack tab (bottles + checklist) -->
+      {:else if totalsTab === 'pack'}
         <div in:fade={{ duration: 250 }}>
         {#if bottleCount === 0}
           <p style="color:rgba(255,255,255,0.5);font-size:14px;">Enter weight and duration to plan bottles.</p>
@@ -982,9 +1011,36 @@
             </div>
           </div>
           {#if drinkCarbsPerHour > 0}
-            <p style="color:rgba(255,255,255,0.35);font-size:11px;margin-top:10px;">Drink covers {drinkCarbsPerHour}g/h → less solid food needed. Check Schedule tab.</p>
+            <p style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:10px;">Drink covers {drinkCarbsPerHour}g/h → less solid food needed. Check Schedule tab.</p>
           {:else}
-            <p style="color:rgba(255,255,255,0.35);font-size:12px;margin-top:10px;">Water only — all carbs from solid food.</p>
+            <p style="color:rgba(255,255,255,0.45);font-size:12px;margin-top:10px;">Water only — all carbs from solid food.</p>
+          {/if}
+
+          <!-- Pack checklist -->
+          {#if packItems.length > 0}
+            <div style="margin-top:20px;border-top:1px solid rgba(255,255,255,0.1);padding-top:16px;">
+              <div class="flex items-center justify-between mb-md">
+                <span style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">Pack list</span>
+                {#if checkedPack.size > 0}
+                  <button style="color:rgba(255,255,255,0.5);font-size:11px;" on:click={resetPack}>Reset</button>
+                {/if}
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                {#each packItems as item}
+                  {@const checked = checkedPack.has(item.id)}
+                  <button
+                    class="flex items-center gap-md text-left"
+                    on:click={() => togglePack(item.id)}>
+                    <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid {checked ? '#FFD700' : 'rgba(255,255,255,0.25)'};background:{checked ? '#FFD700' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+                      {#if checked}
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      {/if}
+                    </div>
+                    <span style="font-size:14px;color:{checked ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.85)'};text-decoration:{checked ? 'line-through' : 'none'};transition:color 0.15s;">{item.label}</span>
+                  </button>
+                {/each}
+              </div>
+            </div>
           {/if}
         {/if}
         </div>

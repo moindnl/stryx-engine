@@ -118,6 +118,25 @@
   let installPlatform: 'ios' | 'android' | null = null;
   let installSheetTimer: ReturnType<typeof setTimeout> | null = null;
   let deferredInstallPrompt: any = null;
+  let sheetDragStartY = 0;
+  let sheetDragOffsetY = 0;
+  let sheetIsDragging = false;
+
+  function onSheetDragStart(e: TouchEvent) {
+    sheetDragStartY = e.touches[0].clientY;
+    sheetDragOffsetY = 0;
+    sheetIsDragging = true;
+  }
+  function onSheetDragMove(e: TouchEvent) {
+    if (!sheetIsDragging) return;
+    sheetDragOffsetY = Math.max(0, e.touches[0].clientY - sheetDragStartY);
+  }
+  function onSheetDragEnd() {
+    if (!sheetIsDragging) return;
+    sheetIsDragging = false;
+    if (sheetDragOffsetY > 80) dismissInstallSheet();
+    sheetDragOffsetY = 0;
+  }
 
   // Restore profile from localStorage
   onMount(() => {
@@ -169,6 +188,8 @@
 
   function dismissInstallSheet() {
     installPlatform = null;
+    sheetDragOffsetY = 0;
+    sheetIsDragging = false;
   }
   async function triggerInstall() {
     if (!deferredInstallPrompt) return;
@@ -1118,19 +1139,17 @@
       on:click={dismissInstallSheet} role="presentation" transition:fade={{ duration: 200 }}>
     </div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(17,17,17,0.93);color:#ffffff;"
+      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      on:touchstart={onSheetDragStart}
+      on:touchmove={onSheetDragMove}
+      on:touchend={onSheetDragEnd}
       transition:fly={{ duration: 300, y: 80 }}>
-      <!-- Handle -->
+      <!-- Drag handle -->
       <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
 
-      <div class="flex items-start justify-between mb-4">
-        <div>
-          <p class="text-heading-md font-extra-bold" style="color:#ffffff;">Works offline</p>
-          <p class="text-caption-md mt-1" style="color:rgba(255,255,255,0.6);">Save to home screen for instant access.</p>
-        </div>
-        <button on:click={dismissInstallSheet} class="ml-4 mt-0.5 p-1 rounded-full" style="color:rgba(255,255,255,0.5);" aria-label="Dismiss">
-          <X class="w-5 h-5" />
-        </button>
+      <div class="mb-4">
+        <p class="text-heading-md font-extra-bold" style="color:#ffffff;">Works offline</p>
+        <p class="text-caption-md mt-1" style="color:rgba(255,255,255,0.6);">Save to home screen for instant access.</p>
       </div>
 
       {#if installPlatform === 'ios'}

@@ -241,6 +241,14 @@
           intensityFactor < 1.05 ? '#c2410c' : '#d30005'
         };color:#ffffff;transition:background 0.35s ease,color 0.35s ease`;
 
+  $: zoneColor = tadejMode ? '#f0c000' :
+    intensityFactor < 0.55 ? '#4b4b4d' :
+    intensityFactor < 0.75 ? '#1151ff' :
+    intensityFactor < 0.90 ? '#007d48' :
+    intensityFactor < 1.05 ? '#c2410c' : '#d30005';
+
+  $: intensityBorderStyle = `border-left:${intensityFactor > 0 ? '3px solid ' + zoneColor : '1px solid var(--color-hairline)'};transition:border-color 0.35s ease,border-width 0.2s ease;`;
+
   $: intensity = (intensityFactor === 0 ? 'moderate' :
     intensityFactor < 0.65 ? 'low' :
     intensityFactor <= 0.80 ? 'moderate' :
@@ -371,6 +379,16 @@
       }, 280);
     }
   }
+
+  const HOW_TO_STEPS = [
+    { n: '1', title: 'Set up your profile', body: 'Enter weight, FTP, and your preferences once — they save automatically.' },
+    { n: '2', title: 'Enter your ride', body: 'Add distance, duration, and planned power for this specific ride.' },
+    { n: '3', title: 'Read results', body: 'Get precise carbohydrate and fluid targets based on your power output.' },
+  ];
+
+  function tabStyle(tab: string, active: string): string {
+    return `${active === tab ? 'background:#FFD700;color:#111111;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;`;
+  }
 </script>
 
 <main class="min-h-screen bg-[--color-canvas]">
@@ -389,19 +407,20 @@
     </div>
   {/if}
 
-  <div class="max-w-6xl mx-auto p-sm md:p-md lg:p-lg" class:pb-28={duration > 0 && weight > 0}>
+  <div class="max-w-6xl mx-auto p-sm md:p-md lg:p-lg"
+  >
 
     <!-- Title -->
-    <div class="text-center mb-section card-enter card-enter-1">
+    <div class="text-center mb-lg md:mb-section card-enter card-enter-1">
       <div class="flex items-center justify-center gap-md mb-sm">
         <Banana class="w-10 h-10 md:w-12 md:h-12 {bananaClass}" style="color:{bananaColor};transition:color 0.6s ease;" />
         <h1 class="text-heading-xl md:text-display-campaign text-[--color-ink] font-extra-bold">
           BananaSprocket
         </h1>
       </div>
-      <p class="text-caption-md text-[--color-mute] mb-xs">Precise carb & fluid targets from your FTP and ride data.</p>
+      <p class="text-caption-md text-[--color-mute] mb-xs">Precise carb & fluid targets from your FTP and power.</p>
       {#if weight > 0 || ftp > 0}
-        <button class="flex items-center gap-xs text-caption-sm text-[--color-stone]" style="text-decoration:underline;text-underline-offset:3px;" on:click={() => (showGuide = !showGuide)}>
+        <button class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone]" style="text-decoration:underline;text-underline-offset:3px;" on:click={() => (showGuide = !showGuide)}>
           {#if showGuide}
             <X class="w-3.5 h-3.5" />Hide guide
           {:else}
@@ -413,39 +432,52 @@
 
     <!-- 3-step how-to — shown on first visit or on demand -->
     {#if profileLoaded && (!(weight > 0 || ftp > 0) || showGuide)}
-    <div transition:slide={{ duration: 260, easing: cubicOut }} class="card-soft rounded-sm p-lg md:p-xl mb-section card-enter card-enter-2">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-lg relative">
-        <div class="hidden md:block absolute left-0 right-0 top-6 h-px" style="background:var(--color-hairline);"></div>
-
-        <div class="space-y-sm relative z-10">
-          <div class="w-8 h-8 rounded-full flex items-center justify-center mb-sm" style="background:rgba(17,81,255,0.1);border:1px solid rgba(17,81,255,0.3);">
-            <span class="text-lg font-bold text-[--color-info]">1</span>
+    <div transition:slide={{ duration: 260, easing: cubicOut }} class="mb-lg md:mb-section card-enter card-enter-2">
+      <!-- Mobile: horizontal swipe cards -->
+      <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;">
+        {#each HOW_TO_STEPS as step, i}
+          <div class="snap-center shrink-0 w-[78%] card-soft rounded-sm p-lg space-y-sm shimmer-once"
+            style="--shimmer-delay:{0.5 + i * 0.1}s"
+            in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
+            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:rgba(17,81,255,0.1);border:1px solid rgba(17,81,255,0.3);">
+              <span class="text-lg font-bold text-[--color-info]">{step.n}</span>
+            </div>
+            <h2 class="text-body-strong font-bold text-[--color-ink]">{step.title}</h2>
+            <p class="text-caption-md text-[--color-charcoal]">{step.body}</p>
           </div>
-          <h2 class="text-body-strong font-bold text-[--color-ink]">Set up your profile</h2>
-          <p class="text-caption-md text-[--color-charcoal]">Enter weight, FTP, and your preferences once — they save automatically.</p>
-        </div>
-
-        <div class="space-y-sm relative z-10">
-          <div class="w-8 h-8 rounded-full flex items-center justify-center mb-sm" style="background:rgba(17,81,255,0.1);border:1px solid rgba(17,81,255,0.3);">
-            <span class="text-lg font-bold text-[--color-info]">2</span>
+        {/each}
+      </div>
+      <!-- Desktop: 3-column grid -->
+      <div class="hidden md:grid grid-cols-3 gap-lg relative card-soft rounded-sm p-xl">
+        <div class="absolute left-0 right-0 top-[52px] h-px" style="background:var(--color-hairline);"></div>
+        {#each HOW_TO_STEPS as step, i}
+          <div class="space-y-sm relative z-10"
+            in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
+            <div class="w-8 h-8 rounded-full flex items-center justify-center mb-sm" style="background:rgba(17,81,255,0.1);border:1px solid rgba(17,81,255,0.3);">
+              <span class="text-lg font-bold text-[--color-info]">{step.n}</span>
+            </div>
+            <h2 class="text-body-strong font-bold text-[--color-ink]">{step.title}</h2>
+            <p class="text-caption-md text-[--color-charcoal]">{step.body}</p>
           </div>
-          <h2 class="text-body-strong font-bold text-[--color-ink]">Enter your ride</h2>
-          <p class="text-caption-md text-[--color-charcoal]">Add distance, duration, and planned power for this specific ride.</p>
-        </div>
-
-        <div class="space-y-sm relative z-10">
-          <div class="w-8 h-8 rounded-full flex items-center justify-center mb-sm" style="background:rgba(17,81,255,0.1);border:1px solid rgba(17,81,255,0.3);">
-            <span class="text-lg font-bold text-[--color-info]">3</span>
-          </div>
-          <h2 class="text-body-strong font-bold text-[--color-ink]">Read results</h2>
-          <p class="text-caption-md text-[--color-charcoal]">Get precise carbohydrate and fluid targets based on your power output.</p>
-        </div>
+        {/each}
       </div>
     </div>
     {/if}
 
+    <!-- Input section -->
+    <div class="mb-lg">
+      <div class="flex items-center gap-md mb-lg">
+        <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
+        <span class="badge text-utility-xs font-bold uppercase tracking-widest">Setup</span>
+        <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
+      </div>
+
+    <!-- Unified setup card -->
+    <div class="rounded-sm overflow-hidden mb-lg card-enter card-enter-3"
+      style="background:var(--color-canvas);border:1px solid var(--color-hairline);">
+
     <!-- Rider Profile -->
-    <div class="card-soft rounded-sm mb-lg card-enter card-enter-3" on:input={triggerBananaSpin}>
+    <div on:input={triggerBananaSpin}>
       <button
         class="w-full flex items-center justify-between p-lg text-left cursor-pointer"
         on:click={() => (profileOpen = !profileOpen)}
@@ -466,13 +498,14 @@
             {/if}
           {/if}
         </div>
-        <ChevronDown class="w-5 h-5 text-[--color-ink] transition-transform duration-200 flex-shrink-0 ml-sm {profileOpen ? 'rotate-180' : ''}" />
+        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ml-sm" style="background:var(--color-hairline-soft);">
+          <ChevronDown class="w-4 h-4 text-[--color-ink] transition-transform duration-200 {profileOpen ? 'rotate-180' : ''}" />
+        </div>
       </button>
 
       {#if profileOpen}
         <div transition:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;">
-          <div class="bg-[--color-canvas] rounded-sm overflow-hidden"
-            style="border:1px solid #e5e5e5;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+          <div class="bg-[--color-soft-cloud] rounded-sm overflow-hidden">
 
             <!-- Weight -->
             <div class="flex items-center justify-between px-lg py-lg">
@@ -556,13 +589,17 @@
             </div>
 
           </div>
-          <p class="text-caption-sm text-[--color-stone] px-lg pb-md pt-xs">Saved locally on this device. Nothing sent to any server.</p>
+          <div class="mx-lg mt-xl" style="border-top:1px solid var(--color-hairline-soft);"></div>
+          <p class="text-caption-sm text-[--color-stone] px-lg pb-lg pt-md">Saved locally on this device. Nothing sent to any server.</p>
         </div>
       {/if}
     </div>
 
-    <!-- Ride Input Card -->
-    <div class="card-soft rounded-sm mb-section card-enter card-enter-4" on:input={triggerBananaSpin}>
+    <!-- Internal divider -->
+    <div class="h-px" style="background:var(--color-hairline);"></div>
+
+    <!-- Ride Input -->
+    <div on:input={triggerBananaSpin}>
       <button
         class="w-full flex items-center justify-between p-lg text-left cursor-pointer"
         on:click={() => (rideOpen = !rideOpen)}
@@ -574,30 +611,34 @@
             <span class="text-heading-md font-bold text-[--color-ink]">Ride</span>
           </div>
           {#if !rideOpen}
-            {#if distance > 0 || duration > 0 || power > 0}
-              <div class="flex flex-wrap gap-xs">
+            {#if power > 0 && duration > 0}
+              <div class="flex flex-wrap items-center gap-xs">
+                <CheckCircle class="w-5 h-5 text-[--color-success]" />
                 {#if distance > 0}<span class="badge">{distance} {imperial ? 'mi' : 'km'}</span>{/if}
-                {#if duration > 0}<span class="badge">{formatDuration(duration)}</span>{/if}
-                {#if power > 0}<span class="badge">{power} W</span>{/if}
+                <span class="badge">{formatDuration(duration)}</span>
+                <span class="badge">{power} W</span>
                 {#if temperature !== 20}<span class="badge">{temperature}°C</span>{/if}
               </div>
+            {:else if distance > 0 || duration > 0 || power > 0}
+              <span class="text-caption-sm text-[--color-mute]">Almost done →</span>
             {:else}
               <span class="text-caption-sm text-[--color-sale]">Add ride details →</span>
             {/if}
           {/if}
         </div>
-        <ChevronDown class="w-5 h-5 text-[--color-ink] transition-transform duration-200 flex-shrink-0 ml-sm {rideOpen ? 'rotate-180' : ''}" />
+        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ml-sm" style="background:var(--color-hairline-soft);">
+          <ChevronDown class="w-4 h-4 text-[--color-ink] transition-transform duration-200 {rideOpen ? 'rotate-180' : ''}" />
+        </div>
       </button>
 
       {#if rideOpen}
         <div transition:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;">
-          <div class="bg-[--color-canvas] rounded-sm overflow-hidden"
-            style="border:1px solid #e5e5e5;box-shadow:0 2px 12px rgba(0,0,0,0.06);"
+          <div class="bg-[--color-soft-cloud] rounded-sm overflow-hidden"
             on:focusout={handleRideCardFocusOut}>
 
             <!-- Row 1: Distance / Duration -->
             <div class="grid grid-cols-1 md:grid-cols-2">
-              <div class="flex items-center justify-between px-lg py-lg border-b md:border-b-0 md:border-r border-[var(--color-hairline)]">
+              <div class="flex items-center justify-between px-lg py-lg md:border-r border-[var(--color-hairline)]">
                 <label for="distance" class="text-caption-md text-[--color-ink]">Distance</label>
                 <div class="flex items-center gap-xs">
                   <input id="distance" type="number" bind:value={distance} min="1" max="500" step="1"
@@ -607,8 +648,11 @@
                   <span class="text-caption-sm text-[--color-mute] w-8">{imperial ? 'mi' : 'km'}</span>
                 </div>
               </div>
-              <div class="flex items-center justify-between px-lg py-lg border-b border-[var(--color-hairline)]">
-                <label for="duration" class="text-caption-md text-[--color-ink]">Duration</label>
+              <div class="flex items-center justify-between px-lg py-lg">
+                <div>
+                  <label for="duration" class="text-caption-md text-[--color-ink]">Duration</label>
+                  <p class="text-utility-xs text-[--color-stone] mt-xxs">e.g. 1:30 or 1.5 for 1h 30min</p>
+                </div>
                 <div class="flex items-center gap-xs">
                   <input id="duration" type="text" inputmode="decimal" bind:value={durationRaw}
                     placeholder="1:30"
@@ -622,7 +666,7 @@
 
             <!-- Row 2: Power / Zone -->
             <div class="grid grid-cols-1 md:grid-cols-2">
-              <div class="flex items-center justify-between px-lg py-lg border-b md:border-b-0 md:border-r border-[var(--color-hairline)]">
+              <div class="flex items-center justify-between px-lg py-lg md:border-r border-[var(--color-hairline)]">
                 <div>
                   <label for="power" class="text-caption-md text-[--color-ink] block">Ride Power</label>
                   <span class="text-caption-sm text-[--color-mute]">Planned average</span>
@@ -635,7 +679,7 @@
                   <span class="text-caption-sm text-[--color-mute] w-8">W</span>
                 </div>
               </div>
-              <div class="flex items-center justify-between px-lg py-lg border-b border-[var(--color-hairline)]">
+              <div class="flex items-center justify-between px-lg py-lg">
                 <span class="text-caption-md text-[--color-ink]">Zone</span>
                 <div class="flex items-center h-10">
                   {#if powerDerived && zoneLabel}
@@ -650,7 +694,7 @@
             </div>
 
             <!-- Temperature -->
-            <div class="px-lg py-lg border-b border-[var(--color-hairline)]">
+            <div class="px-lg py-lg">
               <div class="flex items-center justify-between mb-sm">
                 <label for="temperature" class="text-caption-md text-[--color-ink]">Temperature</label>
                 <span class="text-caption-md font-bold text-[--color-ink]">{temperature}°C</span>
@@ -681,6 +725,17 @@
       {/if}
     </div>
 
+    </div><!-- /Unified setup card -->
+
+    </div><!-- /Input section -->
+
+    <!-- Results divider -->
+    <div class="flex items-center gap-md mb-lg">
+      <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
+      <span class="badge text-utility-xs font-bold uppercase tracking-widest">Results</span>
+      <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
+    </div>
+
     <!-- Results Row 1: Speed + Power -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-5">
 
@@ -697,7 +752,7 @@
         </div>
         <div class="mb-lg">
           <div class="flex items-baseline gap-sm">
-            <span class="text-7xl md:text-8xl font-extra-bold text-[--color-ink]">{Math.round($animatedSpeed)}</span>
+            <span class="text-7xl md:text-8xl font-extra-bold" style="color:{speedKmh > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{Math.round($animatedSpeed)}</span>
             <span class="text-3xl text-[--color-mute]">{speedUnit}</span>
           </div>
         </div>
@@ -712,7 +767,7 @@
       </div>
 
       <!-- Power card -->
-      <div class="card p-lg">
+      <div class="card p-lg" style={intensityBorderStyle}>
         <div class="flex items-start gap-md mb-lg">
           <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
             <Zap class="w-7 h-7 text-[--color-ink]" />
@@ -724,7 +779,7 @@
         </div>
         <div class="mb-md">
           <div class="flex items-baseline gap-sm">
-            <span class="text-7xl md:text-8xl font-extra-bold text-[--color-ink]">{power}</span>
+            <span class="text-7xl md:text-8xl font-extra-bold" style="color:{power > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{power}</span>
             <span class="text-3xl text-[--color-mute]">W</span>
           </div>
         </div>
@@ -743,10 +798,10 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-6">
 
       <!-- Carbs card -->
-      <div class="card p-lg">
+      <div class="card p-lg" style={intensityBorderStyle}>
         <div class="flex items-start gap-md mb-lg">
-          <div class="w-12 h-12 rounded-sm bg-[--color-success] flex items-center justify-center flex-shrink-0">
-            <Wheat class="w-7 h-7 text-[--color-on-primary]" />
+          <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
+            <Wheat class="w-7 h-7 text-[--color-ink]" />
           </div>
           <div class="min-w-0">
             <h2 class="text-heading-lg font-bold text-[--color-ink]">Carbohydrates</h2>
@@ -756,7 +811,7 @@
         <div class="mb-sm">
           <div class="flex items-baseline gap-sm">
             {#key carbsPerHour}
-              <span class="text-7xl md:text-8xl font-extra-bold text-[--color-ink] num-flash">{Math.round($animatedCarbs)}</span>
+              <span class="text-7xl md:text-8xl font-extra-bold {carbsPerHour > 0 ? 'num-flash' : ''}" style="color:{carbsPerHour > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{Math.round($animatedCarbs)}</span>
             {/key}
             <span class="text-3xl text-[--color-mute]">g/h</span>
           </div>
@@ -776,8 +831,8 @@
       <!-- Fluids card -->
       <div class="card p-lg">
         <div class="flex items-start gap-md mb-lg">
-          <div class="w-12 h-12 rounded-sm bg-[--color-info] flex items-center justify-center flex-shrink-0">
-            <Droplet class="w-7 h-7 text-[--color-on-primary]" />
+          <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
+            <Droplet class="w-7 h-7 text-[--color-ink]" />
           </div>
           <div class="min-w-0">
             <h2 class="text-heading-lg font-bold text-[--color-ink]">Fluids</h2>
@@ -787,7 +842,7 @@
         <div class="mb-sm">
           <div class="flex items-baseline gap-sm">
             {#key fluidPerHour}
-              <span class="text-7xl md:text-8xl font-extra-bold text-[--color-ink] num-flash">{$animatedFluid.toFixed(1)}</span>
+              <span class="text-7xl md:text-8xl font-extra-bold {fluidPerHour > 0 ? 'num-flash' : ''}" style="color:{fluidPerHour > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{$animatedFluid.toFixed(1)}</span>
             {/key}
             <span class="text-3xl text-[--color-mute]">L/h</span>
           </div>
@@ -808,18 +863,19 @@
       <!-- Tab bar -->
       <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:20px;padding:3px;">
         <button
-          style="{totalsTab === 'summary' ? 'background:#ffffff;color:#111111;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+          style={tabStyle('summary', totalsTab)}
           on:click={() => (totalsTab = 'summary')}>Summary</button>
         <button
-          style="{totalsTab === 'schedule' ? 'background:#ffffff;color:#111111;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+          style={tabStyle('schedule', totalsTab)}
           on:click={() => (totalsTab = 'schedule')}>Schedule</button>
         <button
-          style="{totalsTab === 'bottles' ? 'background:#ffffff;color:#111111;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+          style={tabStyle('bottles', totalsTab)}
           on:click={() => (totalsTab = 'bottles')}>Bottles</button>
       </div>
 
       <!-- Summary tab -->
       {#if totalsTab === 'summary'}
+        <div in:fade={{ duration: 250 }}>
         <h2 class="text-caption-md mb-lg text-[--color-on-primary]">Total needs for {duration > 0 ? formatDuration(duration) : '—'}</h2>
         <div class="grid grid-cols-3 gap-md">
           <div class="bg-[--color-on-primary] rounded-md p-md text-center">
@@ -827,7 +883,7 @@
             <div class="text-caption-sm text-[--color-charcoal]">Carbs</div>
           </div>
           <div class="bg-[--color-on-primary] rounded-md p-md text-center">
-            <div class="text-4xl md:text-5xl font-extra-bold text-[--color-ink] mb-xs">
+            <div class="text-4xl md:text-5xl font-extra-bold text-[--color-ink] mb-xs flex items-center justify-center" style="min-height:1.2em;">
               {powerDerived ? Math.round($animatedTotalKcal) : '—'}
             </div>
             <div class="text-caption-sm text-[--color-charcoal]">kcal</div>
@@ -837,9 +893,11 @@
             <div class="text-caption-sm text-[--color-charcoal]">Fluids</div>
           </div>
         </div>
+        </div>
 
       <!-- Schedule tab -->
       {:else if totalsTab === 'schedule'}
+        <div in:fade={{ duration: 250 }}>
         <!-- Solid product picker -->
         <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
           <span style="color:rgba(255,255,255,0.7);font-size:13px;">Solid food</span>
@@ -867,7 +925,7 @@
             {/each}
           </div>
           <div class="flex items-center justify-between mt-md">
-            <p style="color:rgba(255,255,255,0.35);font-size:12px;">Every 20 min</p>
+            <p style="color:rgba(255,255,255,0.35);font-size:12px;">First fuel at 20 min · every 20 min after</p>
             <p style="color:rgba(255,255,255,0.5);font-size:12px;font-weight:600;">{totalSolidUnits} {activeSolid.label.toLowerCase()}s total</p>
           </div>
           {#if drinkCarbsPerHour > 0}
@@ -875,14 +933,17 @@
           {/if}
         {/if}
 
+        </div>
+
       <!-- Bottles tab -->
       {:else}
+        <div in:fade={{ duration: 250 }}>
         {#if bottleCount === 0}
           <p style="color:rgba(255,255,255,0.5);font-size:14px;">Enter weight and duration to plan bottles.</p>
         {:else}
           <!-- Drink product picker -->
           <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
-            <span style="color:rgba(255,255,255,0.7);font-size:13px;">In bottle</span>
+            <span style="color:rgba(255,255,255,0.7);font-size:13px;">Drink type</span>
             <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
               {#each DRINK_PRODUCTS as p}
                 <button
@@ -926,6 +987,7 @@
             <p style="color:rgba(255,255,255,0.35);font-size:12px;margin-top:10px;">Water only — all carbs from solid food.</p>
           {/if}
         {/if}
+        </div>
       {/if}
     </div>
 
@@ -980,38 +1042,6 @@
     </div>
 
   </div>
-
-  <!-- Sticky mobile results bar -->
-  {#if duration > 0 && weight > 0}
-    <div
-      transition:fly={{ y: 100, duration: 350 }}
-      class="fixed bottom-0 left-0 right-0 z-50 md:hidden px-sm pb-sm"
-      style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom));"
-    >
-      <div class="liquid-glass rounded-sm px-lg py-md">
-        <div class="grid grid-cols-3 text-center">
-          <div>
-            <div class="text-2xl font-extra-bold text-[--color-ink] leading-tight">
-              {Math.round($animatedCarbs)}<span class="text-xs font-normal text-[--color-mute] ml-1">g/h</span>
-            </div>
-            <div class="text-[10px] text-[--color-stone] uppercase tracking-wide mt-1">Carbs</div>
-          </div>
-          <div class="border-x border-[var(--color-hairline)]">
-            <div class="text-2xl font-extra-bold text-[--color-ink] leading-tight">
-              {$animatedFluid.toFixed(1)}<span class="text-xs font-normal text-[--color-mute] ml-1">L/h</span>
-            </div>
-            <div class="text-[10px] text-[--color-stone] uppercase tracking-wide mt-1">Fluids</div>
-          </div>
-          <div>
-            <div class="text-2xl font-extra-bold text-[--color-ink] leading-tight">
-              {powerDerived ? Math.round($animatedKcalPerHour) : '—'}<span class="text-xs font-normal text-[--color-mute] ml-1">{powerDerived ? 'kcal/h' : ''}</span>
-            </div>
-            <div class="text-[10px] text-[--color-stone] uppercase tracking-wide mt-1">Energy</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  {/if}
 
   <!-- PWA install bottom sheet -->
   {#if installPlatform}

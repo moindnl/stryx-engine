@@ -93,6 +93,26 @@
   .card-enter-6 { animation-delay: 0.40s; }
   .card-enter-7 { animation-delay: 0.47s; }
 
+  /* Shimmer hint — sweep once to signal swipeability */
+  @keyframes shimmerSweep {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(250%); }
+  }
+  .shimmer-once {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-once::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%);
+    transform: translateX(-100%);
+    animation: shimmerSweep 1.3s ease-in-out forwards;
+    animation-delay: var(--shimmer-delay, 0.6s);
+    pointer-events: none;
+  }
+
   /* Base form styling */
   input, select, button {
     font-family: var(--font-sans);

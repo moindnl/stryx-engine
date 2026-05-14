@@ -117,6 +117,7 @@
   // PWA install bottom sheet (null = hidden)
   let installPlatform: 'ios' | 'android' | null = null;
   let installSheetTimer: ReturnType<typeof setTimeout> | null = null;
+  let deferredInstallPrompt: any = null;
 
   // Restore profile from localStorage
   onMount(() => {
@@ -146,9 +147,15 @@
       || (navigator as any).standalone === true;
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const isAndroid = /android/i.test(navigator.userAgent);
-    if (isMobile && !standalone && (isIos || isAndroid) && !localStorage.getItem('bs-install-dismissed')) {
+    if (isMobile && !standalone && (isIos || isAndroid)) {
       installSheetTimer = setTimeout(() => { installPlatform = isIos ? 'ios' : 'android'; }, 1200);
     }
+
+    window.addEventListener('beforeinstallprompt', (e: Event) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+    });
+    window.addEventListener('appinstalled', () => { installPlatform = null; });
   });
 
   onDestroy(() => {
@@ -162,7 +169,13 @@
 
   function dismissInstallSheet() {
     installPlatform = null;
-    localStorage.setItem('bs-install-dismissed', '1');
+  }
+  async function triggerInstall() {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    if (outcome === 'accepted') installPlatform = null;
   }
   // Guard: only save after profile has been loaded from storage
   $: if (profileLoaded) localStorage?.setItem('bs-profile', JSON.stringify({ weight, ftp, imperial, sweatRate }));
@@ -1135,25 +1148,33 @@
             <span>Tap <strong>Add</strong> — done</span>
           </li>
         </ol>
-        <p class="text-caption-sm mt-4" style="color:rgba(255,255,255,0.4);">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
+        <p class="text-caption-sm mt-4" style="color:rgba(255,255,255,0.5);">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
       {:else}
-        <ol class="space-y-3 text-body-md">
-          <li class="flex items-start gap-3">
-            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">1</span>
-            <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:rgba(255,255,255,0.5);">(top-right corner)</span></span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">2</span>
-            <span>Tap <strong>Add to Home screen</strong> → <strong>Add</strong></span>
-          </li>
-        </ol>
-        <p class="text-caption-sm mt-4" style="color:rgba(255,255,255,0.4);">Chrome may also show an install banner at the bottom automatically.</p>
+        {#if deferredInstallPrompt}
+          <button on:click={triggerInstall}
+            class="w-full py-3 rounded-full text-button-md font-extra-bold mb-4"
+            style="background:#FFD700;color:#111111;">
+            Install now
+          </button>
+        {:else}
+          <ol class="space-y-3 text-body-md">
+            <li class="flex items-start gap-3">
+              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">1</span>
+              <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:rgba(255,255,255,0.5);">(top-right corner)</span></span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">2</span>
+              <span>Tap <strong>Add to Home screen</strong> → <strong>Add</strong></span>
+            </li>
+          </ol>
+          <p class="text-caption-sm mt-4" style="color:rgba(255,255,255,0.5);">Chrome may also show an install banner at the bottom automatically.</p>
+        {/if}
       {/if}
 
       <button on:click={dismissInstallSheet}
         class="mt-6 w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:#FFD700;color:#111111;">
-        Got it
+        style="background:rgba(255,255,255,0.12);color:#ffffff;">
+        Not now
       </button>
     </div>
   {/if}

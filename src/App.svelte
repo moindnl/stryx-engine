@@ -152,7 +152,7 @@
       resetInputs();
       neuralizer = true;
       setTimeout(() => { neuralizer = false; }, 2900);
-    }, 3000);
+    }, 2000);
   }
   function cancelHold() {
     if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
@@ -645,7 +645,9 @@
             <div class="flex justify-end px-lg py-md">
               <button class="filter-chip flex items-center gap-xs" on:click={resetInputs}
                 on:mousedown={startHold} on:mouseup={cancelHold} on:mouseleave={cancelHold}
-                on:touchstart={startHold} on:touchend={cancelHold}
+                on:touchstart|preventDefault={startHold} on:touchend={cancelHold} on:touchcancel={cancelHold}
+                on:contextmenu|preventDefault
+                style="touch-action:manipulation;user-select:none;-webkit-user-select:none;"
                 aria-label="Reset ride inputs">
                 <RotateCcw class="w-4 h-4" />
                 Reset ride

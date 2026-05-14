@@ -1,6 +1,6 @@
 import pkg from '/Users/daniel/.claude/skills/lighthouse-runner/node_modules/playwright/index.js';
 const { chromium } = pkg;
-import { writeFileSync, mkdirSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,135 +12,102 @@ const BANANA_PATHS = `
   <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.11 22 2 22 2 20c0-1.5 1.14-1.55 3.15-2.11Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 `;
 
-function iconHTML(size, dark) {
-  const r = Math.round(size * 0.22); // corner radius (~22% — iOS squircle approx)
-  const pad = Math.round(size * 0.18);
-  const svgSize = size - pad * 2;
+function deg2rad(d) { return d * Math.PI / 180; }
+function pt(cx, cy, r, deg) {
+  return [cx + r * Math.cos(deg2rad(deg)), cy + r * Math.sin(deg2rad(deg))];
+}
 
-  if (dark) {
-    return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html, body { width:${size}px; height:${size}px; overflow:hidden; background:transparent; }
-</style>
-</head>
-<body>
-<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <radialGradient id="bgGrad" cx="40%" cy="30%" r="70%">
-      <stop offset="0%"  stop-color="#2a2a35"/>
-      <stop offset="100%" stop-color="#0d0d12"/>
-    </radialGradient>
-    <linearGradient id="glassOverlay" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="rgba(255,255,255,0.12)"/>
-      <stop offset="55%"  stop-color="rgba(255,255,255,0.03)"/>
-      <stop offset="100%" stop-color="rgba(255,255,255,0.00)"/>
-    </linearGradient>
-    <linearGradient id="rimGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="rgba(255,255,255,0.30)"/>
-      <stop offset="100%" stop-color="rgba(255,255,255,0.06)"/>
-    </linearGradient>
-    <clipPath id="roundClip">
-      <rect width="${size}" height="${size}" rx="${r}" ry="${r}"/>
-    </clipPath>
-  </defs>
+// Clockwise SVG arc path from startDeg to endDeg (degrees, SVG coords: 0°=right, 90°=down)
+function arc(cx, cy, r, startDeg, endDeg) {
+  const [sx, sy] = pt(cx, cy, r, startDeg);
+  const [ex, ey] = pt(cx, cy, r, endDeg);
+  let sweep = endDeg - startDeg;
+  if (sweep <= 0) sweep += 360;
+  const large = sweep > 180 ? 1 : 0;
+  return `M ${sx.toFixed(2)},${sy.toFixed(2)} A ${r.toFixed(2)},${r.toFixed(2)} 0 ${large},1 ${ex.toFixed(2)},${ey.toFixed(2)}`;
+}
 
-  <!-- background -->
-  <rect width="${size}" height="${size}" rx="${r}" ry="${r}" fill="url(#bgGrad)"/>
+function iconHTML(size) {
+  const cr  = Math.round(size * 0.22);   // corner radius (iOS squircle)
+  const cx  = size * 0.5;
+  const cy  = size * 0.515;              // arc center, slightly below pixel-center
+  const R   = size * 0.295;             // arc radius
+  const tw  = size * 0.038;             // track stroke
+  const aw  = size * 0.046;             // active arc stroke (slightly thicker)
 
-  <!-- glass overlay -->
-  <rect width="${size}" height="${size}" rx="${r}" ry="${r}" fill="url(#glassOverlay)" clip-path="url(#roundClip)"/>
+  // Full track: 135° → 45° clockwise (270° arc, 90° gap at bottom)
+  const trackD  = arc(cx, cy, R, 135, 405);   // 405 = 45+360, forces correct large-arc
 
-  <!-- banana icon -->
-  <g transform="translate(${pad},${pad})">
-    <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24" style="overflow:visible">
-      <g color="#FFD700" style="filter:drop-shadow(0 2px 8px rgba(255,210,0,0.35))">
-        ${BANANA_PATHS}
-      </g>
-    </svg>
-  </g>
+  // Active arc: 135° → 330° clockwise (195° ≈ 72% of track filled)
+  const activeD = arc(cx, cy, R, 135, 330);
 
-  <!-- top specular rim -->
-  <rect width="${size}" height="${size}" rx="${r}" ry="${r}"
-    fill="none"
-    stroke="url(#rimGrad)"
-    stroke-width="1.5"
-    clip-path="url(#roundClip)"/>
+  // Gradient bounds (horizontal, spans full arc width)
+  const gx1 = cx - R, gx2 = cx + R, gy = cy;
 
-  <!-- inner top highlight line -->
-  <rect x="1" y="1" width="${size - 2}" height="${Math.round(size * 0.42)}" rx="${r}" ry="${r}"
-    fill="none"
-    stroke="rgba(255,255,255,0.08)"
-    stroke-width="1"
-    clip-path="url(#roundClip)"/>
-</svg>
-</body>
-</html>`;
-  }
+  // Banana: centered inside arc, slightly above arc center
+  const bs  = size * 0.32;              // banana SVG size
+  const bx  = cx - bs * 0.5;
+  const by  = cy - bs * 0.52;
 
-  // Light mode
+  // Glow stdDeviation
+  const gsd = (size * 0.015).toFixed(1);
+
   return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html, body { width:${size}px; height:${size}px; overflow:hidden; background:transparent; }
-</style>
+<style>* { margin:0; padding:0; } html,body { width:${size}px; height:${size}px; overflow:hidden; background:transparent; }</style>
 </head>
 <body>
 <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%"   stop-color="#fffdf5"/>
-      <stop offset="60%"  stop-color="#fff8e1"/>
-      <stop offset="100%" stop-color="#fff3c4"/>
+    <radialGradient id="bg" cx="38%" cy="32%" r="72%">
+      <stop offset="0%"   stop-color="#252530"/>
+      <stop offset="100%" stop-color="#0f0f14"/>
+    </radialGradient>
+    <linearGradient id="arcG" x1="${gx1.toFixed(1)}" y1="${gy.toFixed(1)}" x2="${gx2.toFixed(1)}" y2="${gy.toFixed(1)}" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#e06500"/>
+      <stop offset="55%"  stop-color="#ffd700"/>
+      <stop offset="100%" stop-color="#ffe566"/>
     </linearGradient>
-    <linearGradient id="glassTop" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="rgba(255,255,255,0.88)"/>
-      <stop offset="50%"  stop-color="rgba(255,255,255,0.30)"/>
-      <stop offset="100%" stop-color="rgba(255,255,255,0.00)"/>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="${size}" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="rgba(255,255,255,0.22)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.04)"/>
     </linearGradient>
-    <linearGradient id="rimGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="rgba(255,255,255,1.00)"/>
-      <stop offset="100%" stop-color="rgba(255,255,255,0.30)"/>
-    </linearGradient>
-    <clipPath id="roundClip">
-      <rect width="${size}" height="${size}" rx="${r}" ry="${r}"/>
-    </clipPath>
+    <clipPath id="clip"><rect width="${size}" height="${size}" rx="${cr}" ry="${cr}"/></clipPath>
+    <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="${gsd}" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
 
   <!-- background -->
-  <rect width="${size}" height="${size}" rx="${r}" ry="${r}" fill="url(#bgGrad)"/>
+  <rect width="${size}" height="${size}" rx="${cr}" ry="${cr}" fill="url(#bg)"/>
 
-  <!-- glass highlight layer (top half) -->
-  <rect width="${size}" height="${size}" rx="${r}" ry="${r}"
-    fill="url(#glassTop)" clip-path="url(#roundClip)"/>
+  <!-- dim track -->
+  <path d="${trackD}"
+    stroke="rgba(255,200,50,0.14)" stroke-width="${tw.toFixed(1)}"
+    stroke-linecap="round" fill="none"/>
 
-  <!-- banana icon -->
-  <g transform="translate(${pad},${pad})">
-    <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24" style="overflow:visible">
-      <g color="#b8690a" style="filter:drop-shadow(0 2px 6px rgba(180,100,0,0.18))">
+  <!-- active arc + glow -->
+  <g filter="url(#glow)">
+    <path d="${activeD}"
+      stroke="url(#arcG)" stroke-width="${aw.toFixed(1)}"
+      stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- banana -->
+  <g transform="translate(${bx.toFixed(1)},${by.toFixed(1)})">
+    <svg width="${bs}" height="${bs}" viewBox="0 0 24 24" overflow="visible">
+      <g color="#FFD54F" style="filter:drop-shadow(0 0 ${(bs*0.07).toFixed(0)}px rgba(255,210,50,0.55))">
         ${BANANA_PATHS}
       </g>
     </svg>
   </g>
 
-  <!-- top rim highlight -->
-  <rect width="${size}" height="${size}" rx="${r}" ry="${r}"
-    fill="none"
-    stroke="url(#rimGrad)"
-    stroke-width="2"
-    clip-path="url(#roundClip)"/>
-
-  <!-- subtle outer shadow hint -->
-  <rect x="0.75" y="0.75" width="${size - 1.5}" height="${size - 1.5}" rx="${r}" ry="${r}"
-    fill="none"
-    stroke="rgba(180,140,0,0.12)"
-    stroke-width="1.5"/>
+  <!-- glass rim -->
+  <rect width="${size}" height="${size}" rx="${cr}" ry="${cr}"
+    fill="none" stroke="url(#rim)" stroke-width="1.5" clip-path="url(#clip)"/>
 </svg>
 </body>
 </html>`;
@@ -151,15 +118,13 @@ async function generate() {
   const page = await browser.newPage();
 
   const variants = [
-    { size: 192, dark: false, out: 'icon-192x192.png' },
-    { size: 512, dark: false, out: 'icon-512x512.png' },
-    { size: 192, dark: true,  out: 'icon-192x192-dark.png' },
-    { size: 512, dark: true,  out: 'icon-512x512-dark.png' },
+    { size: 192, out: 'icon-192x192.png' },
+    { size: 512, out: 'icon-512x512.png' },
   ];
 
-  for (const { size, dark, out } of variants) {
+  for (const { size, out } of variants) {
     await page.setViewportSize({ width: size, height: size });
-    await page.setContent(iconHTML(size, dark), { waitUntil: 'networkidle' });
+    await page.setContent(iconHTML(size), { waitUntil: 'networkidle' });
     const buf = await page.screenshot({ type: 'png', omitBackground: true });
     writeFileSync(resolve(publicDir, out), buf);
     console.log(`✓ ${out}`);

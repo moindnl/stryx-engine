@@ -2,8 +2,8 @@
   import { Banana, Zap, Gauge, Droplet, ChevronDown, RotateCcw, User, Ruler, Scale, Wheat, CheckCircle, Info, X, Bike } from 'lucide-svelte';
   import { tweened } from 'svelte/motion';
   import { linear, cubicOut } from 'svelte/easing';
-  import { fly, slide } from 'svelte/transition';
-  import { onMount } from 'svelte';
+  import { fly, fade, slide } from 'svelte/transition';
+  import { onMount, onDestroy } from 'svelte';
 
   // Piecewise linear carb oxidation by IF (Jeukendrup 2004 / ACSM guidelines)
   function carbsFromIF(if_val: number): number {
@@ -108,6 +108,10 @@
 
   let showDesktopBanner = false;
 
+  // PWA install bottom sheet (null = hidden)
+  let installPlatform: 'ios' | 'android' | null = null;
+  let installSheetTimer: ReturnType<typeof setTimeout> | null = null;
+
   // Restore profile from localStorage
   onMount(() => {
     // Easter egg: console greeting
@@ -127,14 +131,32 @@
     }
     profileLoaded = true;
     // Show desktop banner on md+ screens, unless dismissed this session
-    if (window.innerWidth >= 768 && !sessionStorage.getItem('bs-desktop-dismissed')) {
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile && !sessionStorage.getItem('bs-desktop-dismissed')) {
       showDesktopBanner = true;
     }
+
+    const standalone = window.matchMedia('(display-mode: standalone)').matches
+      || (navigator as any).standalone === true;
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isAndroid = /android/i.test(navigator.userAgent);
+    if (isMobile && !standalone && (isIos || isAndroid) && !localStorage.getItem('bs-install-dismissed')) {
+      installSheetTimer = setTimeout(() => { installPlatform = isIos ? 'ios' : 'android'; }, 1200);
+    }
+  });
+
+  onDestroy(() => {
+    if (installSheetTimer) clearTimeout(installSheetTimer);
   });
 
   function dismissDesktopBanner() {
     showDesktopBanner = false;
     sessionStorage.setItem('bs-desktop-dismissed', '1');
+  }
+
+  function dismissInstallSheet() {
+    installPlatform = null;
+    localStorage.setItem('bs-install-dismissed', '1');
   }
   // Guard: only save after profile has been loaded from storage
   $: if (profileLoaded) localStorage?.setItem('bs-profile', JSON.stringify({ weight, ftp, imperial, sweatRate }));
@@ -988,6 +1010,65 @@
           </div>
         </div>
       </div>
+    </div>
+  {/if}
+
+  <!-- PWA install bottom sheet -->
+  {#if installPlatform}
+    <div class="fixed inset-0 z-[990] bg-black/40" style="backdrop-filter:blur(2px);"
+      on:click={dismissInstallSheet} role="presentation" transition:fade={{ duration: 200 }}>
+    </div>
+    <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
+      style="background:rgba(17,17,17,0.93);color:#ffffff;"
+      transition:fly={{ duration: 300, y: 80 }}>
+      <!-- Handle -->
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
+
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <p class="text-heading-md font-extra-bold" style="color:#ffffff;">Works offline</p>
+          <p class="text-caption-md mt-1" style="color:rgba(255,255,255,0.6);">Save to home screen for instant access.</p>
+        </div>
+        <button on:click={dismissInstallSheet} class="ml-4 mt-0.5 p-1 rounded-full" style="color:rgba(255,255,255,0.5);" aria-label="Dismiss">
+          <X class="w-5 h-5" />
+        </button>
+      </div>
+
+      {#if installPlatform === 'ios'}
+        <ol class="space-y-3 text-body-md">
+          <li class="flex items-start gap-3">
+            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">1</span>
+            <span>Tap the <strong>Share</strong> button at the bottom of Safari</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">2</span>
+            <span>Scroll down and tap <strong>Add to Home Screen</strong></span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">3</span>
+            <span>Tap <strong>Add</strong> — done</span>
+          </li>
+        </ol>
+        <p class="text-caption-sm mt-4" style="color:rgba(255,255,255,0.4);">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
+      {:else}
+        <ol class="space-y-3 text-body-md">
+          <li class="flex items-start gap-3">
+            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">1</span>
+            <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:rgba(255,255,255,0.5);">(top-right corner)</span></span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">2</span>
+            <span>Tap <strong>Add to Home screen</strong> → <strong>Add</strong></span>
+          </li>
+        </ol>
+        <p class="text-caption-sm mt-4" style="color:rgba(255,255,255,0.4);">Chrome may also show an install banner at the bottom automatically.</p>
+      {/if}
+
+      <button on:click={dismissInstallSheet}
+        class="mt-6 w-full py-3 rounded-full text-button-md font-extra-bold"
+        style="background:#FFD700;color:#111111;">
+        Got it
+      </button>
     </div>
   {/if}
 

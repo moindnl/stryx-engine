@@ -32,14 +32,14 @@ function iconHTML(size) {
   const cx  = size * 0.5;
   const cy  = size * 0.515;              // arc center, slightly below pixel-center
   const R   = size * 0.295;             // arc radius
-  const tw  = size * 0.038;             // track stroke
-  const aw  = size * 0.046;             // active arc stroke (slightly thicker)
+  const tw  = size * 0.054;             // track stroke
+  const aw  = size * 0.054;             // active arc stroke
 
   // Full track: 135° → 45° clockwise (270° arc, 90° gap at bottom)
   const trackD  = arc(cx, cy, R, 135, 405);   // 405 = 45+360, forces correct large-arc
 
-  // Active arc: 135° → 330° clockwise (195° ≈ 72% of track filled)
-  const activeD = arc(cx, cy, R, 135, 330);
+  // Active arc: 135° → 337.5° clockwise (202.5° = 75% of track)
+  const activeD = arc(cx, cy, R, 135, 337.5);
 
   // Gradient bounds (horizontal, spans full arc width)
   const gx1 = cx - R, gx2 = cx + R, gy = cy;

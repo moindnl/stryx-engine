@@ -219,8 +219,6 @@
   let solidProduct: SolidId = 'gel';
   let drinkProduct: DrinkId = 'water';
 
-  let showDesktopBanner = false;
-
   // PWA install bottom sheet (null = hidden)
   let installPlatform: 'ios' | 'android' | null = null;
   let installSheetTimer: ReturnType<typeof setTimeout> | null = null;
@@ -266,12 +264,8 @@
     );
 
     if (localStorage.getItem('bs-seen-build') !== BUILD_NAME) showWhatsNew = true;
-    // Show desktop banner on md+ screens, unless dismissed this session
-    const isMobile = window.innerWidth < 768;
-    if (!isMobile && !sessionStorage.getItem('bs-desktop-dismissed')) {
-      showDesktopBanner = true;
-    }
 
+    const isMobile = window.innerWidth < 768;
     const standalone = window.matchMedia('(display-mode: standalone)').matches
       || (navigator as any).standalone === true;
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -289,11 +283,6 @@
     window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
     window.removeEventListener('appinstalled', onAppInstalled);
   });
-
-  function dismissDesktopBanner() {
-    showDesktopBanner = false;
-    sessionStorage.setItem('bs-desktop-dismissed', '1');
-  }
 
   function dismissInstallSheet() {
     installPlatform = null;
@@ -315,7 +304,6 @@
   function resetInputs() {
     distance = 0; durationRaw = ''; power = 0; temperature = 20;
     rideOpen = true; rideAutoCollapsed = false;
-    triggerBananaSpin();
   }
 
   // Easter egg F: hold Reset 3s → neuralyzer flash
@@ -350,14 +338,6 @@
   $: heatBonus  = temperature > 20 ? Math.round((temperature - 20) / 5 * 0.3 * 10) / 10 : 0;
   $: sweatMultiplier = sweatRate === 'light' ? 0.8 : sweatRate === 'heavy' ? 1.3 : 1.0;
 
-  // Banana spin on input change
-  let bananaClass = 'banana-idle';
-  let bananaTimer: ReturnType<typeof setTimeout>;
-  function triggerBananaSpin() {
-    clearTimeout(bananaTimer);
-    bananaClass = 'banana-spin';
-    bananaTimer = setTimeout(() => { bananaClass = 'banana-idle'; }, 500);
-  }
 
   // Power-derived zone
   $: intensityFactor = ftp > 0 && power > 0 ? power / ftp : 0;
@@ -366,12 +346,6 @@
   // 🥚 Easter egg B: Tadej mode at ≥500W
   $: tadejMode = power >= 500;
 
-  $: bananaColor = tadejMode ? '#111111' :               // black banana
-    intensityFactor < 0.55 ? '#FFD700' :                 // yellow
-    intensityFactor < 0.75 ? '#F59E0B' :                 // amber
-    intensityFactor < 0.90 ? '#F97316' :                 // orange
-    intensityFactor < 1.05 ? '#EF4444' :                 // red
-    '#DC2626';                                            // deep red
 
   $: zoneLabel = intensityFactor === 0 ? '' :
     tadejMode ? 'ARE YOU OKAY?!' :
@@ -574,53 +548,43 @@
     </div>
   {/if}
 
-  <!-- Desktop notice -->
-  {#if showDesktopBanner}
-    <div class="hidden md:flex items-center justify-between px-lg py-md gap-md"
-      style="background:#111111;color:#ffffff;">
-      <div class="flex items-center gap-sm">
-        <Banana class="w-4 h-4 flex-shrink-0" style="color:#FFD700;" />
-        <span style="font-size:13px;">BananaSprocket is designed for mobile use — install it as a PWA on your phone for quick access during rides.</span>
-      </div>
-      <button on:click={dismissDesktopBanner}
-        style="flex-shrink:0;font-size:12px;opacity:0.6;padding:4px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:20px;color:#fff;white-space:nowrap;"
-        aria-label="Dismiss">Got it</button>
+  <!-- App Header -->
+  <header class="w-full py-xl text-center rounded-b-[28px]" style="background:var(--color-soft-cloud);">
+    <div class="flex items-center justify-center mb-sm">
+      <h1 class="text-heading-xl md:text-display-campaign font-extra-bold flex items-center gap-sm md:gap-md" style="color:var(--color-ink);">
+        Banana
+        <img src="/favicon.svg" alt=""
+          class="w-9 h-9 md:w-[86px] md:h-[86px] flex-shrink-0"
+          style="border-radius:18%;box-shadow:0 0 0 1px rgba(180,100,0,0.25),0 0 10px rgba(180,100,0,0.12);" />
+        Sprocket
+      </h1>
     </div>
-  {/if}
-
-  <div class="max-w-6xl mx-auto p-sm md:p-md lg:p-lg"
-  >
-
-    <!-- Title -->
-    <div class="text-center mb-lg md:mb-section card-enter card-enter-1">
-      <div class="flex items-center justify-center gap-md mb-sm">
-        <Banana class="w-10 h-10 md:w-12 md:h-12 {bananaClass}" style="color:{bananaColor};transition:color 0.6s ease;" />
-        <h1 class="text-heading-xl md:text-display-campaign text-[--color-ink] font-extra-bold">
-          BananaSprocket
-        </h1>
-      </div>
-      <p class="text-caption-md text-[--color-mute] mb-xs italic">Precise carb & fluid targets from your FTP and power.</p>
-      <div class="flex items-center justify-center gap-md flex-wrap">
-        {#if weight > 0 || ftp > 0}
-          <button class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone]" style="text-decoration:underline;text-underline-offset:3px;" on:click={() => (showGuide = !showGuide)}>
-            {#if showGuide}
-              <X class="w-3.5 h-3.5" />Hide guide
-            {:else}
-              <Info class="w-3.5 h-3.5" />Getting started
-            {/if}
-          </button>
-        {/if}
-        {#if showWhatsNew}
-          <button class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone]" style="text-decoration:underline;text-underline-offset:3px;" on:click={() => (showChangelogSheet = true)}>
-            What's new in v{VERSION} · {BUILD_NAME} <ChevronRight class="w-3 h-3" />
-          </button>
-        {/if}
-      </div>
+    <p class="text-caption-md mb-sm" style="color:var(--color-mute);">Precise carb &amp; fluid targets from your FTP and power.</p>
+    <div class="flex items-center justify-center gap-md flex-wrap">
+      {#if weight > 0 || ftp > 0}
+        <button class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone] underline underline-offset-[3px]"
+          on:click={() => (showGuide = !showGuide)}>
+          {#if showGuide}
+            <X class="w-3.5 h-3.5" />Hide guide
+          {:else}
+            <Info class="w-3.5 h-3.5" />Guide
+          {/if}
+        </button>
+      {/if}
+      {#if showWhatsNew}
+        <button class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone] underline underline-offset-[3px]"
+          on:click={() => (showChangelogSheet = true)}>
+          v{VERSION} · {BUILD_NAME} <ChevronRight class="w-3 h-3" />
+        </button>
+      {/if}
     </div>
+  </header>
+
+  <div class="max-w-6xl mx-auto p-sm md:p-md lg:p-lg">
 
     <!-- 3-step how-to — shown on first visit or on demand -->
     {#if !(weight > 0 || ftp > 0) || showGuide}
-    <div transition:fade={{ duration: 200 }} class="mb-lg md:mb-section card-enter card-enter-2">
+    <div transition:fade={{ duration: 200 }} class="mb-lg md:mb-section card-enter card-enter-1">
       <!-- Mobile: horizontal swipe cards -->
       <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;">
         {#each HOW_TO_STEPS as step, i}
@@ -656,7 +620,7 @@
     {/if}
 
     <!-- Input section -->
-    <div class="mb-lg card-enter card-enter-3">
+    <div class="mb-lg card-enter card-enter-2">
       <div class="flex items-center gap-md mb-lg">
         <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
         <span class="badge text-utility-xs font-bold uppercase tracking-widest">Setup</span>
@@ -668,7 +632,7 @@
       style="background:var(--color-canvas);border:1px solid var(--color-hairline);">
 
     <!-- Rider Profile -->
-    <div on:input={triggerBananaSpin}>
+    <div>
       <button
         class="w-full flex items-center justify-between p-lg text-left cursor-pointer"
         on:click={() => { profileOpen = !profileOpen; if (profileOpen) rideOpen = false; }}
@@ -791,7 +755,7 @@
     <div class="h-px" style="background:var(--color-hairline);"></div>
 
     <!-- Ride Input -->
-    <div on:input={triggerBananaSpin}>
+    <div>
       <button
         class="w-full flex items-center justify-between p-lg text-left cursor-pointer"
         on:click={() => { rideOpen = !rideOpen; if (rideOpen) profileOpen = false; }}
@@ -922,14 +886,14 @@
     </div><!-- /Input section -->
 
     <!-- Results divider -->
-    <div class="flex items-center gap-md mb-lg card-enter card-enter-5">
+    <div class="flex items-center gap-md mb-lg card-enter card-enter-4">
       <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
       <span class="badge text-utility-xs font-bold uppercase tracking-widest">Results</span>
       <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
     </div>
 
     <!-- Results Row 1: Speed + Power -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-5">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-4">
 
       <!-- Speed card -->
       <div class="card p-lg">
@@ -987,7 +951,7 @@
     </div>
 
     <!-- Results Row 2: Carbs + Fluids -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-5">
 
       <!-- Carbs card -->
       <div class="card p-lg">
@@ -1050,7 +1014,7 @@
     </div>
 
     <!-- Totals + Fueling Schedule + Bottle Planner — tabbed dark card -->
-    <div class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-7">
+    <div class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-6">
 
       <!-- Tab bar -->
       <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:20px;padding:3px;">
@@ -1212,9 +1176,12 @@
 
     <!-- Footer -->
     <div class="text-center -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));padding-top:1.5rem;">
-      <div class="flex items-center justify-center gap-sm mb-lg">
-        <Banana class="w-4 h-4" style="color:{bananaColor};transition:color 0.6s ease;" />
-        <span class="text-caption-sm text-[--color-stone]" style="font-weight:600;">BananaSprocket</span>
+      <div class="flex items-center justify-center gap-xs mb-lg">
+        <span class="text-caption-sm text-[--color-stone]" style="font-weight:600;">Banana</span>
+        <img src="/favicon.svg" alt=""
+          class="w-5 h-5 flex-shrink-0"
+          style="border-radius:18%;box-shadow:0 0 0 1px rgba(180,100,0,0.25),0 0 6px rgba(180,100,0,0.12);" />
+        <span class="text-caption-sm text-[--color-stone]" style="font-weight:600;">Sprocket</span>
       </div>
       <div class="flex justify-center items-center gap-md">
         <button on:click={() => showMathSheet = true}

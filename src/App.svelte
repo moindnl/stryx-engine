@@ -500,7 +500,7 @@
   ];
 
   function tabStyle(tab: string, active: string): string {
-    return `${active === tab ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;`;
+    return `${active === tab ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:rgba(17,17,17,0.45);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;`;
   }
 </script>
 
@@ -979,10 +979,10 @@
     </div>
 
     <!-- Totals + Fueling Schedule + Bottle Planner — tabbed dark card -->
-    <div bind:this={tabCard} class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-5">
+    <div bind:this={tabCard} class="rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-5" style="background:rgba(247,59,32,0.05);border:1px solid rgba(247,59,32,0.12);">
 
       <!-- Tab bar -->
-      <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:20px;padding:3px;">
+      <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(17,17,17,0.06);border-radius:20px;padding:3px;">
         <button
           style={tabStyle('summary', totalsTab)}
           on:click={() => switchTab('summary')}>Totals</button>
@@ -997,21 +997,21 @@
       <!-- Totals tab -->
       {#if totalsTab === 'summary'}
         <div in:fade={{ duration: 250 }}>
-        <h2 class="text-caption-md mb-lg text-[--color-on-primary]">Total needs for {formatDuration(duration)}</h2>
+        <h2 class="text-caption-md mb-lg text-[--color-mute]">Total needs for {formatDuration(duration)}</h2>
         <div class="grid grid-cols-3 gap-md">
-          <div class="bg-[--color-on-primary] rounded-md p-md text-center">
+          <div class="rounded-md p-md text-center" style="background:rgba(255,255,255,0.7);">
             <div class="text-4xl md:text-5xl font-extra-bold text-[--color-ink] mb-xs">{Math.round($animatedTotalCarbs)}g</div>
-            <div class="text-caption-sm text-[--color-charcoal]">Carbs</div>
+            <div class="text-caption-sm text-[--color-mute]">Carbs</div>
           </div>
-          <div class="bg-[--color-on-primary] rounded-md p-md text-center">
+          <div class="rounded-md p-md text-center" style="background:rgba(255,255,255,0.7);">
             <div class="text-4xl md:text-5xl font-extra-bold text-[--color-ink] mb-xs flex items-center justify-center" style="min-height:1.2em;">
               {powerDerived ? Math.round($animatedTotalKcal) : '—'}
             </div>
-            <div class="text-caption-sm text-[--color-charcoal]">kcal</div>
+            <div class="text-caption-sm text-[--color-mute]">kcal</div>
           </div>
-          <div class="bg-[--color-on-primary] rounded-md p-md text-center">
-            <div class="text-4xl md:text-5xl font-extra-bold text-[--color-info] mb-xs">{$animatedTotalFluid.toFixed(1)}L</div>
-            <div class="text-caption-sm text-[--color-charcoal]">Fluids</div>
+          <div class="rounded-md p-md text-center" style="background:rgba(255,255,255,0.7);">
+            <div class="text-4xl md:text-5xl font-extra-bold mb-xs" style="color:#477ee9;">{$animatedTotalFluid.toFixed(1)}L</div>
+            <div class="text-caption-sm text-[--color-mute]">Fluids</div>
           </div>
         </div>
         </div>
@@ -1021,36 +1021,36 @@
         <div in:fade={{ duration: 250 }}>
         <!-- Solid product picker -->
         <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
-          <span style="color:rgba(255,255,255,0.7);font-size:13px;">Solid food</span>
-          <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
+          <span style="color:var(--color-mute);font-size:13px;">Solid food</span>
+          <div style="display:flex;border-radius:20px;border:1px solid #cacacb;overflow:hidden;background:#f5f5f5;">
             {#each SOLID_PRODUCTS as p}
               <button
-                style="{solidProduct === p.id ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;"
+                style="{solidProduct === p.id ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;"
                 on:click={() => (solidProduct = p.id)}>{p.label} ({p.carbs}g)</button>
             {/each}
           </div>
         </div>
         {#if fuelingEvents.length === 0}
-          <p style="color:rgba(255,255,255,0.5);font-size:14px;">Ride too short for a fueling schedule.</p>
+          <p style="color:var(--color-mute);font-size:14px;">Ride too short for a fueling schedule.</p>
         {:else if fuelingEvents[0].carbs === 0}
-          <p style="color:rgba(255,255,255,0.5);font-size:14px;">No solid food needed — drink covers all carbs.</p>
+          <p style="color:var(--color-mute);font-size:14px;">No solid food needed — drink covers all carbs.</p>
         {:else}
-          <div style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);">
+          <div style="border-radius:14px;overflow:hidden;border:1px solid var(--color-hairline);background:rgba(255,255,255,0.7);">
             {#each fuelingEvents as event, i}
               <div class="flex items-center justify-between px-lg py-md"
-                style="{i < fuelingEvents.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.08);' : ''}">
-                <span style="color:rgba(255,255,255,0.5);font-size:13px;font-variant-numeric:tabular-nums;min-width:2.6rem;">{event.time}</span>
-                <span style="color:#ffffff;font-weight:700;font-size:15px;">{event.carbs}g</span>
-                <span style="color:rgba(255,255,255,0.5);font-size:12px;">{event.units}× {solidLabel}</span>
+                style="{i < fuelingEvents.length - 1 ? 'border-bottom:1px solid var(--color-hairline);' : ''}">
+                <span style="color:var(--color-mute);font-size:13px;font-variant-numeric:tabular-nums;min-width:2.6rem;">{event.time}</span>
+                <span style="color:var(--color-ink);font-weight:700;font-size:15px;">{event.carbs}g</span>
+                <span style="color:var(--color-mute);font-size:12px;">{event.units}× {solidLabel}</span>
               </div>
             {/each}
           </div>
           <div class="flex items-center justify-between mt-md">
-            <p style="color:rgba(255,255,255,0.45);font-size:12px;">First fuel at 20 min · every 20 min after</p>
-            <p style="color:rgba(255,255,255,0.5);font-size:12px;font-weight:600;">{totalSolidUnits} {solidLabel}s total</p>
+            <p style="color:var(--color-stone);font-size:12px;">First fuel at 20 min · every 20 min after</p>
+            <p style="color:var(--color-stone);font-size:12px;font-weight:600;">{totalSolidUnits} {solidLabel}s total</p>
           </div>
           {#if drinkCarbsPerHour > 0}
-            <p style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:6px;">↑ reduced by {drinkCarbsPerHour}g/h from drink</p>
+            <p style="color:var(--color-stone);font-size:11px;margin-top:6px;">↑ reduced by {drinkCarbsPerHour}g/h from drink</p>
           {/if}
         {/if}
         </div>
@@ -1059,61 +1059,61 @@
       {:else if totalsTab === 'pack'}
         <div in:fade={{ duration: 250 }}>
         {#if bottleCount === 0}
-          <p style="color:rgba(255,255,255,0.5);font-size:14px;">No bottles needed at this intensity.</p>
+          <p style="color:var(--color-mute);font-size:14px;">No bottles needed at this intensity.</p>
         {:else}
           <!-- Drink product picker -->
           <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
-            <span style="color:rgba(255,255,255,0.7);font-size:13px;">Drink type</span>
-            <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
+            <span style="color:var(--color-mute);font-size:13px;">Drink type</span>
+            <div style="display:flex;border-radius:20px;border:1px solid #cacacb;overflow:hidden;background:#f5f5f5;">
               {#each DRINK_PRODUCTS as p}
                 <button
-                  style="{drinkProduct === p.id ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 12px;font-size:12px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                  style="{drinkProduct === p.id ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:6px 12px;font-size:12px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
                   on:click={() => (drinkProduct = p.id)}>{p.label}</button>
               {/each}
             </div>
           </div>
           <!-- Bottle size selector -->
           <div class="flex items-center justify-between mb-lg flex-wrap gap-sm">
-            <span style="color:rgba(255,255,255,0.7);font-size:13px;">Bottle size</span>
-            <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
-              <button style="{bottleSize === 500 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 500)}>500ml</button>
-              <button style="{bottleSize === 750 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 750)}>750ml</button>
-              <button style="{bottleSize === 1000 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 1000)}>1L</button>
+            <span style="color:var(--color-mute);font-size:13px;">Bottle size</span>
+            <div style="display:flex;border-radius:20px;border:1px solid #cacacb;overflow:hidden;background:#f5f5f5;">
+              <button style="{bottleSize === 500 ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 500)}>500ml</button>
+              <button style="{bottleSize === 750 ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 750)}>750ml</button>
+              <button style="{bottleSize === 1000 ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 1000)}>1L</button>
             </div>
           </div>
-          <div style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);">
-            <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
-              <span style="color:rgba(255,255,255,0.6);font-size:14px;">Bottles needed</span>
-              <span style="color:#fff;font-weight:700;font-size:15px;">{bottleCount}</span>
+          <div style="border-radius:14px;overflow:hidden;border:1px solid var(--color-hairline);background:rgba(255,255,255,0.7);">
+            <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid var(--color-hairline);">
+              <span style="color:var(--color-mute);font-size:14px;">Bottles needed</span>
+              <span style="color:var(--color-ink);font-weight:700;font-size:15px;">{bottleCount}</span>
             </div>
-            <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
-              <span style="color:rgba(255,255,255,0.6);font-size:14px;">Fluid per bottle</span>
-              <span style="color:#fff;font-weight:700;font-size:15px;">{mlPerBottle} ml</span>
+            <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid var(--color-hairline);">
+              <span style="color:var(--color-mute);font-size:14px;">Fluid per bottle</span>
+              <span style="color:var(--color-ink);font-weight:700;font-size:15px;">{mlPerBottle} ml</span>
             </div>
             {#if drinkCarbsPerBottle > 0}
-              <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
-                <span style="color:rgba(255,255,255,0.6);font-size:14px;">Carbs from drink</span>
-                <span style="color:#fff;font-weight:700;font-size:15px;">{drinkCarbsPerBottle} g/bottle</span>
+              <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid var(--color-hairline);">
+                <span style="color:var(--color-mute);font-size:14px;">Carbs from drink</span>
+                <span style="color:var(--color-ink);font-weight:700;font-size:15px;">{drinkCarbsPerBottle} g/bottle</span>
               </div>
             {/if}
             <div class="flex items-center justify-between px-lg py-md">
-              <span style="color:rgba(255,255,255,0.6);font-size:14px;">Extra solid carbs</span>
-              <span style="color:#fff;font-weight:700;font-size:15px;">{Math.max(0, carbsPerBottle)} g/bottle</span>
+              <span style="color:var(--color-mute);font-size:14px;">Extra solid carbs</span>
+              <span style="color:var(--color-ink);font-weight:700;font-size:15px;">{Math.max(0, carbsPerBottle)} g/bottle</span>
             </div>
           </div>
           {#if drinkCarbsPerHour > 0}
-            <p style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:10px;">Drink covers {drinkCarbsPerHour}g/h → less solid food needed. Check Schedule tab.</p>
+            <p style="color:var(--color-stone);font-size:11px;margin-top:10px;">Drink covers {drinkCarbsPerHour}g/h → less solid food needed. Check Schedule tab.</p>
           {:else}
-            <p style="color:rgba(255,255,255,0.45);font-size:12px;margin-top:10px;">Water only — all carbs from solid food.</p>
+            <p style="color:var(--color-stone);font-size:12px;margin-top:10px;">Water only — all carbs from solid food.</p>
           {/if}
 
           <!-- Pack checklist -->
           {#if packItems.length > 0}
-            <div style="margin-top:20px;border-top:1px solid rgba(255,255,255,0.1);padding-top:16px;">
+            <div style="margin-top:20px;border-top:1px solid var(--color-hairline);padding-top:16px;">
               <div class="flex items-center justify-between mb-md">
-                <span style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">Pack list</span>
+                <span style="color:var(--color-stone);font-size:13px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">Pack list</span>
                 {#if checkedPack.size > 0}
-                  <button style="color:rgba(255,255,255,0.5);font-size:11px;" on:click={resetPack}>Reset</button>
+                  <button style="color:var(--color-stone);font-size:11px;" on:click={resetPack}>Reset</button>
                 {/if}
               </div>
               <div style="display:flex;flex-direction:column;gap:10px;">
@@ -1122,12 +1122,12 @@
                   <button
                     class="flex items-center gap-md text-left"
                     on:click={() => togglePack(item.id)}>
-                    <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid {checked ? '#f73b20' : 'rgba(255,255,255,0.25)'};background:{checked ? '#f73b20' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+                    <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid {checked ? '#f73b20' : 'rgba(17,17,17,0.2)'};background:{checked ? '#f73b20' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
                       {#if checked}
-                        <Check class="w-3 h-3" style="color:#111111;" />
+                        <Check class="w-3 h-3" style="color:#ffffff;" />
                       {/if}
                     </div>
-                    <span style="font-size:14px;color:{checked ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.85)'};text-decoration:{checked ? 'line-through' : 'none'};transition:color 0.15s;">{item.label}</span>
+                    <span style="font-size:14px;color:{checked ? 'var(--color-stone)' : 'var(--color-ink)'};text-decoration:{checked ? 'line-through' : 'none'};transition:color 0.15s;">{item.label}</span>
                   </button>
                 {/each}
               </div>

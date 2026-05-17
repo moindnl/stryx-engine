@@ -883,73 +883,10 @@
 
     </div><!-- /Input section -->
 
-    <!-- Results divider -->
-    <div class="flex items-center gap-md mb-lg card-enter card-enter-4">
-      <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
-      <span class="badge text-utility-xs font-bold uppercase tracking-widest">Results</span>
-      <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
-    </div>
+    {#if duration > 0 && (weight > 0)}
 
-    <!-- Results Row 1: Speed + Power -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-4">
-
-      <!-- Speed card -->
-      <div class="card p-lg">
-        <div class="flex items-start gap-md mb-lg">
-          <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
-            <Gauge class="w-7 h-7 text-[--color-ink]" />
-          </div>
-          <div class="min-w-0">
-            <h2 class="text-heading-lg font-bold text-[--color-ink]">Speed</h2>
-            <p class="text-caption-sm text-[--color-mute]">Average pace for your ride</p>
-          </div>
-        </div>
-        <div class="mb-lg">
-          <div class="flex items-baseline gap-sm">
-            <span class="text-7xl md:text-8xl font-extra-bold" style="color:{speedKmh > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{Math.round($animatedSpeed)}</span>
-            <span class="text-3xl text-[--color-mute]">{speedUnit}</span>
-          </div>
-        </div>
-        {#if speedSlogan}
-          <a href={animalLinks[speedSlogan]} target="_blank" rel="noopener noreferrer">
-            <span class="badge-black inline-flex items-center gap-xs">
-              {speedSlogan}
-              <ExternalLink class="w-3 h-3" />
-            </span>
-          </a>
-        {/if}
-      </div>
-
-      <!-- Power card -->
-      <div class="card p-lg">
-        <div class="flex items-start gap-md mb-lg">
-          <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
-            <Zap class="w-7 h-7 text-[--color-ink]" />
-          </div>
-          <div class="min-w-0">
-            <h2 class="text-heading-lg font-bold text-[--color-ink]">Power</h2>
-            <p class="text-caption-sm text-[--color-mute]">Ride intensity based on your FTP</p>
-          </div>
-        </div>
-        <div class="mb-md">
-          <div class="flex items-baseline gap-sm">
-            <span class="text-7xl md:text-8xl font-extra-bold" style="color:{power > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{power}</span>
-            <span class="text-3xl text-[--color-mute]">W</span>
-          </div>
-        </div>
-        {#if powerDerived}
-          <div class="flex items-center gap-sm flex-wrap">
-            <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}% FTP</span>
-            <span class="badge-black" style="background:#c2410c;color:#ffffff;">~{Math.round($animatedKcalPerHour)} kcal/h</span>
-          </div>
-        {:else}
-          <p class="text-caption-sm text-[--color-mute]">Enter FTP in Rider Profile & ride power above</p>
-        {/if}
-      </div>
-    </div>
-
-    <!-- Results Row 2: Carbs + Fluids -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-5">
+    <!-- Results Row 1: Carbs + Fluids (primary output) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-3">
 
       <!-- Carbs card -->
       <div class="card p-lg">
@@ -1011,14 +948,57 @@
       </div>
     </div>
 
+    <!-- Results Row 2: Power (+ speed when available) -->
+    <div class="card p-lg mb-lg card-enter card-enter-4">
+      <div class="flex items-start gap-md mb-lg">
+        <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
+          <Zap class="w-7 h-7 text-[--color-ink]" />
+        </div>
+        <div class="min-w-0">
+          <h2 class="text-heading-lg font-bold text-[--color-ink]">Power</h2>
+          <p class="text-caption-sm text-[--color-mute]">Ride intensity based on your FTP</p>
+        </div>
+      </div>
+      <div class="mb-md">
+        <div class="flex items-baseline gap-sm">
+          <span class="text-7xl md:text-8xl font-extra-bold" style="color:{power > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{power ?? 0}</span>
+          <span class="text-3xl text-[--color-mute]">W</span>
+        </div>
+      </div>
+      {#if powerDerived}
+        <div class="flex items-center gap-sm flex-wrap">
+          <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}% FTP</span>
+          <span class="badge-black" style="background:#c2410c;color:#ffffff;">~{Math.round($animatedKcalPerHour)} kcal/h</span>
+        </div>
+      {:else}
+        <p class="text-caption-sm text-[--color-mute]">Enter FTP and ride power to see zone</p>
+      {/if}
+      {#if speedKmh > 0}
+        <div class="flex items-center justify-between mt-md pt-md" style="border-top:1px solid var(--color-hairline);">
+          <div class="flex items-baseline gap-sm">
+            <span class="text-heading-md font-bold text-[--color-ink]">{Math.round($animatedSpeed)}</span>
+            <span class="text-caption-md text-[--color-mute]">{speedUnit}</span>
+          </div>
+          {#if speedSlogan}
+            <a href={animalLinks[speedSlogan]} target="_blank" rel="noopener noreferrer">
+              <span class="badge-black inline-flex items-center gap-xs">
+                {speedSlogan}
+                <ExternalLink class="w-3 h-3" />
+              </span>
+            </a>
+          {/if}
+        </div>
+      {/if}
+    </div>
+
     <!-- Totals + Fueling Schedule + Bottle Planner — tabbed dark card -->
-    <div class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-6">
+    <div class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-5">
 
       <!-- Tab bar -->
       <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:20px;padding:3px;">
         <button
           style={tabStyle('summary', totalsTab)}
-          on:click={() => (totalsTab = 'summary')}>Summary</button>
+          on:click={() => (totalsTab = 'summary')}>Totals</button>
         <button
           style={tabStyle('schedule', totalsTab)}
           on:click={() => (totalsTab = 'schedule')}>Schedule</button>
@@ -1027,10 +1007,10 @@
           on:click={() => (totalsTab = 'pack')}>Pack</button>
       </div>
 
-      <!-- Summary tab -->
+      <!-- Totals tab -->
       {#if totalsTab === 'summary'}
         <div in:fade={{ duration: 250 }}>
-        <h2 class="text-caption-md mb-lg text-[--color-on-primary]">Total needs for {duration > 0 ? formatDuration(duration) : '—'}</h2>
+        <h2 class="text-caption-md mb-lg text-[--color-on-primary]">Total needs for {formatDuration(duration)}</h2>
         <div class="grid grid-cols-3 gap-md">
           <div class="bg-[--color-on-primary] rounded-md p-md text-center">
             <div class="text-4xl md:text-5xl font-extra-bold text-[--color-ink] mb-xs">{Math.round($animatedTotalCarbs)}g</div>
@@ -1064,7 +1044,7 @@
           </div>
         </div>
         {#if fuelingEvents.length === 0}
-          <p style="color:rgba(255,255,255,0.5);font-size:14px;">Enter weight and duration to generate schedule.</p>
+          <p style="color:rgba(255,255,255,0.5);font-size:14px;">Ride too short for a fueling schedule.</p>
         {:else if fuelingEvents[0].carbs === 0}
           <p style="color:rgba(255,255,255,0.5);font-size:14px;">No solid food needed — drink covers all carbs.</p>
         {:else}
@@ -1086,14 +1066,13 @@
             <p style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:6px;">↑ reduced by {drinkCarbsPerHour}g/h from drink</p>
           {/if}
         {/if}
-
         </div>
 
       <!-- Pack tab (bottles + checklist) -->
       {:else if totalsTab === 'pack'}
         <div in:fade={{ duration: 250 }}>
         {#if bottleCount === 0}
-          <p style="color:rgba(255,255,255,0.5);font-size:14px;">Enter weight and duration to plan bottles.</p>
+          <p style="color:rgba(255,255,255,0.5);font-size:14px;">No bottles needed at this intensity.</p>
         {:else}
           <!-- Drink product picker -->
           <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
@@ -1171,6 +1150,14 @@
         </div>
       {/if}
     </div>
+
+    {:else}
+    <!-- Results empty state -->
+    <div class="card p-xl text-center mb-xl card-enter card-enter-3"
+      transition:fade={{ duration: 200 }}>
+      <p class="text-caption-md text-[--color-mute]">Add duration and body weight above to see your nutrition plan.</p>
+    </div>
+    {/if}
 
     <!-- Footer -->
     <div class="text-center -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));padding-top:1.5rem;">

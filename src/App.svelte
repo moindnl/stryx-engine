@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Zap, Gauge, Droplet, ChevronDown, ChevronRight, RotateCcw, User, Ruler, Scale, Wheat, CheckCircle, Check, Info, RefreshCw, X, Bike, ExternalLink, Lock } from 'lucide-svelte';
+  import { Zap, Droplet, ChevronDown, ChevronRight, RotateCcw, User, Ruler, Scale, Wheat, CheckCircle, Check, RefreshCw, X, Bike, ExternalLink, Lock } from 'lucide-svelte';
   import { tweened } from 'svelte/motion';
   import { linear, cubicOut, cubicIn } from 'svelte/easing';
   import { fly, fade, slide } from 'svelte/transition';
@@ -180,8 +180,10 @@
   let sheetDragStartY = 0;
   let sheetDragOffsetY = 0;
   let sheetIsDragging = false;
+  let _sheetDismiss: (() => void) | null = null;
 
-  function onSheetDragStart(e: TouchEvent) {
+  function onSheetDragStart(e: TouchEvent, dismiss: () => void) {
+    _sheetDismiss = dismiss;
     sheetDragStartY = e.touches[0].clientY;
     sheetDragOffsetY = 0;
     sheetIsDragging = true;
@@ -197,11 +199,8 @@
     if (sheetDragOffsetY > 80) {
       sheetDragOffsetY = window.innerHeight;
       setTimeout(() => {
-        if (installPlatform) dismissInstallSheet();
-        else if (showAboutSheet) showAboutSheet = false;
-        else if (showChangelogSheet) dismissChangelog();
-        else if (showImpressumSheet) showImpressumSheet = false;
-        else if (showMathSheet) showMathSheet = false;
+        _sheetDismiss?.();
+        _sheetDismiss = null;
         sheetDragOffsetY = 0;
       }, 260);
     } else {
@@ -229,6 +228,7 @@
 
     window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
     window.addEventListener('appinstalled', onAppInstalled);
+    _profileReady = true;
   });
 
   onDestroy(() => {
@@ -250,8 +250,9 @@
     deferredInstallPrompt = null;
     if (outcome === 'accepted') installPlatform = null;
   }
-  // Guard: only save after profile has been loaded from storage
-  $: localStorage.setItem('bp-profile', JSON.stringify({ weight, ftp, imperial, sweatRate }));
+  // Only save after initial load — prevents wiping storage during init
+  let _profileReady = false;
+  $: if (_profileReady) localStorage.setItem('bp-profile', JSON.stringify({ weight, ftp, imperial, sweatRate }));
 
   // Reset per-ride inputs only; profile persists
   function resetInputs() {
@@ -285,7 +286,7 @@
 
   // Metric-normalised values used in all calculations
   $: weightKg   = imperial ? (weight ?? 0) / 2.20462 : (weight ?? 0);
-  $: distanceKm = imperial ? distance * 1.60934 : distance;
+  $: distanceKm = imperial ? (distance ?? 0) * 1.60934 : (distance ?? 0);
   $: speedKmh   = distanceKm > 0 && duration > 0 ? distanceKm / duration : 0;
   $: speedUnit  = imperial ? 'mph' : 'km/h';
   $: heatBonus  = temperature > 20 ? Math.round((temperature - 20) / 5 * 0.3 * 10) / 10 : 0;
@@ -489,7 +490,7 @@
       transition:fly={{ y: -48, duration: 300, easing: cubicOut }}>
       <div class="inline-flex items-center gap-md rounded-full px-md py-sm pointer-events-auto"
         style="background:#f73b20;color:#ffffff;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
-        <RefreshCw class="w-3.5 h-3.5 flex-shrink-0" style="color:#f73b20;" />
+        <RefreshCw class="w-3.5 h-3.5 flex-shrink-0" style="color:#ffffff;" />
         <span class="text-caption-sm" style="color:rgba(255,255,255,0.85);">Update available</span>
         <button on:click={() => doUpdateSW()}
           class="text-caption-sm font-extra-bold rounded-full px-sm py-xxs"
@@ -1139,7 +1140,7 @@
       transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[996] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
       style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
-      on:touchstart={onSheetDragStart}
+      on:touchstart={(e) => onSheetDragStart(e, () => showAboutSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 420, duration: 380, easing: cubicOut }}
@@ -1193,7 +1194,7 @@
       on:click={dismissChangelog} role="presentation" transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
       style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
-      on:touchstart={onSheetDragStart}
+      on:touchstart={(e) => onSheetDragStart(e, dismissChangelog)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 420, duration: 380, easing: cubicOut }}
@@ -1224,7 +1225,7 @@
     </div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
       style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
-      on:touchstart={onSheetDragStart}
+      on:touchstart={(e) => onSheetDragStart(e, dismissInstallSheet)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 420, duration: 380, easing: cubicOut }}
@@ -1300,7 +1301,7 @@
       transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
       style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
-      on:touchstart={onSheetDragStart}
+      on:touchstart={(e) => onSheetDragStart(e, () => showImpressumSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 420, duration: 380, easing: cubicOut }}
@@ -1339,7 +1340,7 @@
       transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
       style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
-      on:touchstart={onSheetDragStart}
+      on:touchstart={(e) => onSheetDragStart(e, () => showMathSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 420, duration: 380, easing: cubicOut }}

@@ -808,6 +808,7 @@
             <div class="px-lg py-lg">
               <div class="flex items-center justify-between mb-sm">
                 <label for="temperature" class="text-caption-md text-[--color-ink]">Temperature</label>
+                <!-- °C intentional — heat formula is Celsius-based regardless of unit preference -->
                 <span class="text-caption-md font-bold text-[--color-ink]">{temperature}°C</span>
               </div>
               <input id="temperature" type="range" bind:value={temperature} min="0" max="45" step="1"

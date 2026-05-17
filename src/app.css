@@ -116,12 +116,7 @@
   /* Focus states */
   input:focus, select:focus {
     outline: none;
-    transform: scale(1.02);
     border-color: #09090b !important;
-  }
-
-  input, select {
-    transition: transform 0.2s ease;
   }
 }
 

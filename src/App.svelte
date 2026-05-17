@@ -1302,26 +1302,26 @@
       <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
       <p class="text-heading-md font-extra-bold mb-lg" style="color:#ffffff;">Impressum</p>
 
-      <p class="text-caption-sm mb-xs" style="color:rgba(255,255,255,0.45);">Angaben gemäß § 5 TMG</p>
+      <p class="text-caption-sm mb-xs" style="color:rgba(255,255,255,0.45);">Legal disclosure · § 5 TMG</p>
       <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);margin-bottom:20px;">
         <div class="px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
           <p style="color:#ffffff;font-size:14px;font-weight:600;">Daniel Muschinski</p>
           <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:2px;">Freudenbegrstraße 4, 28213 Bremen</p>
         </div>
         <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
-          <span style="color:rgba(255,255,255,0.55);font-size:14px;">Kontakt</span>
+          <span style="color:rgba(255,255,255,0.55);font-size:14px;">Contact</span>
           <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
             style="color:#f73b20;font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
         </div>
         <div class="px-lg py-md">
-          <p style="color:rgba(255,255,255,0.55);font-size:13px;line-height:1.5;">Privates, nicht-kommerzielles Projekt. Es werden keine personenbezogenen Daten erhoben oder an Dritte weitergegeben.</p>
+          <p style="color:rgba(255,255,255,0.55);font-size:13px;line-height:1.5;">Private, non-commercial project. No personal data is collected or shared with third parties.</p>
         </div>
       </div>
 
       <button on:click={() => showImpressumSheet = false}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
         style="background:rgba(255,255,255,0.12);color:#ffffff;">
-        Schließen
+        Close
       </button>
     </div>
   {/if}

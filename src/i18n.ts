@@ -176,11 +176,11 @@ const translations = {
     ariaSetupProfile: 'Fahrerprofil einrichten',
 
     step1Title: 'Profil einrichten',
-    step1Body: 'Gewicht, FTP und Einstellungen einmalig eingeben — werden automatisch gespeichert.',
+    step1Body: 'Gewicht & FTP einmalig eingeben — wird gespeichert.',
     step2Title: 'Fahrt eingeben',
-    step2Body: 'Distanz, Dauer und geplante Leistung für diese Fahrt eintragen.',
-    step3Title: 'Ergebnisse lesen',
-    step3Body: 'Genaue Kohlenhydrat- und Flüssigkeitsziele basierend auf deiner Leistung.',
+    step2Body: 'Distanz, Dauer und Leistung eintragen.',
+    step3Title: 'Ergebnisse',
+    step3Body: 'Kohlenhydrat- & Flüssigkeitsziele nach Leistung.',
 
     riderProfile: 'Fahrerprofil',
     notSet: 'Nicht gesetzt',

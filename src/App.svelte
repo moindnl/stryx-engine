@@ -778,7 +778,7 @@
           </div>
 
           <!-- Reset -->
-          <div class="flex justify-end pt-sm" style="border-top:1px solid var(--color-hairline);">
+          <div class="flex justify-end pt-sm">
             <button class="filter-chip flex items-center gap-xs" on:click={resetInputs}
               on:mousedown={startHold} on:mouseup={cancelHold} on:mouseleave={cancelHold}
               on:touchstart|preventDefault={startHold} on:touchend={cancelHold} on:touchcancel={cancelHold}

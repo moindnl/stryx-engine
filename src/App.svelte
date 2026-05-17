@@ -509,7 +509,7 @@
         <img src="/favicon.svg" alt=""
           class="w-7 h-7 flex-shrink-0"
           style="border-radius:18%;box-shadow:0 0 0 1px rgba(180,100,0,0.20),0 0 8px rgba(180,100,0,0.10);" />
-        <span class="text-body-strong font-extra-bold" style="color:var(--color-ink);">BananaSprocket</span>
+        <h1 class="text-body-strong font-extra-bold" style="color:var(--color-ink);margin:0;">BananaSprocket</h1>
       </div>
       <!-- Right chips -->
       <div class="flex items-center gap-sm">
@@ -537,7 +537,7 @@
     {#if !(weight > 0 || ftp > 0)}
     <div transition:fade={{ duration: 200 }} class="mb-lg md:mb-section card-enter card-enter-1">
       <!-- Mobile: horizontal swipe cards -->
-      <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;">
+      <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;" tabindex="0" role="region" aria-label="Result cards">
         {#each HOW_TO_STEPS as step, i}
           <div class="snap-center shrink-0 w-[78%] card-soft rounded-sm overflow-hidden shimmer-once flex"
             style="--shimmer-delay:{0.5 + i * 0.1}s"
@@ -681,6 +681,8 @@
                   <button
                     class="flex items-center gap-[2px]"
                     style="{sweatRate === value ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;transition:background 0.15s,color 0.15s;"
+                    aria-label="{value.charAt(0).toUpperCase() + value.slice(1)} sweat rate"
+                    aria-pressed={sweatRate === value}
                     on:click={() => (sweatRate = value)}>
                     {#each { length: drops } as _}<Droplet class="w-3.5 h-3.5" />{/each}
                   </button>
@@ -1148,7 +1150,7 @@
         <img src="/favicon.svg" alt="" class="w-10 h-10 flex-shrink-0" style="border-radius:18%;" />
         <div>
           <p class="text-heading-md font-extra-bold" style="color:#111111;">BananaSprocket</p>
-          <p class="text-caption-sm" style="color:rgba(17,17,17,0.4);">v{VERSION}</p>
+          <p class="text-caption-sm" style="color:rgba(17,17,17,0.65);">v{VERSION}</p>
         </div>
       </div>
 
@@ -1156,15 +1158,15 @@
 
       <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);margin-bottom:24px;">
         <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
-          <span style="color:rgba(17,17,17,0.5);font-size:14px;">Data storage</span>
+          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Data storage</span>
           <span style="color:#111111;font-weight:600;font-size:14px;">Device only</span>
         </div>
         <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
-          <span style="color:rgba(17,17,17,0.5);font-size:14px;">Server requests</span>
+          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Server requests</span>
           <span style="color:#111111;font-weight:600;font-size:14px;">None</span>
         </div>
         <div class="flex items-center justify-between px-lg py-md">
-          <span style="color:rgba(17,17,17,0.5);font-size:14px;">Works offline</span>
+          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Works offline</span>
           <span style="color:#111111;font-weight:600;font-size:14px;">Yes</span>
         </div>
       </div>
@@ -1196,7 +1198,7 @@
       transition:fly={{ duration: 300, y: 80 }}>
       <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
       <p class="text-heading-md font-extra-bold mb-xs" style="color:#111111;">What's new</p>
-      <p class="text-caption-md mb-lg" style="color:rgba(17,17,17,0.45);">v{VERSION} · {BUILD_NAME}</p>
+      <p class="text-caption-md mb-lg" style="color:rgba(17,17,17,0.65);">v{VERSION} · {BUILD_NAME}</p>
       <ul style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
         {#each CHANGELOG_ITEMS as item}
           <li class="flex items-start gap-md">
@@ -1229,7 +1231,7 @@
 
       <div class="mb-4">
         <p class="text-heading-md font-extra-bold" style="color:#111111;">Works offline</p>
-        <p class="text-caption-md mt-1" style="color:rgba(17,17,17,0.55);">Save to home screen for instant access.</p>
+        <p class="text-caption-md mt-1" style="color:rgba(17,17,17,0.65);">Save to home screen for instant access.</p>
       </div>
 
       {#if installPlatform === 'ios'}
@@ -1247,7 +1249,7 @@
             <span>Tap <strong>Add</strong> — done</span>
           </li>
         </ol>
-        <p class="text-caption-sm mt-4" style="color:rgba(17,17,17,0.45);">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
+        <p class="text-caption-sm mt-4" style="color:rgba(17,17,17,0.65);">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
       {:else}
         {#if deferredInstallPrompt}
           <button on:click={triggerInstall}
@@ -1259,14 +1261,14 @@
           <ol class="space-y-3 text-body-md">
             <li class="flex items-start gap-3">
               <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">1</span>
-              <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:rgba(17,17,17,0.4);">(top-right corner)</span></span>
+              <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:rgba(17,17,17,0.65);">(top-right corner)</span></span>
             </li>
             <li class="flex items-start gap-3">
               <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">2</span>
               <span>Tap <strong>Add to Home screen</strong> → <strong>Add</strong></span>
             </li>
           </ol>
-          <p class="text-caption-sm mt-4" style="color:rgba(17,17,17,0.45);">Chrome may also show an install banner at the bottom automatically.</p>
+          <p class="text-caption-sm mt-4" style="color:rgba(17,17,17,0.65);">Chrome may also show an install banner at the bottom automatically.</p>
         {/if}
       {/if}
 
@@ -1302,19 +1304,19 @@
       <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
       <p class="text-heading-md font-extra-bold mb-lg" style="color:#111111;">Impressum</p>
 
-      <p class="text-caption-sm mb-xs" style="color:rgba(17,17,17,0.4);">Legal disclosure · § 5 TMG</p>
+      <p class="text-caption-sm mb-xs" style="color:rgba(17,17,17,0.65);">Legal disclosure · § 5 TMG</p>
       <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);margin-bottom:20px;">
         <div class="px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
           <p style="color:#111111;font-size:14px;font-weight:600;">Daniel Muschinski</p>
-          <p style="color:rgba(17,17,17,0.45);font-size:13px;margin-top:2px;">Freudenbegrstraße 4, 28213 Bremen</p>
+          <p style="color:rgba(17,17,17,0.65);font-size:13px;margin-top:2px;">Freudenbegrstraße 4, 28213 Bremen</p>
         </div>
         <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
-          <span style="color:rgba(17,17,17,0.5);font-size:14px;">Contact</span>
+          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Contact</span>
           <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
             style="color:#f73b20;font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
         </div>
         <div class="px-lg py-md">
-          <p style="color:rgba(17,17,17,0.5);font-size:13px;line-height:1.5;">Private, non-commercial project. No personal data is collected or shared with third parties.</p>
+          <p style="color:rgba(17,17,17,0.65);font-size:13px;line-height:1.5;">Private, non-commercial project. No personal data is collected or shared with third parties.</p>
         </div>
       </div>
 
@@ -1341,7 +1343,7 @@
       <p class="text-heading-md font-extra-bold mb-lg" style="color:#111111;">How the math works</p>
 
       <div class="mb-lg" style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);">
-        <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:1fr auto auto;background:rgba(17,17,17,0.04);padding:8px 14px;color:rgba(17,17,17,0.4);letter-spacing:0.05em;">
+        <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:1fr auto auto;background:rgba(17,17,17,0.04);padding:8px 14px;color:rgba(17,17,17,0.65);letter-spacing:0.05em;">
           <span>Zone</span><span class="text-right pr-4">% FTP</span><span class="text-right">Carbs</span>
         </div>
         {#each [
@@ -1353,15 +1355,15 @@
         ] as row, i}
           <div class="grid text-caption-sm" style="grid-template-columns:1fr auto auto;padding:10px 14px;{i % 2 === 1 ? 'background:rgba(17,17,17,0.03);' : ''}border-top:1px solid rgba(17,17,17,0.06);">
             <span style="color:#111111;">{row.zone}</span>
-            <span class="text-right pr-4" style="color:rgba(17,17,17,0.45);">{row.ftp}</span>
+            <span class="text-right pr-4" style="color:rgba(17,17,17,0.65);">{row.ftp}</span>
             <span class="text-right" style="color:rgba(17,17,17,0.7);">{row.carbs}</span>
           </div>
         {/each}
       </div>
 
-      <p class="text-caption-sm mb-sm" style="color:rgba(17,17,17,0.5);">Fluids scale with body weight — sweat modifier adjusts ±20–30%.</p>
-      <p class="text-caption-sm mb-sm" style="color:rgba(17,17,17,0.5);">Heat: +0.3 L/h per 5°C above 20°C added to fluid target.</p>
-      <p class="text-caption-sm mb-lg" style="color:rgba(17,17,17,0.5);">Rides &gt;2h: add electrolytes — plain water dilutes sodium balance on long efforts.</p>
+      <p class="text-caption-sm mb-sm" style="color:rgba(17,17,17,0.65);">Fluids scale with body weight — sweat modifier adjusts ±20–30%.</p>
+      <p class="text-caption-sm mb-sm" style="color:rgba(17,17,17,0.65);">Heat: +0.3 L/h per 5°C above 20°C added to fluid target.</p>
+      <p class="text-caption-sm mb-lg" style="color:rgba(17,17,17,0.65);">Rides &gt;2h: add electrolytes — plain water dilutes sodium balance on long efforts.</p>
 
       <button on:click={() => showMathSheet = false}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"

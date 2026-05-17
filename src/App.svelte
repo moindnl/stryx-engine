@@ -1131,16 +1131,19 @@
 
     <!-- Footer -->
     <div class="flex flex-col items-center gap-sm -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-top:1.25rem;padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));">
-      <div class="flex items-center gap-lg">
+      <div class="flex items-center gap-md">
         <button on:click={() => showMathSheet = true}
-          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">How the math works</button>
+          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline"
+          style="padding:10px 12px;">How the math works</button>
         <button on:click={() => showAboutSheet = true}
-          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">About · v{VERSION}</button>
+          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline"
+          style="padding:10px 12px;">About · v{VERSION}</button>
       </div>
-      <div class="flex items-center gap-lg">
-        <span class="text-caption-sm text-[--color-stone]">© 2026 bonkproof</span>
+      <div class="flex items-center gap-md">
+        <span class="text-caption-sm text-[--color-stone]" style="padding:10px 12px;">© 2026 bonkproof</span>
         <button on:click={() => showImpressumSheet = true}
-          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">Legal Notice</button>
+          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline"
+          style="padding:10px 12px;">Legal Notice</button>
       </div>
     </div>
 

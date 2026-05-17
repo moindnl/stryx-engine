@@ -10,11 +10,11 @@ const translations = {
     ariaSetupProfile: 'Set up rider profile',
 
     step1Title: 'Set up your profile',
-    step1Body: 'Enter weight, FTP, and your preferences once — they save automatically.',
+    step1Body: 'Enter weight & FTP once — saves automatically.',
     step2Title: 'Enter your ride',
-    step2Body: 'Add distance, duration, and planned power for this specific ride.',
-    step3Title: 'Read results',
-    step3Body: 'Get precise carbohydrate and fluid targets based on your power output.',
+    step2Body: 'Add distance, duration, and power.',
+    step3Title: 'Results',
+    step3Body: 'Carb & fluid targets based on your power.',
 
     riderProfile: 'Rider Profile',
     notSet: 'Not set',

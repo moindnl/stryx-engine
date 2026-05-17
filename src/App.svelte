@@ -504,8 +504,8 @@
     <div style="max-width:640px;margin:0 auto;height:52px;background:#09090b;border-radius:9999px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">
       <!-- Logo -->
       <div class="flex items-center gap-sm">
-        <img src="/favicon.svg" alt="" class="w-7 h-7 block flex-shrink-0" style="border-radius:18%;" />
-        <h1 style="margin:0;font-size:15px;font-weight:800;letter-spacing:-0.01em;color:#ffffff;">bonkproof</h1>
+        <img src="/favicon.svg" alt="" style="width:34px;height:34px;display:block;flex-shrink:0;border-radius:24%;box-shadow:0 0 0 2px #f73b20;" />
+        <h1 style="margin:0;font-size:17px;font-weight:700;letter-spacing:-0.02em;color:#ffffff;">bonkproof</h1>
       </div>
       <!-- Right -->
       <div class="flex items-center gap-sm">

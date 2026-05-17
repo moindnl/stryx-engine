@@ -507,16 +507,13 @@
   {#if updateAvailable}
     <div class="fixed top-0 left-0 right-0 z-[1000] flex justify-center pt-3 px-4 pointer-events-none"
       transition:fly={{ y: -48, duration: 300, easing: cubicOut }}>
-      <div class="inline-flex items-center gap-md rounded-full px-md py-sm pointer-events-auto"
-        style="background:#f73b20;color:#ffffff;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
-        <RefreshCw class="w-3.5 h-3.5 flex-shrink-0" style="color:#ffffff;" />
-        <span class="text-caption-sm" style="color:rgba(255,255,255,0.85);">Update available</span>
+      <div class="inline-flex items-center gap-sm rounded-full pointer-events-auto"
+        style="background:#111111;color:#ffffff;box-shadow:0 4px 20px rgba(0,0,0,0.35);padding:6px 6px 6px 16px;">
+        <RefreshCw class="w-3.5 h-3.5 flex-shrink-0" style="color:rgba(255,255,255,0.55);" />
+        <span class="text-caption-sm" style="color:rgba(255,255,255,0.8);">New version available</span>
         <button on:click={() => doUpdateSW()}
-          class="text-caption-sm font-extra-bold rounded-full px-sm py-xxs"
-          style="background:#f73b20;color:#ffffff;">Refresh</button>
-        <button on:click={() => updateAvailable = false} aria-label="Dismiss">
-          <X class="w-3.5 h-3.5" style="color:rgba(255,255,255,0.45);" />
-        </button>
+          class="text-caption-sm font-extra-bold rounded-full"
+          style="background:#f73b20;color:#ffffff;padding:6px 14px;white-space:nowrap;">Update now</button>
       </div>
     </div>
   {/if}
@@ -543,7 +540,14 @@
             <span class="absolute" style="top:1px;right:1px;width:9px;height:9px;border-radius:50%;background:#34c759;border:1.5px solid var(--color-canvas);"></span>
           </button>
         {/if}
-        {#if showWhatsNew}
+        {#if updateAvailable}
+          <button class="text-caption-sm font-bold flex items-center gap-xs"
+            style="background:#f73b20;color:#ffffff;border-radius:20px;padding:5px 12px;"
+            on:click={() => doUpdateSW()}>
+            <RefreshCw class="w-3 h-3" />
+            Update
+          </button>
+        {:else if showWhatsNew}
           <button class="badge text-caption-sm flex items-center gap-xs"
             on:click={() => (showChangelogSheet = true)}>
             <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#fb2d54;"></span>

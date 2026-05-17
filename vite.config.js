@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'icon-192x192.png', 'icon-512x512.png', 'icon-192x192-dark.png', 'icon-512x512-dark.png'],
       manifest: {
-        name: 'BananaSprocket — Cycling Nutrition',
-        short_name: 'BananaSprocket',
+        name: 'BonkProof — Cycling Nutrition',
+        short_name: 'BonkProof',
         description: 'Precise carb & fluid targets from your FTP and ride data.',
         theme_color: '#111111',
         background_color: '#111111',

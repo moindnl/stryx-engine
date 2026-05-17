@@ -7,10 +7,8 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicDir = resolve(__dirname, '../public');
 
-const BANANA_PATHS = `
-  <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.11 22 2 22 2 20c0-1.5 1.14-1.55 3.15-2.11Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-`;
+// Lucide Zap (lightning bolt) — 24×24 viewBox
+const ZAP_PATH = `<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" stroke="none"/>`;
 
 function deg2rad(d) { return d * Math.PI / 180; }
 function pt(cx, cy, r, deg) {
@@ -66,9 +64,9 @@ function iconHTML(size) {
       <stop offset="100%" stop-color="#0f0f14"/>
     </radialGradient>
     <linearGradient id="arcG" x1="${gx1.toFixed(1)}" y1="${gy.toFixed(1)}" x2="${gx2.toFixed(1)}" y2="${gy.toFixed(1)}" gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="#e06500"/>
-      <stop offset="55%"  stop-color="#ffd700"/>
-      <stop offset="100%" stop-color="#ffe566"/>
+      <stop offset="0%"   stop-color="#c02010"/>
+      <stop offset="55%"  stop-color="#f73b20"/>
+      <stop offset="100%" stop-color="#fb6040"/>
     </linearGradient>
     <linearGradient id="rim" x1="0" y1="0" x2="0" y2="${size}" gradientUnits="userSpaceOnUse">
       <stop offset="0%"   stop-color="rgba(255,255,255,0.22)"/>
@@ -86,7 +84,7 @@ function iconHTML(size) {
 
   <!-- dim track -->
   <path d="${trackD}"
-    stroke="rgba(255,200,50,0.14)" stroke-width="${tw.toFixed(1)}"
+    stroke="rgba(247,59,32,0.18)" stroke-width="${tw.toFixed(1)}"
     stroke-linecap="round" fill="none"/>
 
   <!-- active arc + glow -->
@@ -96,11 +94,11 @@ function iconHTML(size) {
       stroke-linecap="round" fill="none"/>
   </g>
 
-  <!-- banana -->
+  <!-- zap bolt -->
   <g transform="translate(${bx.toFixed(1)},${by.toFixed(1)})">
     <svg width="${bs}" height="${bs}" viewBox="0 0 24 24" overflow="visible">
-      <g color="#FFD54F" style="filter:drop-shadow(0 0 ${(bs*0.07).toFixed(0)}px rgba(255,210,50,0.55))">
-        ${BANANA_PATHS}
+      <g color="#ffffff" style="filter:drop-shadow(0 0 ${(bs*0.07).toFixed(0)}px rgba(247,59,32,0.7))">
+        ${ZAP_PATH}
       </g>
     </svg>
   </g>

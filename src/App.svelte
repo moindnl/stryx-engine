@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Banana, Zap, Gauge, Droplet, ChevronDown, ChevronRight, RotateCcw, User, Ruler, Scale, Wheat, CheckCircle, Check, Info, RefreshCw, X, Bike, ExternalLink, Lock } from 'lucide-svelte';
+  import { Zap, Gauge, Droplet, ChevronDown, ChevronRight, RotateCcw, User, Ruler, Scale, Wheat, CheckCircle, Check, Info, RefreshCw, X, Bike, ExternalLink, Lock } from 'lucide-svelte';
   import { tweened } from 'svelte/motion';
   import { linear, cubicOut, cubicIn } from 'svelte/easing';
   import { fly, fade, slide } from 'svelte/transition';
@@ -43,7 +43,7 @@
   function dismissChangelog() {
     showChangelogSheet = false;
     showWhatsNew = false;
-    localStorage.setItem('bs-seen-build', BUILD_NAME);
+    localStorage.setItem('bp-seen-build', BUILD_NAME);
   }
 
   let showAboutSheet = false;
@@ -114,7 +114,7 @@
 
   // Rider profile (persists via localStorage — read synchronously so guide renders correctly on first paint)
   let _savedProfile: Record<string, any> = {};
-  try { _savedProfile = JSON.parse(localStorage.getItem('bs-profile') || '{}'); } catch { /* ignore */ }
+  try { _savedProfile = JSON.parse(localStorage.getItem('bp-profile') || '{}'); } catch { /* ignore */ }
   let weight: number | undefined = _savedProfile.weight > 0 ? _savedProfile.weight : undefined;
   let ftp: number | undefined = _savedProfile.ftp > 0 ? _savedProfile.ftp : undefined;
   let imperial: boolean = typeof _savedProfile.imperial === 'boolean' ? _savedProfile.imperial : false;
@@ -212,18 +212,18 @@
   onMount(() => {
     // Easter egg: console greeting
     console.log(
-      '%cBananaSprocket — Cycling Nutrition Planner\n\nPsst. You\'re looking at the source.\nWhy are you not riding your bike?\n\nBuilt by Daniel Muschinski\nhttps://github.com/moindnl',
+      '%cBonkProof — Cycling Nutrition Planner\n\nPsst. You\'re looking at the source.\nWhy are you not riding your bike?\n\nBuilt by Daniel Muschinski\nhttps://github.com/moindnl',
       'color:#FFD700;background:#111111;font-family:monospace;font-size:12px;padding:16px 20px;border-radius:8px;line-height:1.6;'
     );
 
-    if (localStorage.getItem('bs-seen-build') !== BUILD_NAME) showWhatsNew = true;
+    if (localStorage.getItem('bp-seen-build') !== BUILD_NAME) showWhatsNew = true;
 
     const isMobile = window.innerWidth < 768;
     const standalone = window.matchMedia('(display-mode: standalone)').matches
       || (navigator as any).standalone === true;
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const isAndroid = /android/i.test(navigator.userAgent);
-    if (isMobile && !standalone && (isIos || isAndroid) && !localStorage.getItem('bs-install-dismissed')) {
+    if (isMobile && !standalone && (isIos || isAndroid) && !localStorage.getItem('bp-install-dismissed')) {
       _installOS = isIos ? 'ios' : 'android'; // reactive block fires when profile complete
     }
 
@@ -241,7 +241,7 @@
     installPlatform = null;
     sheetDragOffsetY = 0;
     sheetIsDragging = false;
-    localStorage.setItem('bs-install-dismissed', '1');
+    localStorage.setItem('bp-install-dismissed', '1');
   }
   async function triggerInstall() {
     if (!deferredInstallPrompt) return;
@@ -251,7 +251,7 @@
     if (outcome === 'accepted') installPlatform = null;
   }
   // Guard: only save after profile has been loaded from storage
-  $: localStorage.setItem('bs-profile', JSON.stringify({ weight, ftp, imperial, sweatRate }));
+  $: localStorage.setItem('bp-profile', JSON.stringify({ weight, ftp, imperial, sweatRate }));
 
   // Reset per-ride inputs only; profile persists
   function resetInputs() {
@@ -509,7 +509,7 @@
         <img src="/favicon.svg" alt=""
           class="w-7 h-7 flex-shrink-0"
           style="border-radius:18%;box-shadow:0 0 0 1px rgba(180,100,0,0.20),0 0 8px rgba(180,100,0,0.10);" />
-        <h1 class="text-body-strong font-extra-bold" style="color:var(--color-ink);margin:0;">BananaSprocket</h1>
+        <h1 class="text-body-strong font-extra-bold" style="color:var(--color-ink);margin:0;">BonkProof</h1>
       </div>
       <!-- Right chips -->
       <div class="flex items-center gap-sm">
@@ -1124,7 +1124,7 @@
           class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">About · v{VERSION}</button>
       </div>
       <div class="flex items-center gap-lg">
-        <span class="text-caption-sm text-[--color-stone]">© 2026 BananaSprocket</span>
+        <span class="text-caption-sm text-[--color-stone]">© 2026 BonkProof</span>
         <button on:click={() => showImpressumSheet = true}
           class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">Legal Notice</button>
       </div>
@@ -1150,7 +1150,7 @@
       <div class="flex items-center gap-md mb-lg">
         <img src="/favicon.svg" alt="" class="w-10 h-10 flex-shrink-0" style="border-radius:18%;" />
         <div>
-          <p class="text-heading-md font-extra-bold" style="color:#111111;">BananaSprocket</p>
+          <p class="text-heading-md font-extra-bold" style="color:#111111;">BonkProof</p>
           <p class="text-caption-sm" style="color:rgba(17,17,17,0.65);">v{VERSION}</p>
         </div>
       </div>

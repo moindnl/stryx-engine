@@ -585,7 +585,7 @@
     <!-- Rider Profile -->
     <div>
       <button
-        class="w-full flex items-center justify-between p-lg text-left cursor-pointer"
+        class="w-full flex items-center justify-between p-lg text-left cursor-pointer focus:outline-none"
         on:click={() => { profileOpen = !profileOpen; if (profileOpen) rideOpen = false; }}
         aria-expanded={profileOpen}
       >
@@ -608,7 +608,7 @@
         <div transition:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;">
 
           <!-- Weight -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--color-hairline);">
+          <div class="flex items-center justify-between py-lg">
             <label for="weight" class="text-caption-md font-bold text-[--color-ink]">Body Weight</label>
             <div class="flex items-center gap-xs">
               <input id="weight" type="number" bind:value={weight} min="1" max="400" step="1" placeholder="75"
@@ -674,13 +674,10 @@
       {/if}
     </div>
 
-    <!-- Internal divider -->
-    <div class="h-px" style="background:var(--color-hairline);"></div>
-
     <!-- Ride Input -->
     <div>
       <button
-        class="w-full flex items-center justify-between p-lg text-left cursor-pointer"
+        class="w-full flex items-center justify-between p-lg text-left cursor-pointer focus:outline-none"
         on:click={() => { rideOpen = !rideOpen; if (rideOpen) profileOpen = false; }}
         aria-expanded={rideOpen}
       >
@@ -704,7 +701,7 @@
           on:focusout={handleRideCardFocusOut}>
 
           <!-- Distance -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--color-hairline);">
+          <div class="flex items-center justify-between py-lg">
             <label for="distance" class="text-caption-md font-bold text-[--color-ink]">
               Distance <span class="text-caption-sm text-[--color-mute] font-normal">(optional)</span>
             </label>

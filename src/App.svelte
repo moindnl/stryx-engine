@@ -313,9 +313,9 @@
       ? 'background:#f0c000;color:#111111;transition:background 0.35s ease,color 0.35s ease'
       : `background:${
           intensityFactor < 0.55 ? '#4b4b4d' :
-          intensityFactor < 0.75 ? '#1151ff' :
-          intensityFactor < 0.90 ? '#007d48' :
-          intensityFactor < 1.05 ? '#c2410c' : '#d30005'
+          intensityFactor < 0.75 ? '#477ee9' :
+          intensityFactor < 0.90 ? '#34c771' :
+          intensityFactor < 1.05 ? '#f73b20' : '#fb2d54'
         };color:#ffffff;transition:background 0.35s ease,color 0.35s ease`;
 
 
@@ -477,7 +477,7 @@
   ];
 
   function tabStyle(tab: string, active: string): string {
-    return `${active === tab ? 'background:#FFD700;color:#111111;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;`;
+    return `${active === tab ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;`;
   }
 </script>
 
@@ -488,12 +488,12 @@
     <div class="fixed top-0 left-0 right-0 z-[1000] flex justify-center pt-3 px-4 pointer-events-none"
       transition:fly={{ y: -48, duration: 300, easing: cubicOut }}>
       <div class="inline-flex items-center gap-md rounded-full px-md py-sm pointer-events-auto"
-        style="background:#111111;color:#ffffff;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
-        <RefreshCw class="w-3.5 h-3.5 flex-shrink-0" style="color:#FFD700;" />
+        style="background:#f73b20;color:#ffffff;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
+        <RefreshCw class="w-3.5 h-3.5 flex-shrink-0" style="color:#f73b20;" />
         <span class="text-caption-sm" style="color:rgba(255,255,255,0.85);">Update available</span>
         <button on:click={() => doUpdateSW()}
           class="text-caption-sm font-extra-bold rounded-full px-sm py-xxs"
-          style="background:#FFD700;color:#111111;">Refresh</button>
+          style="background:#f73b20;color:#ffffff;">Refresh</button>
         <button on:click={() => updateAvailable = false} aria-label="Dismiss">
           <X class="w-3.5 h-3.5" style="color:rgba(255,255,255,0.45);" />
         </button>
@@ -523,7 +523,7 @@
         {#if showWhatsNew}
           <button class="badge text-caption-sm flex items-center gap-xs"
             on:click={() => (showChangelogSheet = true)}>
-            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#EF4444;"></span>
+            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#fb2d54;"></span>
             New
           </button>
         {/if}
@@ -542,8 +542,8 @@
           <div class="snap-center shrink-0 w-[78%] card-soft rounded-sm overflow-hidden shimmer-once flex"
             style="--shimmer-delay:{0.5 + i * 0.1}s"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
-            <div class="flex items-center justify-center flex-shrink-0" style="background:#FFD700;min-width:56px;padding:0 18px 0 14px;clip-path:polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);">
-              <span class="text-lg font-bold" style="color:#111111;">{step.n}</span>
+            <div class="flex items-center justify-center flex-shrink-0" style="background:#f73b20;min-width:56px;padding:0 18px 0 14px;clip-path:polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);">
+              <span class="text-lg font-bold" style="color:#ffffff;">{step.n}</span>
             </div>
             <div class="p-lg space-y-xs">
               <h2 class="text-body-strong font-bold text-[--color-ink]">{step.title}</h2>
@@ -557,8 +557,8 @@
         {#each HOW_TO_STEPS as step, i}
           <div class="flex flex-col"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
-            <div class="flex items-center justify-center py-md" style="background:#FFD700;">
-              <span class="text-lg font-bold" style="color:#111111;">{step.n}</span>
+            <div class="flex items-center justify-center py-md" style="background:#f73b20;">
+              <span class="text-lg font-bold" style="color:#ffffff;">{step.n}</span>
             </div>
             <div class="p-lg space-y-xs flex-1">
               <h2 class="text-body-strong font-bold text-[--color-ink]">{step.title}</h2>
@@ -655,10 +655,10 @@
               </div>
               <div style="display:flex;border-radius:20px;border:1px solid #cacacb;overflow:hidden;background:#f5f5f5;">
                 <button
-                  style="{!imperial ? 'background:#111111;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                  style="{!imperial ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
                   on:click={() => { if (imperial) toggleImperial(); }}>km / kg</button>
                 <button
-                  style="{imperial ? 'background:#111111;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                  style="{imperial ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
                   on:click={() => { if (!imperial) toggleImperial(); }}>mi / lbs</button>
               </div>
             </div>
@@ -680,7 +680,7 @@
                 {#each SWEAT_LEVELS as { value, drops }}
                   <button
                     class="flex items-center gap-[2px]"
-                    style="{sweatRate === value ? 'background:#111111;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;transition:background 0.15s,color 0.15s;"
+                    style="{sweatRate === value ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;transition:background 0.15s,color 0.15s;"
                     on:click={() => (sweatRate = value)}>
                     {#each { length: drops } as _}<Droplet class="w-3.5 h-3.5" />{/each}
                   </button>
@@ -922,7 +922,7 @@
       {#if powerDerived}
         <div class="flex items-center gap-sm flex-wrap">
           <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}% FTP</span>
-          <span class="badge-black" style="background:#c2410c;color:#ffffff;">~{Math.round($animatedKcalPerHour)} kcal/h</span>
+          <span class="badge-black" style="background:#f73b20;color:#ffffff;">~{Math.round($animatedKcalPerHour)} kcal/h</span>
         </div>
       {:else}
         <p class="text-caption-sm text-[--color-mute]">Enter FTP and ride power to see zone</p>
@@ -1089,7 +1089,7 @@
                   <button
                     class="flex items-center gap-md text-left"
                     on:click={() => togglePack(item.id)}>
-                    <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid {checked ? '#FFD700' : 'rgba(255,255,255,0.25)'};background:{checked ? '#FFD700' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+                    <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid {checked ? '#f73b20' : 'rgba(255,255,255,0.25)'};background:{checked ? '#f73b20' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
                       {#if checked}
                         <Check class="w-3 h-3" style="color:#111111;" />
                       {/if}
@@ -1172,7 +1172,7 @@
       <div class="flex gap-sm">
         <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
           class="flex-1 py-3 rounded-full text-button-md font-extra-bold text-center"
-          style="background:#FFD700;color:#111111;text-decoration:none;">
+          style="background:#f73b20;color:#ffffff;text-decoration:none;">
           GitHub <ExternalLink size={14} style="display:inline;vertical-align:middle;margin-left:4px;" />
         </a>
         <button on:click={() => showAboutSheet = false}
@@ -1200,14 +1200,14 @@
       <ul style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
         {#each CHANGELOG_ITEMS as item}
           <li class="flex items-start gap-md">
-            <span style="color:#FFD700;font-size:16px;line-height:1.4;flex-shrink:0;">·</span>
+            <span style="color:#f73b20;font-size:16px;line-height:1.4;flex-shrink:0;">·</span>
             <span style="font-size:15px;color:rgba(255,255,255,0.85);line-height:1.5;">{item}</span>
           </li>
         {/each}
       </ul>
       <button on:click={dismissChangelog}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:#FFD700;color:#111111;">
+        style="background:#f73b20;color:#ffffff;">
         Got it
       </button>
     </div>
@@ -1252,7 +1252,7 @@
         {#if deferredInstallPrompt}
           <button on:click={triggerInstall}
             class="w-full py-3 rounded-full text-button-md font-extra-bold mb-4"
-            style="background:#FFD700;color:#111111;">
+            style="background:#f73b20;color:#ffffff;">
             Install now
           </button>
         {:else}
@@ -1311,7 +1311,7 @@
         <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
           <span style="color:rgba(255,255,255,0.55);font-size:14px;">Kontakt</span>
           <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
-            style="color:#FFD700;font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
+            style="color:#f73b20;font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
         </div>
         <div class="px-lg py-md">
           <p style="color:rgba(255,255,255,0.55);font-size:13px;line-height:1.5;">Privates, nicht-kommerzielles Projekt. Es werden keine personenbezogenen Daten erhoben oder an Dritte weitergegeben.</p>

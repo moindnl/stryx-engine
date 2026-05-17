@@ -782,19 +782,21 @@
             </p>
           </div>
 
-          <!-- Reset -->
-          <div class="flex justify-end pt-sm">
-            <button class="filter-chip flex items-center gap-xs" on:click={resetInputs}
-              on:mousedown={startHold} on:mouseup={cancelHold} on:mouseleave={cancelHold}
-              on:touchstart|preventDefault={startHold} on:touchend={cancelHold} on:touchcancel={cancelHold}
-              on:contextmenu|preventDefault
-              style="touch-action:manipulation;user-select:none;-webkit-user-select:none;"
-              aria-label="Reset ride inputs">
-              <RotateCcw class="w-4 h-4" />
-              {$t.resetRide}
-            </button>
-          </div>
+        </div>
+      {/if}
 
+      <!-- Reset — always visible when ride data present -->
+      {#if duration > 0 || distance > 0 || power > 0}
+        <div class="flex justify-end px-lg pb-lg">
+          <button class="filter-chip flex items-center gap-xs" on:click={resetInputs}
+            on:mousedown={startHold} on:mouseup={cancelHold} on:mouseleave={cancelHold}
+            on:touchstart|preventDefault={startHold} on:touchend={cancelHold} on:touchcancel={cancelHold}
+            on:contextmenu|preventDefault
+            style="touch-action:manipulation;user-select:none;-webkit-user-select:none;"
+            aria-label="Reset ride inputs">
+            <RotateCcw class="w-4 h-4" />
+            {$t.resetRide}
+          </button>
         </div>
       {/if}
     </div>

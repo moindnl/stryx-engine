@@ -262,8 +262,8 @@ const translations = {
 
     emptyState: 'Dauer und Gewicht eingeben für Ergebnisse.',
 
-    howItWorks: 'So funktioniert\'s',
-    about: 'Über die App',
+    howItWorks: 'Formel',
+    about: 'Info',
     legal: 'Impressum',
 
     dataStorage: 'Datenspeicherung',

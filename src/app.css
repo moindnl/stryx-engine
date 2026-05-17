@@ -321,7 +321,8 @@
     height: 24px;
     border-radius: 50%;
     background: #ffffff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    border: 1.5px solid #3f3f46;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
     cursor: pointer;
   }
   .temp-slider::-moz-range-thumb {
@@ -329,8 +330,8 @@
     height: 24px;
     border-radius: 50%;
     background: #ffffff;
-    border: none;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    border: 1.5px solid #3f3f46;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
     cursor: pointer;
   }
   .temp-slider::-webkit-slider-runnable-track { border-radius: 2px; }

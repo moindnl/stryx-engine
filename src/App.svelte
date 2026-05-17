@@ -129,6 +129,15 @@
   let neuralizer = false;        // easter egg F: neuralyzer flash
   let holdTimer: ReturnType<typeof setTimeout> | null = null;
   let totalsTab: 'summary' | 'schedule' | 'pack' = 'summary';
+  let tabCard: HTMLElement;
+  function switchTab(tab: typeof totalsTab) {
+    totalsTab = tab;
+    setTimeout(() => {
+      if (!tabCard) return;
+      const y = tabCard.getBoundingClientRect().top + window.scrollY - 68; // 56px header + 12px gap
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }, 0);
+  }
   let checkedPack: Set<string> = new Set();
   function togglePack(id: string) {
     if (checkedPack.has(id)) checkedPack.delete(id); else checkedPack.add(id);
@@ -953,19 +962,19 @@
     </div>
 
     <!-- Totals + Fueling Schedule + Bottle Planner — tabbed dark card -->
-    <div class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-5">
+    <div bind:this={tabCard} class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-5">
 
       <!-- Tab bar -->
       <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:20px;padding:3px;">
         <button
           style={tabStyle('summary', totalsTab)}
-          on:click={() => (totalsTab = 'summary')}>Totals</button>
+          on:click={() => switchTab('summary')}>Totals</button>
         <button
           style={tabStyle('schedule', totalsTab)}
-          on:click={() => (totalsTab = 'schedule')}>Schedule</button>
+          on:click={() => switchTab('schedule')}>Schedule</button>
         <button
           style={tabStyle('pack', totalsTab)}
-          on:click={() => (totalsTab = 'pack')}>Pack</button>
+          on:click={() => switchTab('pack')}>Pack</button>
       </div>
 
       <!-- Totals tab -->

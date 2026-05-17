@@ -43,11 +43,8 @@
   
   body {
     @apply text-[--color-ink] min-h-screen;
-    background: linear-gradient(160deg, #fef6f4 0%, #fde0d5 35%, #fef0ec 65%, #fde8e0 100%);
-    /* background-attachment: fixed creates blur depth on desktop.
-       iOS Safari ignores this in scroll containers — gradient scrolls with
-       the page. Frosted glass still works visually; parallax lock doesn't. */
-    background-attachment: fixed;
+    /* Gradient lives in a fixed DOM element (#bg-gradient in App.svelte)
+       so iOS Safari's backdrop-filter can blur it. Body bg is transparent. */
   }
 
   /* Easter egg F: neuralyzer flash */

@@ -483,6 +483,8 @@
   }
 </script>
 
+<div aria-hidden="true" style="position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#fdd5c2 0%,#fbd0be 25%,#fef0ec 65%,#fde8e0 100%);"></div>
+
 <main class="min-h-screen">
 
   <!-- Update toast -->
@@ -578,7 +580,7 @@
     <div class="mb-lg card-enter card-enter-2">
 
     <!-- Unified setup card -->
-    <div class="liquid-glass rounded-sm mb-lg" style="overflow:clip;">
+    <div class="liquid-glass rounded-sm mb-lg">
 
     <!-- Rider Profile -->
     <div>
@@ -1078,7 +1080,7 @@
     <!-- Footer -->
     <div style="border-top:1px solid var(--color-hairline);padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 24px));">
       <div class="flex items-center justify-between flex-wrap gap-xs" style="padding:12px 0;">
-        <span class="text-caption-sm" style="color:var(--color-stone);padding:4px 0;">© 2026 bonkproof</span>
+        <span class="text-caption-sm" style="color:var(--color-stone);padding:4px 0;">© 2026 Daniel Muschinski</span>
         <div class="flex items-center flex-wrap">
           <button on:click={() => showMathSheet = true}
             class="text-caption-sm text-[--color-mute] hover:text-[--color-ink]"

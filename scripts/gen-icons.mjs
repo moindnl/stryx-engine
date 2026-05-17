@@ -7,9 +7,6 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicDir = resolve(__dirname, '../public');
 
-// Lucide Zap (lightning bolt) — 24×24 viewBox
-const ZAP_PATH = `<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" stroke="none"/>`;
-
 function deg2rad(d) { return d * Math.PI / 180; }
 function pt(cx, cy, r, deg) {
   return [cx + r * Math.cos(deg2rad(deg)), cy + r * Math.sin(deg2rad(deg))];
@@ -42,10 +39,17 @@ function iconHTML(size) {
   // Gradient bounds (horizontal, spans full arc width)
   const gx1 = cx - R, gx2 = cx + R, gy = cy;
 
-  // Banana: centered inside arc, slightly above arc center
-  const bs  = size * 0.32;              // banana SVG size
-  const bx  = cx - bs * 0.5;
-  const by  = cy - bs * 0.52;
+  // Dizzy face — centered, slightly above arc center
+  const fcy  = cy - size * 0.024;       // face center y
+  const fr   = size * 0.180;            // face radius
+  const eox  = size * 0.074;            // eye horizontal offset
+  const eoy  = size * 0.025;            // eye vertical offset (up)
+  const earm = size * 0.025;            // eye × arm half-length
+  const esw  = (size * 0.022).toFixed(1); // eye stroke width
+  const lex  = cx - eox, rex = cx + eox, eey = fcy - eoy;
+  const mrx  = size * 0.035;            // mouth rx
+  const mry  = size * 0.023;            // mouth ry
+  const mcy  = fcy + size * 0.069;      // mouth center y
 
   // Glow stdDeviation
   const gsd = (size * 0.015).toFixed(1);
@@ -77,6 +81,9 @@ function iconHTML(size) {
       <feGaussianBlur in="SourceGraphic" stdDeviation="${gsd}" result="b"/>
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
+    <filter id="face-shadow">
+      <feDropShadow dx="0" dy="0" stdDeviation="${(size*0.016).toFixed(1)}" flood-color="rgba(0,0,0,0.4)"/>
+    </filter>
   </defs>
 
   <!-- background -->
@@ -94,14 +101,16 @@ function iconHTML(size) {
       stroke-linecap="round" fill="none"/>
   </g>
 
-  <!-- zap bolt -->
-  <g transform="translate(${bx.toFixed(1)},${by.toFixed(1)})">
-    <svg width="${bs}" height="${bs}" viewBox="0 0 24 24" overflow="visible">
-      <g color="#ffffff" style="filter:drop-shadow(0 0 ${(bs*0.07).toFixed(0)}px rgba(247,59,32,0.7))">
-        ${ZAP_PATH}
-      </g>
-    </svg>
-  </g>
+  <!-- dizzy face -->
+  <circle cx="${cx.toFixed(1)}" cy="${fcy.toFixed(1)}" r="${fr.toFixed(1)}" fill="#ffffff" filter="url(#face-shadow)"/>
+  <!-- left eye × -->
+  <path d="M${(lex-earm).toFixed(1)},${(eey-earm).toFixed(1)} L${(lex+earm).toFixed(1)},${(eey+earm).toFixed(1)} M${(lex-earm).toFixed(1)},${(eey+earm).toFixed(1)} L${(lex+earm).toFixed(1)},${(eey-earm).toFixed(1)}"
+    stroke="#111111" stroke-width="${esw}" stroke-linecap="round"/>
+  <!-- right eye × -->
+  <path d="M${(rex-earm).toFixed(1)},${(eey-earm).toFixed(1)} L${(rex+earm).toFixed(1)},${(eey+earm).toFixed(1)} M${(rex-earm).toFixed(1)},${(eey+earm).toFixed(1)} L${(rex+earm).toFixed(1)},${(eey-earm).toFixed(1)}"
+    stroke="#111111" stroke-width="${esw}" stroke-linecap="round"/>
+  <!-- mouth — small open oval -->
+  <ellipse cx="${cx.toFixed(1)}" cy="${mcy.toFixed(1)}" rx="${mrx.toFixed(1)}" ry="${mry.toFixed(1)}" fill="#111111"/>
 
   <!-- glass rim -->
   <rect width="${size}" height="${size}" rx="${cr}" ry="${cr}"

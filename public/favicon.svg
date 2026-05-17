@@ -13,9 +13,8 @@
       <feGaussianBlur in="SourceGraphic" stdDeviation="11" result="b"/>
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-    <filter id="glow-bolt" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    <filter id="face-shadow">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="rgba(0,0,0,0.4)"/>
     </filter>
   </defs>
 
@@ -31,9 +30,17 @@
     fill="none" stroke="url(#arc-grad)" stroke-width="18" stroke-linecap="round"
     filter="url(#glow-arc)"/>
 
-  <!-- Zap / lightning bolt — centered, white with glow -->
-  <!-- Lucide Zap: M13 2L3 14h9l-1 8 10-12h-9l1-8z, 24×24 vb, scaled ×10.5, centered -->
-  <g transform="translate(130,130) scale(10.5)" filter="url(#glow-bolt)">
-    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="white"/>
-  </g>
+  <!-- Face -->
+  <circle cx="256" cy="252" r="92" fill="#ffffff" filter="url(#face-shadow)"/>
+
+  <!-- Left eye × (center 218,239) -->
+  <path d="M205,226 L231,252 M205,252 L231,226"
+    stroke="#111111" stroke-width="11" stroke-linecap="round"/>
+
+  <!-- Right eye × (center 294,239) -->
+  <path d="M281,226 L307,252 M281,252 L307,226"
+    stroke="#111111" stroke-width="11" stroke-linecap="round"/>
+
+  <!-- Mouth — small open oval -->
+  <ellipse cx="256" cy="287" rx="18" ry="12" fill="#111111"/>
 </svg>

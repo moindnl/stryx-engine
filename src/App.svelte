@@ -117,6 +117,7 @@
   let holdTimer: ReturnType<typeof setTimeout> | null = null;
   let totalsTab: 'summary' | 'schedule' | 'pack' = 'summary';
   let tabCard: HTMLElement;
+  let setupCard: HTMLElement;
   function switchTab(tab: typeof totalsTab) {
     totalsTab = tab;
     setTimeout(() => {
@@ -513,7 +514,7 @@
         <button
           class="flex items-center justify-center"
           style="width:34px;height:34px;border-radius:50%;background:#ffffff;"
-          on:click={() => { profileOpen = !profileOpen; if (profileOpen) rideOpen = false; }}
+          on:click={() => { profileOpen = !profileOpen; if (profileOpen) { rideOpen = false; setTimeout(() => setupCard?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); } }}
           aria-label="{weight > 0 && ftp > 0 ? 'Rider profile' : 'Set up rider profile'}">
           {#if weight > 0 && ftp > 0}
             <User class="w-4 h-4" style="color:#09090b;" />
@@ -573,7 +574,7 @@
     {/if}
 
     <!-- Unified setup card -->
-    <div class="mb-lg card-enter card-enter-2" style="background:#ffffff;border-radius:36px;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.04) 0px 4px 12px 0px;overflow:hidden;">
+    <div bind:this={setupCard} class="mb-lg card-enter card-enter-2" style="background:#ffffff;border-radius:36px;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.04) 0px 4px 12px 0px;overflow:hidden;">
 
     <!-- Rider Profile -->
     <div>

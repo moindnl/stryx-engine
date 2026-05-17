@@ -1136,36 +1136,36 @@
       on:click={() => showAboutSheet = false} role="presentation"
       transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[996] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
       on:touchstart={onSheetDragStart}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       transition:fly={{ duration: 300, y: 80 }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
 
       <!-- App identity -->
       <div class="flex items-center gap-md mb-lg">
         <img src="/favicon.svg" alt="" class="w-10 h-10 flex-shrink-0" style="border-radius:18%;" />
         <div>
-          <p class="text-heading-md font-extra-bold" style="color:#ffffff;">BananaSprocket</p>
-          <p class="text-caption-sm" style="color:rgba(255,255,255,0.45);">v{VERSION}</p>
+          <p class="text-heading-md font-extra-bold" style="color:#111111;">BananaSprocket</p>
+          <p class="text-caption-sm" style="color:rgba(17,17,17,0.4);">v{VERSION}</p>
         </div>
       </div>
 
-      <p class="text-body-md mb-lg" style="color:rgba(255,255,255,0.7);">Precision carbohydrate and fluid targets for cyclists — calculated from your FTP and planned ride power.</p>
+      <p class="text-body-md mb-lg" style="color:rgba(17,17,17,0.6);">Precision carbohydrate and fluid targets for cyclists — calculated from your FTP and planned ride power.</p>
 
-      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);margin-bottom:24px;">
-        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
-          <span style="color:rgba(255,255,255,0.55);font-size:14px;">Data storage</span>
-          <span style="color:#ffffff;font-weight:600;font-size:14px;">Device only</span>
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);margin-bottom:24px;">
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
+          <span style="color:rgba(17,17,17,0.5);font-size:14px;">Data storage</span>
+          <span style="color:#111111;font-weight:600;font-size:14px;">Device only</span>
         </div>
-        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
-          <span style="color:rgba(255,255,255,0.55);font-size:14px;">Server requests</span>
-          <span style="color:#ffffff;font-weight:600;font-size:14px;">None</span>
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
+          <span style="color:rgba(17,17,17,0.5);font-size:14px;">Server requests</span>
+          <span style="color:#111111;font-weight:600;font-size:14px;">None</span>
         </div>
         <div class="flex items-center justify-between px-lg py-md">
-          <span style="color:rgba(255,255,255,0.55);font-size:14px;">Works offline</span>
-          <span style="color:#ffffff;font-weight:600;font-size:14px;">Yes</span>
+          <span style="color:rgba(17,17,17,0.5);font-size:14px;">Works offline</span>
+          <span style="color:#111111;font-weight:600;font-size:14px;">Yes</span>
         </div>
       </div>
 
@@ -1177,7 +1177,7 @@
         </a>
         <button on:click={() => showAboutSheet = false}
           class="flex-1 py-3 rounded-full text-button-md font-extra-bold"
-          style="background:rgba(255,255,255,0.12);color:#ffffff;">
+          style="background:rgba(17,17,17,0.06);color:#111111;">
           Close
         </button>
       </div>
@@ -1189,19 +1189,19 @@
     <div class="fixed inset-0 z-[990] bg-black/40" style="backdrop-filter:blur(2px);"
       on:click={dismissChangelog} role="presentation" transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
       on:touchstart={onSheetDragStart}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       transition:fly={{ duration: 300, y: 80 }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
-      <p class="text-heading-md font-extra-bold mb-xs" style="color:#ffffff;">What's new</p>
-      <p class="text-caption-md mb-lg" style="color:rgba(255,255,255,0.5);">v{VERSION} · {BUILD_NAME}</p>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
+      <p class="text-heading-md font-extra-bold mb-xs" style="color:#111111;">What's new</p>
+      <p class="text-caption-md mb-lg" style="color:rgba(17,17,17,0.45);">v{VERSION} · {BUILD_NAME}</p>
       <ul style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
         {#each CHANGELOG_ITEMS as item}
           <li class="flex items-start gap-md">
             <span style="color:#f73b20;font-size:16px;line-height:1.4;flex-shrink:0;">·</span>
-            <span style="font-size:15px;color:rgba(255,255,255,0.85);line-height:1.5;">{item}</span>
+            <span style="font-size:15px;color:rgba(17,17,17,0.8);line-height:1.5;">{item}</span>
           </li>
         {/each}
       </ul>
@@ -1219,35 +1219,35 @@
       on:click={dismissInstallSheet} role="presentation" transition:fade={{ duration: 200 }}>
     </div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
       on:touchstart={onSheetDragStart}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       transition:fly={{ duration: 300, y: 80 }}>
       <!-- Drag handle -->
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
 
       <div class="mb-4">
-        <p class="text-heading-md font-extra-bold" style="color:#ffffff;">Works offline</p>
-        <p class="text-caption-md mt-1" style="color:rgba(255,255,255,0.6);">Save to home screen for instant access.</p>
+        <p class="text-heading-md font-extra-bold" style="color:#111111;">Works offline</p>
+        <p class="text-caption-md mt-1" style="color:rgba(17,17,17,0.55);">Save to home screen for instant access.</p>
       </div>
 
       {#if installPlatform === 'ios'}
         <ol class="space-y-3 text-body-md">
           <li class="flex items-start gap-3">
-            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">1</span>
+            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">1</span>
             <span>Tap the <strong>Share</strong> button at the bottom of Safari</span>
           </li>
           <li class="flex items-start gap-3">
-            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">2</span>
+            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">2</span>
             <span>Scroll down and tap <strong>Add to Home Screen</strong></span>
           </li>
           <li class="flex items-start gap-3">
-            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">3</span>
+            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">3</span>
             <span>Tap <strong>Add</strong> — done</span>
           </li>
         </ol>
-        <p class="text-caption-sm mt-4" style="color:rgba(255,255,255,0.5);">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
+        <p class="text-caption-sm mt-4" style="color:rgba(17,17,17,0.45);">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
       {:else}
         {#if deferredInstallPrompt}
           <button on:click={triggerInstall}
@@ -1258,21 +1258,21 @@
         {:else}
           <ol class="space-y-3 text-body-md">
             <li class="flex items-start gap-3">
-              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">1</span>
-              <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:rgba(255,255,255,0.5);">(top-right corner)</span></span>
+              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">1</span>
+              <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:rgba(17,17,17,0.4);">(top-right corner)</span></span>
             </li>
             <li class="flex items-start gap-3">
-              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">2</span>
+              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">2</span>
               <span>Tap <strong>Add to Home screen</strong> → <strong>Add</strong></span>
             </li>
           </ol>
-          <p class="text-caption-sm mt-4" style="color:rgba(255,255,255,0.5);">Chrome may also show an install banner at the bottom automatically.</p>
+          <p class="text-caption-sm mt-4" style="color:rgba(17,17,17,0.45);">Chrome may also show an install banner at the bottom automatically.</p>
         {/if}
       {/if}
 
       <button on:click={dismissInstallSheet}
         class="mt-6 w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:rgba(255,255,255,0.12);color:#ffffff;">
+        style="background:rgba(17,17,17,0.06);color:#111111;">
         Not now
       </button>
     </div>
@@ -1294,33 +1294,33 @@
       on:click={() => showImpressumSheet = false} role="presentation"
       transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
       on:touchstart={onSheetDragStart}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       transition:fly={{ duration: 300, y: 80 }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
-      <p class="text-heading-md font-extra-bold mb-lg" style="color:#ffffff;">Impressum</p>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:#111111;">Impressum</p>
 
-      <p class="text-caption-sm mb-xs" style="color:rgba(255,255,255,0.45);">Legal disclosure · § 5 TMG</p>
-      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);margin-bottom:20px;">
-        <div class="px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
-          <p style="color:#ffffff;font-size:14px;font-weight:600;">Daniel Muschinski</p>
-          <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:2px;">Freudenbegrstraße 4, 28213 Bremen</p>
+      <p class="text-caption-sm mb-xs" style="color:rgba(17,17,17,0.4);">Legal disclosure · § 5 TMG</p>
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);margin-bottom:20px;">
+        <div class="px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
+          <p style="color:#111111;font-size:14px;font-weight:600;">Daniel Muschinski</p>
+          <p style="color:rgba(17,17,17,0.45);font-size:13px;margin-top:2px;">Freudenbegrstraße 4, 28213 Bremen</p>
         </div>
-        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
-          <span style="color:rgba(255,255,255,0.55);font-size:14px;">Contact</span>
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
+          <span style="color:rgba(17,17,17,0.5);font-size:14px;">Contact</span>
           <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
             style="color:#f73b20;font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
         </div>
         <div class="px-lg py-md">
-          <p style="color:rgba(255,255,255,0.55);font-size:13px;line-height:1.5;">Private, non-commercial project. No personal data is collected or shared with third parties.</p>
+          <p style="color:rgba(17,17,17,0.5);font-size:13px;line-height:1.5;">Private, non-commercial project. No personal data is collected or shared with third parties.</p>
         </div>
       </div>
 
       <button on:click={() => showImpressumSheet = false}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:rgba(255,255,255,0.12);color:#ffffff;">
+        style="background:rgba(17,17,17,0.06);color:#111111;">
         Close
       </button>
     </div>
@@ -1332,16 +1332,16 @@
       on:click={() => showMathSheet = false} role="presentation"
       transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
       on:touchstart={onSheetDragStart}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       transition:fly={{ duration: 300, y: 80 }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
-      <p class="text-heading-md font-extra-bold mb-lg" style="color:#ffffff;">How the math works</p>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:#111111;">How the math works</p>
 
-      <div class="mb-lg" style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);">
-        <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:1fr auto auto;background:rgba(255,255,255,0.08);padding:8px 14px;color:rgba(255,255,255,0.45);letter-spacing:0.05em;">
+      <div class="mb-lg" style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);">
+        <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:1fr auto auto;background:rgba(17,17,17,0.04);padding:8px 14px;color:rgba(17,17,17,0.4);letter-spacing:0.05em;">
           <span>Zone</span><span class="text-right pr-4">% FTP</span><span class="text-right">Carbs</span>
         </div>
         {#each [
@@ -1351,21 +1351,21 @@
           { zone: 'Threshold', ftp: '90–105%', carbs: '60–90 g/h' },
           { zone: 'VO₂max+',   ftp: '>105%',   carbs: '90–120 g/h' },
         ] as row, i}
-          <div class="grid text-caption-sm" style="grid-template-columns:1fr auto auto;padding:10px 14px;{i % 2 === 1 ? 'background:rgba(255,255,255,0.04);' : ''}border-top:1px solid rgba(255,255,255,0.07);">
-            <span style="color:#ffffff;">{row.zone}</span>
-            <span class="text-right pr-4" style="color:rgba(255,255,255,0.5);">{row.ftp}</span>
-            <span class="text-right" style="color:rgba(255,255,255,0.75);">{row.carbs}</span>
+          <div class="grid text-caption-sm" style="grid-template-columns:1fr auto auto;padding:10px 14px;{i % 2 === 1 ? 'background:rgba(17,17,17,0.03);' : ''}border-top:1px solid rgba(17,17,17,0.06);">
+            <span style="color:#111111;">{row.zone}</span>
+            <span class="text-right pr-4" style="color:rgba(17,17,17,0.45);">{row.ftp}</span>
+            <span class="text-right" style="color:rgba(17,17,17,0.7);">{row.carbs}</span>
           </div>
         {/each}
       </div>
 
-      <p class="text-caption-sm mb-sm" style="color:rgba(255,255,255,0.55);">Fluids scale with body weight — sweat modifier adjusts ±20–30%.</p>
-      <p class="text-caption-sm mb-sm" style="color:rgba(255,255,255,0.55);">Heat: +0.3 L/h per 5°C above 20°C added to fluid target.</p>
-      <p class="text-caption-sm mb-lg" style="color:rgba(255,255,255,0.55);">Rides &gt;2h: add electrolytes — plain water dilutes sodium balance on long efforts.</p>
+      <p class="text-caption-sm mb-sm" style="color:rgba(17,17,17,0.5);">Fluids scale with body weight — sweat modifier adjusts ±20–30%.</p>
+      <p class="text-caption-sm mb-sm" style="color:rgba(17,17,17,0.5);">Heat: +0.3 L/h per 5°C above 20°C added to fluid target.</p>
+      <p class="text-caption-sm mb-lg" style="color:rgba(17,17,17,0.5);">Rides &gt;2h: add electrolytes — plain water dilutes sodium balance on long efforts.</p>
 
       <button on:click={() => showMathSheet = false}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:rgba(255,255,255,0.12);color:#ffffff;">
+        style="background:rgba(17,17,17,0.06);color:#111111;">
         Close
       </button>
     </div>

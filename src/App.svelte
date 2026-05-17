@@ -1160,22 +1160,13 @@
     {/if}
 
     <!-- Footer -->
-    <div class="text-center -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));padding-top:1.5rem;">
-      <div class="flex items-center justify-center gap-xs mb-lg">
-        <span class="text-caption-sm text-[--color-stone]" style="font-weight:600;">Banana</span>
-        <img src="/favicon.svg" alt=""
-          class="w-5 h-5 flex-shrink-0"
-          style="border-radius:18%;box-shadow:0 0 0 1px rgba(180,100,0,0.25),0 0 6px rgba(180,100,0,0.12);" />
-        <span class="text-caption-sm text-[--color-stone]" style="font-weight:600;">Sprocket</span>
-      </div>
-      <div class="flex justify-center items-center gap-md">
-        <button on:click={() => showMathSheet = true}
-          class="text-caption-sm text-[--color-mute]"
-          style="padding:6px 16px;border-radius:9999px;border:1px solid var(--color-hairline);transition:background 0.2s ease;">How the math works</button>
-        <button on:click={() => showRiderCard = true}
-          class="text-caption-sm text-[--color-mute]"
-          style="padding:6px 16px;border-radius:9999px;border:1px solid var(--color-hairline);transition:background 0.2s ease;">v{VERSION} · {BUILD_NAME}</button>
-      </div>
+    <div class="flex justify-center items-center gap-md -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-top:1.25rem;padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));">
+      <button on:click={() => showMathSheet = true}
+        class="text-caption-sm text-[--color-mute]"
+        style="padding:6px 16px;border-radius:9999px;border:1px solid var(--color-hairline);transition:background 0.2s ease;">How the math works</button>
+      <button on:click={() => showRiderCard = true}
+        class="text-caption-sm text-[--color-mute]"
+        style="padding:6px 16px;border-radius:9999px;border:1px solid var(--color-hairline);transition:background 0.2s ease;">About · v{VERSION}</button>
     </div>
 
   </div>

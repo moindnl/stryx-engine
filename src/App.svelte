@@ -1114,14 +1114,18 @@
     {/if}
 
     <!-- Footer -->
-    <div class="flex flex-wrap justify-center items-center gap-x-lg gap-y-sm -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-top:1.25rem;padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));">
-      <span class="text-caption-sm text-[--color-stone]">© 2026 BananaSprocket</span>
-      <button on:click={() => showMathSheet = true}
-        class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">How the math works</button>
-      <button on:click={() => showImpressumSheet = true}
-        class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">Impressum</button>
-      <button on:click={() => showAboutSheet = true}
-        class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">About · v{VERSION}</button>
+    <div class="flex flex-col items-center gap-sm -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-top:1.25rem;padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));">
+      <div class="flex items-center gap-lg">
+        <button on:click={() => showMathSheet = true}
+          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">How the math works</button>
+        <button on:click={() => showAboutSheet = true}
+          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">About · v{VERSION}</button>
+      </div>
+      <div class="flex items-center gap-lg">
+        <span class="text-caption-sm text-[--color-stone]">© 2026 BananaSprocket</span>
+        <button on:click={() => showImpressumSheet = true}
+          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">Impressum</button>
+      </div>
     </div>
 
   </div>

@@ -489,7 +489,7 @@
     <div class="fixed top-0 left-0 right-0 z-[1000] flex justify-center pt-3 px-4 pointer-events-none"
       transition:fly={{ y: -48, duration: 300, easing: cubicOut }}>
       <div class="inline-flex items-center gap-sm rounded-full pointer-events-auto"
-        style="background:#111111;color:#ffffff;box-shadow:0 4px 20px rgba(0,0,0,0.35);padding:6px 6px 6px 16px;">
+        style="background:#09090b;color:#ffffff;box-shadow:0 4px 20px rgba(0,0,0,0.35);padding:6px 6px 6px 16px;">
         <RefreshCw class="w-3.5 h-3.5 flex-shrink-0" style="color:rgba(255,255,255,0.55);" />
         <span class="text-caption-sm" style="color:rgba(255,255,255,0.8);">New version available</span>
         <button on:click={() => doUpdateSW()}
@@ -874,7 +874,7 @@
       {#if powerDerived}
         <div class="flex items-center gap-sm flex-wrap">
           <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}% FTP</span>
-          <span class="badge-black" style="background:#f73b20;color:#ffffff;">~{Math.round($animatedKcalPerHour)} kcal/h</span>
+          <span class="badge-black" style="background:var(--color-accent);color:#ffffff;">~{Math.round($animatedKcalPerHour)} kcal/h</span>
         </div>
       {:else}
         <p class="text-caption-sm text-[--color-mute]">Enter FTP and ride power to see zone</p>

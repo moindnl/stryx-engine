@@ -537,7 +537,7 @@
           <button
             class="relative flex items-center justify-center"
             style="width:32px;height:32px;border-radius:50%;background:var(--color-hairline-soft);"
-            on:click={() => { profileOpen = true; rideOpen = false; }}
+            on:click={() => { profileOpen = !profileOpen; if (profileOpen) rideOpen = false; }}
             aria-label="Rider profile set">
             <User class="w-4 h-4 text-[--color-ink]" />
             <span class="absolute" style="top:1px;right:1px;width:9px;height:9px;border-radius:50%;background:#34c759;border:1.5px solid var(--color-canvas);"></span>

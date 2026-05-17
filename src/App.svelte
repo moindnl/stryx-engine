@@ -681,11 +681,9 @@
 
     <!-- Ride Input -->
     <div>
-      <div
+      <button
         class="w-full flex items-center justify-between p-lg text-left cursor-pointer focus:outline-none"
         on:click={() => { rideOpen = !rideOpen; if (rideOpen) profileOpen = false; }}
-        on:keydown={(e) => e.key === 'Enter' && (rideOpen = !rideOpen)}
-        role="button" tabindex="0"
         aria-expanded={rideOpen}
       >
         <span class="text-heading-md font-bold text-[--color-ink]">{$t.rideLabel}</span>
@@ -700,20 +698,18 @@
             </span>
           {/if}
           {#if !rideOpen && (duration > 0 || distance > 0 || power > 0)}
-            <button
+            <span
+              role="button" tabindex="0"
               on:click|stopPropagation={resetInputs}
-              on:mousedown|stopPropagation={startHold} on:mouseup|stopPropagation={cancelHold} on:mouseleave|stopPropagation={cancelHold}
-              on:touchstart|preventDefault|stopPropagation={startHold} on:touchend|stopPropagation={cancelHold} on:touchcancel|stopPropagation={cancelHold}
-              on:contextmenu|preventDefault
-              class="flex items-center justify-center"
-              style="width:30px;height:30px;border-radius:50%;background:#f4f4f5;flex-shrink:0;touch-action:manipulation;"
-              aria-label="Reset ride inputs">
-              <RotateCcw class="w-3.5 h-3.5 text-[--color-ink]" />
-            </button>
+              on:keydown|stopPropagation={(e) => e.key === 'Enter' && resetInputs()}
+              class="text-caption-sm text-[--color-mute] underline underline-offset-2 cursor-pointer"
+              style="flex-shrink:0;">
+              {$t.resetRide}
+            </span>
           {/if}
           <ChevronDown class="w-4 h-4 text-[--color-ink] transition-transform duration-200 {rideOpen ? 'rotate-180' : ''}" />
         </div>
-      </div>
+      </button>
 
       {#if rideOpen}
         <div transition:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;"

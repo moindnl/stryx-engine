@@ -129,6 +129,15 @@
   let neuralizer = false;        // easter egg F: neuralyzer flash
   let holdTimer: ReturnType<typeof setTimeout> | null = null;
   let totalsTab: 'summary' | 'schedule' | 'pack' = 'summary';
+  let tabCard: HTMLElement;
+  function switchTab(tab: typeof totalsTab) {
+    totalsTab = tab;
+    setTimeout(() => {
+      if (!tabCard) return;
+      const y = tabCard.getBoundingClientRect().top + window.scrollY - 76; // 64px header + 12px gap
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }, 0);
+  }
   let checkedPack: Set<string> = new Set();
   function togglePack(id: string) {
     if (checkedPack.has(id)) checkedPack.delete(id); else checkedPack.add(id);
@@ -250,9 +259,19 @@
     deferredInstallPrompt = null;
     if (outcome === 'accepted') installPlatform = null;
   }
-  // Only save after initial load — prevents wiping storage during init
+  // Only save after initial load — debounced to avoid writing on every keystroke
   let _profileReady = false;
-  $: if (_profileReady) localStorage.setItem('bp-profile', JSON.stringify({ weight, ftp, imperial, sweatRate }));
+  let _saveTimer: ReturnType<typeof setTimeout> | null = null;
+  $: if (_profileReady) {
+    if (_saveTimer) clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(() => {
+      localStorage.setItem('bp-profile', JSON.stringify({ weight, ftp, imperial, sweatRate }));
+    }, 600);
+  }
+
+  // Guide: hide once both weight + ftp set; never re-show (avoids flicker on delete)
+  let _guideSeen = false;
+  $: if (weight > 0 && ftp > 0) _guideSeen = true;
 
   // Reset per-ride inputs only; profile persists
   function resetInputs() {
@@ -503,7 +522,7 @@
   {/if}
 
   <!-- App Header — compact bar -->
-  <header class="w-full rounded-b-[20px]" style="height:56px;background:var(--color-soft-cloud);">
+  <header class="w-full rounded-b-[20px]" style="height:64px;background:var(--color-soft-cloud);">
     <div class="max-w-6xl mx-auto px-lg h-full flex items-center justify-between">
       <!-- Logo -->
       <div class="flex items-center gap-sm">
@@ -515,10 +534,13 @@
       <!-- Right chips -->
       <div class="flex items-center gap-sm">
         {#if weight > 0 && ftp > 0}
-          <button class="badge text-caption-sm flex items-center gap-xs"
-            on:click={() => { profileOpen = true; rideOpen = false; }}>
-            <User class="w-3 h-3" />
-            {weight}{imperial ? 'lb' : 'kg'} · {ftp}W
+          <button
+            class="relative flex items-center justify-center"
+            style="width:32px;height:32px;border-radius:50%;background:var(--color-hairline-soft);"
+            on:click={() => { profileOpen = true; rideOpen = false; }}
+            aria-label="Rider profile set">
+            <User class="w-4 h-4 text-[--color-ink]" />
+            <span class="absolute" style="top:1px;right:1px;width:9px;height:9px;border-radius:50%;background:#34c759;border:1.5px solid var(--color-canvas);"></span>
           </button>
         {/if}
         {#if showWhatsNew}
@@ -535,7 +557,7 @@
   <div class="max-w-6xl mx-auto p-sm md:p-md lg:p-lg">
 
     <!-- 3-step how-to — shown on first visit or on demand -->
-    {#if !(weight > 0 || ftp > 0)}
+    {#if !_guideSeen}
     <div transition:fade={{ duration: 200 }} class="mb-lg md:mb-section card-enter card-enter-1">
       <!-- Mobile: horizontal swipe cards -->
       <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;" tabindex="0" role="region" aria-label="Result cards">
@@ -950,19 +972,19 @@
     </div>
 
     <!-- Totals + Fueling Schedule + Bottle Planner — tabbed dark card -->
-    <div class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-5">
+    <div bind:this={tabCard} class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-5">
 
       <!-- Tab bar -->
       <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:20px;padding:3px;">
         <button
           style={tabStyle('summary', totalsTab)}
-          on:click={() => (totalsTab = 'summary')}>Totals</button>
+          on:click={() => switchTab('summary')}>Totals</button>
         <button
           style={tabStyle('schedule', totalsTab)}
-          on:click={() => (totalsTab = 'schedule')}>Schedule</button>
+          on:click={() => switchTab('schedule')}>Schedule</button>
         <button
           style={tabStyle('pack', totalsTab)}
-          on:click={() => (totalsTab = 'pack')}>Pack</button>
+          on:click={() => switchTab('pack')}>Pack</button>
       </div>
 
       <!-- Totals tab -->
@@ -1118,17 +1140,22 @@
     {/if}
 
     <!-- Footer -->
-    <div class="flex flex-col items-center gap-sm -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-top:1.25rem;padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));">
-      <div class="flex items-center gap-lg">
-        <button on:click={() => showMathSheet = true}
-          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">How the math works</button>
-        <button on:click={() => showAboutSheet = true}
-          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">About · v{VERSION}</button>
-      </div>
-      <div class="flex items-center gap-lg">
-        <span class="text-caption-sm text-[--color-stone]">© 2026 bonkproof</span>
-        <button on:click={() => showImpressumSheet = true}
-          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">Legal Notice</button>
+    <div style="border-top:1px solid var(--color-hairline);padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 24px));">
+      <div class="flex items-center justify-between flex-wrap gap-xs" style="padding:12px 0;">
+        <span class="text-caption-sm" style="color:var(--color-stone);padding:4px 0;">© 2026 bonkproof</span>
+        <div class="flex items-center flex-wrap">
+          <button on:click={() => showMathSheet = true}
+            class="text-caption-sm text-[--color-mute] hover:text-[--color-ink]"
+            style="padding:8px 10px;transition:color 0.15s;">How it works</button>
+          <span style="color:var(--color-hairline);user-select:none;">·</span>
+          <button on:click={() => showAboutSheet = true}
+            class="text-caption-sm text-[--color-mute] hover:text-[--color-ink]"
+            style="padding:8px 10px;transition:color 0.15s;">About</button>
+          <span style="color:var(--color-hairline);user-select:none;">·</span>
+          <button on:click={() => showImpressumSheet = true}
+            class="text-caption-sm text-[--color-mute] hover:text-[--color-ink]"
+            style="padding:8px 10px;transition:color 0.15s;">Legal</button>
+        </div>
       </div>
     </div>
 

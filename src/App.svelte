@@ -479,11 +479,9 @@
   ];
 
   function tabStyle(tab: string, active: string): string {
-    return `${active === tab ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;`;
+    return `${active === tab ? 'background:#ffffff;color:#09090b;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;`;
   }
 </script>
-
-<div aria-hidden="true" style="position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#fdd5c2 0%,#fbd0be 25%,#fef0ec 65%,#fde8e0 100%);"></div>
 
 <main class="min-h-screen">
 
@@ -497,14 +495,14 @@
         <span class="text-caption-sm" style="color:rgba(255,255,255,0.8);">New version available</span>
         <button on:click={() => doUpdateSW()}
           class="text-caption-sm font-extra-bold rounded-full"
-          style="background:#f73b20;color:#ffffff;padding:6px 14px;white-space:nowrap;">Update now</button>
+          style="background:#09090b;color:#ffffff;padding:6px 14px;white-space:nowrap;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">Update now</button>
       </div>
     </div>
   {/if}
 
   <!-- App Header — floating bar -->
   <header class="w-full" style="padding:12px 16px 0;position:sticky;top:0;z-index:100;">
-    <div style="max-width:640px;margin:0 auto;height:52px;background:#f73b20;border-radius:9999px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 24px rgba(247,59,32,0.35),0 1px 4px rgba(247,59,32,0.2);">
+    <div style="max-width:640px;margin:0 auto;height:52px;background:#09090b;border-radius:9999px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">
       <!-- Logo -->
       <div class="flex items-center gap-sm">
         <img src="/favicon.svg" alt="" class="w-7 h-7 block flex-shrink-0" style="border-radius:18%;" />
@@ -519,14 +517,14 @@
           on:click={() => { profileOpen = !profileOpen; if (profileOpen) rideOpen = false; }}
           aria-label="{weight > 0 && ftp > 0 ? 'Rider profile' : 'Set up rider profile'}">
           {#if weight > 0 && ftp > 0}
-            <User class="w-4 h-4" style="color:#f73b20;" />
+            <User class="w-4 h-4" style="color:#09090b;" />
           {:else}
-            <UserX class="w-4 h-4" style="color:#f73b20;" />
+            <UserX class="w-4 h-4" style="color:#09090b;" />
           {/if}
         </button>
         {#if updateAvailable}
           <button class="text-caption-sm font-bold flex items-center gap-xs"
-            style="background:#ffffff;color:#f73b20;border-radius:20px;padding:5px 12px;"
+            style="background:#ffffff;color:#09090b;border-radius:9999px;padding:5px 12px;"
             on:click={() => doUpdateSW()}>
             <RefreshCw class="w-3 h-3" />
             Update
@@ -545,10 +543,10 @@
       <!-- Mobile: horizontal swipe cards -->
       <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;" tabindex="0" role="region" aria-label="Result cards">
         {#each HOW_TO_STEPS as step, i}
-          <div class="snap-center shrink-0 w-[78%] card-soft rounded-sm overflow-hidden shimmer-once flex"
+          <div class="snap-center shrink-0 w-[78%] overflow-hidden shimmer-once flex" style="background:#ececee;border-radius:28px;"
             style="--shimmer-delay:{0.5 + i * 0.1}s"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
-            <div class="flex items-center justify-center flex-shrink-0" style="background:#f73b20;min-width:56px;padding:0 18px 0 14px;clip-path:polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);">
+            <div class="flex items-center justify-center flex-shrink-0" style="background:#09090b;min-width:56px;padding:0 18px 0 14px;clip-path:polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);">
               <span class="text-lg font-bold" style="color:#ffffff;">{step.n}</span>
             </div>
             <div class="p-lg space-y-xs">
@@ -559,11 +557,11 @@
         {/each}
       </div>
       <!-- Desktop: 3-column grid -->
-      <div class="hidden md:grid grid-cols-3 gap-lg card-soft rounded-sm overflow-hidden">
+      <div class="hidden md:grid grid-cols-3 gap-lg overflow-hidden" style="background:#ececee;border-radius:28px;">
         {#each HOW_TO_STEPS as step, i}
           <div class="flex flex-col"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
-            <div class="flex items-center justify-center py-md" style="background:#f73b20;">
+            <div class="flex items-center justify-center py-md" style="background:#09090b;">
               <span class="text-lg font-bold" style="color:#ffffff;">{step.n}</span>
             </div>
             <div class="p-lg space-y-xs flex-1">
@@ -577,7 +575,7 @@
     {/if}
 
     <!-- Unified setup card -->
-    <div class="liquid-glass rounded-sm mb-lg card-enter card-enter-2">
+    <div class="mb-lg card-enter card-enter-2" style="background:#ffffff;border-radius:36px;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.04) 0px 4px 12px 0px;overflow:hidden;">
 
     <!-- Rider Profile -->
     <div>
@@ -610,14 +608,14 @@
             <div class="flex items-center gap-xs">
               <input id="weight" type="number" bind:value={weight} min="1" max="400" step="1" placeholder="75"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:20px;border:1px solid #cacacb;padding:0 14px;background:#fff;"
+                style="height:44px;border-radius:14px;border:1px solid #d4d4d8;padding:0 14px;background:#fff;"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">{imperial ? 'lbs' : 'kg'}</span>
             </div>
           </div>
 
           <!-- FTP -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--color-hairline);">
+          <div class="flex items-center justify-between py-lg" style="border-top:1px solid #ececee;">
             <div>
               <label for="ftp" class="text-caption-md font-bold text-[--color-ink] block">FTP</label>
               <span class="text-caption-sm text-[--color-mute]">Max 1-hour power</span>
@@ -625,38 +623,38 @@
             <div class="flex items-center gap-xs">
               <input id="ftp" type="number" bind:value={ftp} min="0" max="600" step="1" placeholder="280"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:20px;border:1px solid #cacacb;padding:0 14px;background:#fff;"
+                style="height:44px;border-radius:14px;border:1px solid #d4d4d8;padding:0 14px;background:#fff;"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">W</span>
             </div>
           </div>
 
           <!-- Units -->
-          <div class="flex items-center justify-between py-lg gap-md flex-wrap" style="border-top:1px solid var(--color-hairline);">
+          <div class="flex items-center justify-between py-lg gap-md flex-wrap" style="border-top:1px solid #ececee;">
             <span class="text-caption-md font-bold text-[--color-ink]">Units</span>
-            <div style="display:flex;border-radius:20px;border:1px solid #cacacb;overflow:hidden;background:#f5f5f5;">
+            <div style="display:flex;border-radius:14px;border:1px solid #d4d4d8;overflow:hidden;background:#f4f4f5;">
               <button
-                style="{!imperial ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#5f5f61;'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                style="{!imperial ? 'background:#09090b;color:#ffffff;' : 'background:transparent;color:#71717a;'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
                 on:click={() => { if (imperial) toggleImperial(); }}>km / kg</button>
               <button
-                style="{imperial ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#5f5f61;'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                style="{imperial ? 'background:#09090b;color:#ffffff;' : 'background:transparent;color:#71717a;'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
                 on:click={() => { if (!imperial) toggleImperial(); }}>mi / lbs</button>
             </div>
           </div>
 
           <!-- Sweat Rate -->
-          <div class="flex items-center justify-between py-lg gap-md" style="border-top:1px solid var(--color-hairline);">
+          <div class="flex items-center justify-between py-lg gap-md" style="border-top:1px solid #ececee;">
             <div class="flex-shrink-0">
               <span class="text-caption-md font-bold text-[--color-ink] block">Sweat Rate</span>
               <span class="text-caption-sm text-[--color-mute]">
                 {sweatRate === 'light' ? '−20% fluid' : sweatRate === 'heavy' ? '+30% fluid' : 'Baseline'}
               </span>
             </div>
-            <div style="display:flex;border-radius:20px;border:1px solid #cacacb;overflow:hidden;background:#f5f5f5;flex-shrink:0;">
+            <div style="display:flex;border-radius:14px;border:1px solid #d4d4d8;overflow:hidden;background:#f4f4f5;flex-shrink:0;">
               {#each SWEAT_LEVELS as { value, drops }}
                 <button
                   class="flex items-center gap-[2px]"
-                  style="{sweatRate === value ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#5f5f61;'}padding:8px 16px;transition:background 0.15s,color 0.15s;"
+                  style="{sweatRate === value ? 'background:#09090b;color:#ffffff;' : 'background:transparent;color:#71717a;'}padding:8px 16px;transition:background 0.15s,color 0.15s;"
                   aria-label="{value.charAt(0).toUpperCase() + value.slice(1)} sweat rate"
                   aria-pressed={sweatRate === value}
                   on:click={() => (sweatRate = value)}>
@@ -705,14 +703,14 @@
             <div class="flex items-center gap-xs">
               <input id="distance" type="number" bind:value={distance} min="1" max="500" step="1" placeholder="0"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:20px;border:1px solid #cacacb;padding:0 14px;background:#fff;"
+                style="height:44px;border-radius:14px;border:1px solid #d4d4d8;padding:0 14px;background:#fff;"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">{imperial ? 'mi' : 'km'}</span>
             </div>
           </div>
 
           <!-- Duration -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--color-hairline);">
+          <div class="flex items-center justify-between py-lg" style="border-top:1px solid #ececee;">
             <div>
               <label for="duration" class="text-caption-md font-bold text-[--color-ink] block">Duration</label>
               <p class="text-utility-xs text-[--color-stone] mt-xxs">e.g. 1:30 or 1.5 for 1h 30min</p>
@@ -721,14 +719,14 @@
               <input id="duration" type="text" inputmode="decimal" bind:value={durationRaw}
                 placeholder="1:30"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:20px;border:1px solid #cacacb;padding:0 14px;background:#fff;"
+                style="height:44px;border-radius:14px;border:1px solid #d4d4d8;padding:0 14px;background:#fff;"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">h</span>
             </div>
           </div>
 
           <!-- Power -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--color-hairline);">
+          <div class="flex items-center justify-between py-lg" style="border-top:1px solid #ececee;">
             <div>
               <label for="power" class="text-caption-md font-bold text-[--color-ink] block">Ride Power</label>
               <span class="text-caption-sm text-[--color-mute]">Planned average</span>
@@ -736,14 +734,14 @@
             <div class="flex items-center gap-xs">
               <input id="power" type="number" bind:value={power} min="0" max="600" step="1" placeholder="200"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:20px;border:1px solid #cacacb;padding:0 14px;background:#fff;"
+                style="height:44px;border-radius:14px;border:1px solid #d4d4d8;padding:0 14px;background:#fff;"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">W</span>
             </div>
           </div>
 
           <!-- Zone (derived) -->
-          <div class="flex items-center justify-between py-md" style="border-top:1px solid var(--color-hairline);">
+          <div class="flex items-center justify-between py-md" style="border-top:1px solid #ececee;">
             <span class="text-caption-md font-bold text-[--color-ink]">Zone</span>
             <div class="flex items-center">
               {#if powerDerived && zoneLabel}
@@ -760,7 +758,7 @@
           </div>
 
           <!-- Temperature -->
-          <div class="py-lg" style="border-top:1px solid var(--color-hairline);">
+          <div class="py-lg" style="border-top:1px solid #ececee;">
             <div class="flex items-center justify-between mb-sm">
               <label for="temperature" class="text-caption-md font-bold text-[--color-ink]">Temperature</label>
               <!-- °C intentional — heat formula is Celsius-based regardless of unit preference -->
@@ -799,9 +797,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-3">
 
       <!-- Carbs card -->
-      <div class="liquid-glass rounded-sm p-lg">
+      <div class="p-lg" style="background:#ffffff;border-radius:36px;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.04) 0px 4px 12px 0px;">
         <div class="flex items-start gap-md mb-lg">
-          <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
+          <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:#ececee;border-radius:14px;">
             <Wheat class="w-7 h-7 text-[--color-ink]" />
           </div>
           <div class="min-w-0">
@@ -812,7 +810,7 @@
         <div class="mb-sm">
           <div class="flex items-baseline gap-sm">
             {#key carbsPerHour}
-              <span class="text-7xl md:text-8xl font-extra-bold {carbsPerHour > 0 ? 'num-flash' : ''}" style="color:{carbsPerHour > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{Math.round($animatedCarbs)}</span>
+              <span class="text-7xl md:text-8xl font-extra-bold {carbsPerHour > 0 ? 'num-flash' : ''}" style="color:{carbsPerHour > 0 ? 'var(--color-ink)' : '#d4d4d8'};transition:color 0.3s ease;">{Math.round($animatedCarbs)}</span>
             {/key}
             <span class="text-3xl text-[--color-mute]">g/h</span>
           </div>
@@ -830,9 +828,9 @@
       </div>
 
       <!-- Fluids card -->
-      <div class="liquid-glass rounded-sm p-lg">
+      <div class="p-lg" style="background:#ffffff;border-radius:36px;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.04) 0px 4px 12px 0px;">
         <div class="flex items-start gap-md mb-lg">
-          <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
+          <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:#ececee;border-radius:14px;">
             <Droplet class="w-7 h-7 text-[--color-ink]" />
           </div>
           <div class="min-w-0">
@@ -843,7 +841,7 @@
         <div class="mb-sm">
           <div class="flex items-baseline gap-sm">
             {#key fluidPerHour}
-              <span class="text-7xl md:text-8xl font-extra-bold {fluidPerHour > 0 ? 'num-flash' : ''}" style="color:{fluidPerHour > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{$animatedFluid.toFixed(1)}</span>
+              <span class="text-7xl md:text-8xl font-extra-bold {fluidPerHour > 0 ? 'num-flash' : ''}" style="color:{fluidPerHour > 0 ? 'var(--color-ink)' : '#d4d4d8'};transition:color 0.3s ease;">{$animatedFluid.toFixed(1)}</span>
             {/key}
             <span class="text-3xl text-[--color-mute]">L/h</span>
           </div>
@@ -859,9 +857,9 @@
     </div>
 
     <!-- Results Row 2: Power (+ speed when available) -->
-    <div class="liquid-glass rounded-sm p-lg mb-lg card-enter card-enter-4">
+    <div class="p-lg mb-lg card-enter card-enter-4" style="background:#ffffff;border-radius:36px;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.04) 0px 4px 12px 0px;">
       <div class="flex items-start gap-md mb-lg">
-        <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
+        <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:#ececee;border-radius:14px;">
           <Zap class="w-7 h-7 text-[--color-ink]" />
         </div>
         <div class="min-w-0">
@@ -871,7 +869,7 @@
       </div>
       <div class="mb-md">
         <div class="flex items-baseline gap-sm">
-          <span class="text-7xl md:text-8xl font-extra-bold" style="color:{power > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{power ?? 0}</span>
+          <span class="text-7xl md:text-8xl font-extra-bold" style="color:{power > 0 ? 'var(--color-ink)' : '#d4d4d8'};transition:color 0.3s ease;">{power ?? 0}</span>
           <span class="text-3xl text-[--color-mute]">W</span>
         </div>
       </div>
@@ -884,7 +882,7 @@
         <p class="text-caption-sm text-[--color-mute]">Enter FTP and ride power to see zone</p>
       {/if}
       {#if speedKmh > 0}
-        <div class="flex items-center justify-between mt-md pt-md" style="border-top:1px solid var(--color-hairline);">
+        <div class="flex items-center justify-between mt-md pt-md" style="border-top:1px solid #ececee;">
           <div class="flex items-baseline gap-sm">
             <span class="text-heading-md font-bold text-[--color-ink]">{Math.round($animatedSpeed)}</span>
             <span class="text-caption-md text-[--color-mute]">{speedUnit}</span>
@@ -902,7 +900,7 @@
     </div>
 
     <!-- Totals + Fueling Schedule + Bottle Planner — tabbed dark card -->
-    <div bind:this={tabCard} class="liquid-glass-dark rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-5">
+    <div bind:this={tabCard} class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-5">
 
       <!-- Tab bar -->
       <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:20px;padding:3px;">
@@ -1045,9 +1043,9 @@
                   <button
                     class="flex items-center gap-md text-left"
                     on:click={() => togglePack(item.id)}>
-                    <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid {checked ? '#f73b20' : 'rgba(255,255,255,0.25)'};background:{checked ? '#f73b20' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+                    <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid {checked ? '#ffffff' : 'rgba(255,255,255,0.25)'};background:{checked ? '#ffffff' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
                       {#if checked}
-                        <Check class="w-3 h-3" style="color:#ffffff;" />
+                        <Check class="w-3 h-3" style="color:#09090b;" />
                       {/if}
                     </div>
                     <span style="font-size:14px;color:{checked ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.85)'};text-decoration:{checked ? 'line-through' : 'none'};transition:color 0.15s;">{item.label}</span>
@@ -1063,14 +1061,14 @@
 
     {:else}
     <!-- Results empty state -->
-    <div class="liquid-glass rounded-sm py-md px-lg text-center mb-xl card-enter card-enter-3"
+    <div class="awesomic-card rounded-sm py-md px-lg text-center mb-xl card-enter card-enter-3"
       transition:fade={{ duration: 200 }}>
       <p class="text-caption-md text-[--color-mute]">Enter duration and weight to see results.</p>
     </div>
     {/if}
 
     <!-- Footer -->
-    <div style="border-top:1px solid var(--color-hairline);padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 24px));">
+    <div style="border-top:1px solid #ececee;padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 24px));">
       <div class="flex items-center justify-between flex-wrap gap-xs" style="padding:12px 0;">
         <span class="text-caption-sm" style="color:var(--color-stone);padding:4px 0;">© 2026 Daniel Muschinski</span>
         <div class="flex items-center flex-wrap">
@@ -1093,53 +1091,53 @@
 
   <!-- About sheet -->
   {#if showAboutSheet}
-    <div class="fixed inset-0 z-[995] bg-black/40" style="backdrop-filter:blur(2px);"
+    <div class="fixed inset-0 z-[995] bg-black/40"
       on:click={() => showAboutSheet = false} role="presentation"
       transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[996] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      style="background:#ffffff;color:#18181b;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.12) 0px -4px 24px 0px;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showAboutSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 420, duration: 380, easing: cubicOut }}
       out:fly={{ y: 420, duration: 260, easing: cubicIn }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.20);"></div>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#d4d4d8;"></div>
 
       <!-- App identity -->
       <div class="flex items-center gap-md mb-lg">
         <img src="/favicon.svg" alt="" class="w-10 h-10 flex-shrink-0" style="border-radius:18%;" />
         <div>
-          <p class="text-heading-md font-extra-bold" style="color:#111111;">bonkproof</p>
-          <p class="text-caption-sm" style="color:rgba(17,17,17,0.65);">v{VERSION}</p>
+          <p class="text-heading-md font-extra-bold" style="color:#18181b;">bonkproof</p>
+          <p class="text-caption-sm" style="color:#71717a;">v{VERSION}</p>
         </div>
       </div>
 
-      <p class="text-body-md mb-lg" style="color:rgba(17,17,17,0.75);">Precision carbohydrate and fluid targets for cyclists — calculated from your FTP and planned ride power.</p>
+      <p class="text-body-md mb-lg" style="color:#52525b;">Precision carbohydrate and fluid targets for cyclists — calculated from your FTP and planned ride power.</p>
 
-      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);margin-bottom:24px;">
-        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
-          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Data storage</span>
-          <span style="color:#111111;font-weight:600;font-size:14px;">Device only</span>
+      <div style="border-radius:14px;overflow:hidden;border:1px solid #ececee;margin-bottom:24px;">
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid #ececee;">
+          <span style="color:#71717a;font-size:14px;">Data storage</span>
+          <span style="color:#18181b;font-weight:600;font-size:14px;">Device only</span>
         </div>
-        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
-          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Server requests</span>
-          <span style="color:#111111;font-weight:600;font-size:14px;">None</span>
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid #ececee;">
+          <span style="color:#71717a;font-size:14px;">Server requests</span>
+          <span style="color:#18181b;font-weight:600;font-size:14px;">None</span>
         </div>
         <div class="flex items-center justify-between px-lg py-md">
-          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Works offline</span>
-          <span style="color:#111111;font-weight:600;font-size:14px;">Yes</span>
+          <span style="color:#71717a;font-size:14px;">Works offline</span>
+          <span style="color:#18181b;font-weight:600;font-size:14px;">Yes</span>
         </div>
       </div>
 
       <div class="flex gap-sm">
         <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
           class="flex-1 py-3 rounded-full text-button-md font-extra-bold text-center"
-          style="background:#f73b20;color:#ffffff;text-decoration:none;">
+          style="background:#09090b;color:#ffffff;text-decoration:none;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">
           GitHub <ExternalLink size={14} style="display:inline;vertical-align:middle;margin-left:4px;" />
         </a>
         <button on:click={() => showAboutSheet = false}
           class="flex-1 py-3 rounded-full text-button-md font-extra-bold"
-          style="background:rgba(17,17,17,0.08);color:#111111;">
+          style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
           Close
         </button>
       </div>
@@ -1148,65 +1146,65 @@
 
   <!-- PWA install bottom sheet -->
   {#if installPlatform}
-    <div class="fixed inset-0 z-[990] bg-black/40" style="backdrop-filter:blur(2px);"
+    <div class="fixed inset-0 z-[990] bg-black/40"
       on:click={dismissInstallSheet} role="presentation" transition:fade={{ duration: 200 }}>
     </div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      style="background:#ffffff;color:#18181b;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.12) 0px -4px 24px 0px;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
       on:touchstart={(e) => onSheetDragStart(e, dismissInstallSheet)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 420, duration: 380, easing: cubicOut }}
       out:fly={{ y: 420, duration: 260, easing: cubicIn }}>
       <!-- Drag handle -->
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.20);"></div>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#d4d4d8;"></div>
 
       <div class="mb-4">
-        <p class="text-heading-md font-extra-bold" style="color:#111111;">Works offline</p>
-        <p class="text-caption-md mt-1" style="color:rgba(17,17,17,0.65);">Save to home screen for instant access.</p>
+        <p class="text-heading-md font-extra-bold" style="color:#18181b;">Works offline</p>
+        <p class="text-caption-md mt-1" style="color:#71717a;">Save to home screen for instant access.</p>
       </div>
 
       {#if installPlatform === 'ios'}
         <ol class="space-y-3 text-body-md">
           <li class="flex items-start gap-3">
-            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">1</span>
+            <span class="badge text-xs shrink-0 mt-0.5">1</span>
             <span>Tap the <strong>Share</strong> button at the bottom of Safari</span>
           </li>
           <li class="flex items-start gap-3">
-            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">2</span>
+            <span class="badge text-xs shrink-0 mt-0.5">2</span>
             <span>Scroll down and tap <strong>Add to Home Screen</strong></span>
           </li>
           <li class="flex items-start gap-3">
-            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">3</span>
+            <span class="badge text-xs shrink-0 mt-0.5">3</span>
             <span>Tap <strong>Add</strong> — done</span>
           </li>
         </ol>
-        <p class="text-caption-sm mt-4" style="color:rgba(17,17,17,0.65);">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
+        <p class="text-caption-sm mt-4" style="color:#71717a;">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
       {:else}
         {#if deferredInstallPrompt}
           <button on:click={triggerInstall}
             class="w-full py-3 rounded-full text-button-md font-extra-bold mb-4"
-            style="background:#f73b20;color:#ffffff;">
+            style="background:#09090b;color:#ffffff;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">
             Install now
           </button>
         {:else}
           <ol class="space-y-3 text-body-md">
             <li class="flex items-start gap-3">
-              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">1</span>
-              <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:rgba(17,17,17,0.65);">(top-right corner)</span></span>
+              <span class="badge text-xs shrink-0 mt-0.5">1</span>
+              <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:#71717a;">(top-right corner)</span></span>
             </li>
             <li class="flex items-start gap-3">
-              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">2</span>
+              <span class="badge text-xs shrink-0 mt-0.5">2</span>
               <span>Tap <strong>Add to Home screen</strong> → <strong>Add</strong></span>
             </li>
           </ol>
-          <p class="text-caption-sm mt-4" style="color:rgba(17,17,17,0.65);">Chrome may also show an install banner at the bottom automatically.</p>
+          <p class="text-caption-sm mt-4" style="color:#71717a;">Chrome may also show an install banner at the bottom automatically.</p>
         {/if}
       {/if}
 
       <button on:click={dismissInstallSheet}
         class="mt-6 w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:rgba(17,17,17,0.08);color:#111111;">
+        style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
         Not now
       </button>
     </div>
@@ -1224,38 +1222,38 @@
 
   <!-- Impressum sheet -->
   {#if showImpressumSheet}
-    <div class="fixed inset-0 z-[990] bg-black/40" style="backdrop-filter:blur(2px);"
+    <div class="fixed inset-0 z-[990] bg-black/40"
       on:click={() => showImpressumSheet = false} role="presentation"
       transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      style="background:#ffffff;color:#18181b;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.12) 0px -4px 24px 0px;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showImpressumSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 420, duration: 380, easing: cubicOut }}
       out:fly={{ y: 420, duration: 260, easing: cubicIn }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.20);"></div>
-      <p class="text-heading-md font-extra-bold mb-lg" style="color:#111111;">Impressum</p>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#d4d4d8;"></div>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:#18181b;">Impressum</p>
 
-      <p class="text-caption-sm mb-xs" style="color:rgba(17,17,17,0.65);">Legal disclosure · § 5 TMG</p>
-      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);margin-bottom:20px;">
-        <div class="px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
-          <p style="color:#111111;font-size:14px;font-weight:600;">Daniel Muschinski</p>
-          <p style="color:rgba(17,17,17,0.65);font-size:13px;margin-top:2px;">Freudenbegrstraße 4, 28213 Bremen</p>
+      <p class="text-caption-sm mb-xs" style="color:#71717a;">Legal disclosure · § 5 TMG</p>
+      <div style="border-radius:14px;overflow:hidden;border:1px solid #ececee;margin-bottom:20px;">
+        <div class="px-lg py-md" style="border-bottom:1px solid #ececee;">
+          <p style="color:#18181b;font-size:14px;font-weight:600;">Daniel Muschinski</p>
+          <p style="color:#71717a;font-size:13px;margin-top:2px;">Freudenbegrstraße 4, 28213 Bremen</p>
         </div>
-        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
-          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Contact</span>
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid #ececee;">
+          <span style="color:#71717a;font-size:14px;">Contact</span>
           <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
-            style="color:#f73b20;font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
+            style="color:#18181b;font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
         </div>
         <div class="px-lg py-md">
-          <p style="color:rgba(17,17,17,0.65);font-size:13px;line-height:1.5;">Private, non-commercial project. No personal data is collected or shared with third parties.</p>
+          <p style="color:#71717a;font-size:13px;line-height:1.5;">Private, non-commercial project. No personal data is collected or shared with third parties.</p>
         </div>
       </div>
 
       <button on:click={() => showImpressumSheet = false}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:rgba(17,17,17,0.08);color:#111111;">
+        style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
         Close
       </button>
     </div>
@@ -1263,21 +1261,21 @@
 
   <!-- Math sheet -->
   {#if showMathSheet}
-    <div class="fixed inset-0 z-[990] bg-black/40" style="backdrop-filter:blur(2px);"
+    <div class="fixed inset-0 z-[990] bg-black/40"
       on:click={() => showMathSheet = false} role="presentation"
       transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      style="background:#ffffff;color:#18181b;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.12) 0px -4px 24px 0px;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showMathSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 420, duration: 380, easing: cubicOut }}
       out:fly={{ y: 420, duration: 260, easing: cubicIn }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.20);"></div>
-      <p class="text-heading-md font-extra-bold mb-lg" style="color:#111111;">How the math works</p>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#d4d4d8;"></div>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:#18181b;">How the math works</p>
 
-      <div class="mb-lg" style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);">
-        <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:1fr auto auto;background:rgba(17,17,17,0.04);padding:8px 14px;color:rgba(17,17,17,0.65);letter-spacing:0.05em;">
+      <div class="mb-lg" style="border-radius:14px;overflow:hidden;border:1px solid #ececee;">
+        <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:1fr auto auto;background:#f4f4f5;padding:8px 14px;color:#71717a;letter-spacing:0.05em;">
           <span>Zone</span><span class="text-right pr-4">% FTP</span><span class="text-right">Carbs</span>
         </div>
         {#each [
@@ -1287,21 +1285,21 @@
           { zone: 'Threshold', ftp: '90–105%', carbs: '60–90 g/h' },
           { zone: 'VO₂max+',   ftp: '>105%',   carbs: '90–120 g/h' },
         ] as row, i}
-          <div class="grid text-caption-sm" style="grid-template-columns:1fr auto auto;padding:10px 14px;{i % 2 === 1 ? 'background:rgba(17,17,17,0.03);' : ''}border-top:1px solid rgba(17,17,17,0.06);">
-            <span style="color:#111111;">{row.zone}</span>
-            <span class="text-right pr-4" style="color:rgba(17,17,17,0.65);">{row.ftp}</span>
-            <span class="text-right" style="color:rgba(17,17,17,0.7);">{row.carbs}</span>
+          <div class="grid text-caption-sm" style="grid-template-columns:1fr auto auto;padding:10px 14px;{i % 2 === 1 ? 'background:#f4f4f5;' : ''}border-top:1px solid #ececee;">
+            <span style="color:#18181b;">{row.zone}</span>
+            <span class="text-right pr-4" style="color:#71717a;">{row.ftp}</span>
+            <span class="text-right" style="color:#52525b;">{row.carbs}</span>
           </div>
         {/each}
       </div>
 
-      <p class="text-caption-sm mb-sm" style="color:rgba(17,17,17,0.65);">Fluids scale with body weight — sweat modifier adjusts ±20–30%.</p>
-      <p class="text-caption-sm mb-sm" style="color:rgba(17,17,17,0.65);">Heat: +0.3 L/h per 5°C above 20°C added to fluid target.</p>
-      <p class="text-caption-sm mb-lg" style="color:rgba(17,17,17,0.65);">Rides &gt;2h: add electrolytes — plain water dilutes sodium balance on long efforts.</p>
+      <p class="text-caption-sm mb-sm" style="color:#71717a;">Fluids scale with body weight — sweat modifier adjusts ±20–30%.</p>
+      <p class="text-caption-sm mb-sm" style="color:#71717a;">Heat: +0.3 L/h per 5°C above 20°C added to fluid target.</p>
+      <p class="text-caption-sm mb-lg" style="color:#71717a;">Rides &gt;2h: add electrolytes — plain water dilutes sodium balance on long efforts.</p>
 
       <button on:click={() => showMathSheet = false}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:rgba(17,17,17,0.08);color:#111111;">
+        style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
         Close
       </button>
     </div>

@@ -1,37 +1,40 @@
 @import "tailwindcss";
 
-/* Jeton Design System Tokens */
+/* Awesomic Design System Tokens */
 @theme {
   --font-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-  /* Jeton Brand Colors */
-  --color-jeton-red: #f73b20;
-  --color-red-velvet: #360802;
-  --color-flamingo-pink: #f84d35;
-  --color-fiery-rose: #fb2d54;
-  --color-ocean-blue: #477ee9;
-  --color-mint-green: #34c771;
+  /* Awesomic Neutral Scale */
+  --color-obsidian: #09090b;
+  --color-ink: #18181b;
+  --color-graphite: #3f3f46;
+  --color-slate: #52525b;
+  --color-steel: #71717a;
+  --color-ash: #a1a1aa;
+  --color-pebble: #d4d4d8;
+  --color-fog: #ececee;
+  --color-mist: #f4f4f5;
+  --color-snow: #ffffff;
 
-  /* Semantic tokens (mapped to Jeton) */
-  --color-ink: #111111;
+  /* Brand accent — data signal only (zone badges, power highlights) */
+  --color-accent: #f73b20;
+
+  /* Semantic aliases for backwards compat */
   --color-on-primary: #ffffff;
   --color-canvas: #ffffff;
-  --color-soft-cloud: #fef6f4;
-  --color-charcoal: #39393b;
-  --color-mute: #5f5f61;
-  --color-ash: #4b4b4d;
-  --color-stone: #6e6e70;
-  --color-hairline: #f0d5cf;
-  --color-hairline-soft: #fef6f4;
-  --color-sale: #fb2d54;
+  --color-charcoal: #3f3f46;
+  --color-mute: #71717a;
+  --color-stone: #71717a;
+  --color-hairline: #ececee;
+  --color-hairline-soft: #f4f4f5;
+  --color-sale: #f73b20;
   --color-success: #34c771;
   --color-info: #477ee9;
-  --color-accent: #f73b20;
-  --color-accent-teal: #0a7281;
+  --color-soft-cloud: #f4f4f5;
 
-  /* Jeton Shadows */
-  --shadow-lg: rgba(247, 59, 32, 0.1) 0px 8px 24px 0px, rgba(247, 59, 32, 0.05) 0px 2px 8px 0px;
-  --shadow-md: rgba(0, 0, 0, 0.05) 0px -4px 16px 0px;
+  /* Shadows */
+  --shadow-card: rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.04) 0px 4px 12px 0px;
+  --shadow-button: rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset, rgba(117,123,133,0.4) 0px 9px 14px -5px inset, rgb(44,46,52) 0px 0px 0px 1.5px, rgba(0,0,0,0.14) 0px 4px 6px 0px;
 }
 
 @layer base {
@@ -40,11 +43,11 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  
+
   body {
-    @apply text-[--color-ink] min-h-screen;
-    /* Gradient lives in a fixed DOM element (#bg-gradient in App.svelte)
-       so iOS Safari's backdrop-filter can blur it. Body bg is transparent. */
+    @apply min-h-screen;
+    background: #f4f4f5;
+    color: #18181b;
   }
 
   /* Easter egg F: neuralyzer flash */
@@ -62,9 +65,9 @@
 
   /* Number flash on value change */
   @keyframes numFlash {
-    0%   { color: var(--color-ink); }
-    30%  { color: var(--color-mint-green); }
-    100% { color: var(--color-ink); }
+    0%   { color: #18181b; }
+    30%  { color: #34c771; }
+    100% { color: #18181b; }
   }
   .num-flash {
     animation: numFlash 0.6s ease-out forwards;
@@ -109,35 +112,35 @@
   input, select, button {
     font-family: var(--font-sans);
   }
-  
+
   /* Focus states */
   input:focus, select:focus {
     outline: none;
     transform: scale(1.02);
-    border-color: var(--color-jeton-red) !important;
+    border-color: #09090b !important;
   }
-  
+
   input, select {
     transition: transform 0.2s ease;
   }
 }
 
-/* Nike Component System */
+/* Awesomic Component System */
 @layer utilities {
   /* Typography Scale */
   .text-display-campaign { font-size: 96px; line-height: 0.9; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; text-transform: uppercase; }
-  .text-heading-xl { font-size: 32px; line-height: 1.2; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
-  .text-heading-lg { font-size: 24px; line-height: 1.2; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
-  .text-heading-md { font-size: 16px; line-height: 1.75; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
+  .text-heading-xl { font-size: 32px; line-height: 1.28; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
+  .text-heading-lg { font-size: 20px; line-height: 1.35; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
+  .text-heading-md { font-size: 18px; line-height: 1.45; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
   .text-body-strong { font-size: 16px; line-height: 1.5; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
   .text-body-md { font-size: 16px; line-height: 1.5; font-weight: 400; font-family: var(--font-sans); letter-spacing: 0; }
-  .text-caption-md { font-size: 14px; line-height: 1.5; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
+  .text-caption-md { font-size: 14px; line-height: 1.56; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
   .text-caption-sm { font-size: 12px; line-height: 1.5; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
-  .text-utility-xs { font-size: 9px; line-height: 1.75; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
-  .text-button-lg { font-size: 24px; line-height: 1.2; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
-  .text-button-md { font-size: 16px; line-height: 1.5; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
-  .text-button-sm { font-size: 14px; line-height: 1.5; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
-  
+  .text-utility-xs { font-size: 10px; line-height: 1.8; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
+  .text-button-lg { font-size: 16px; line-height: 1.5; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
+  .text-button-md { font-size: 14px; line-height: 1.56; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
+  .text-button-sm { font-size: 12px; line-height: 1.5; font-weight: 500; font-family: var(--font-sans); letter-spacing: 0; }
+
   /* Spacing Scale (8px base) */
   .p-xxs { padding: 2px; }
   .p-xs { padding: 4px; }
@@ -147,7 +150,7 @@
   .p-xl { padding: 24px; }
   .p-xxl { padding: 30px; }
   .p-section { padding: 48px; }
-  
+
   .py-xxs { padding-top: 2px; padding-bottom: 2px; }
   .py-xs { padding-top: 4px; padding-bottom: 4px; }
   .py-sm { padding-top: 8px; padding-bottom: 8px; }
@@ -155,13 +158,13 @@
   .py-lg { padding-top: 18px; padding-bottom: 18px; }
   .py-xl { padding-top: 24px; padding-bottom: 24px; }
   .py-xxl { padding-top: 30px; padding-bottom: 30px; }
-  
+
   .px-xxs { padding-left: 2px; padding-right: 2px; }
   .px-xs { padding-left: 4px; padding-right: 4px; }
   .px-sm { padding-left: 8px; padding-right: 8px; }
   .px-md { padding-left: 12px; padding-right: 12px; }
   .px-lg { padding-left: 18px; padding-right: 18px; }
-  
+
   .mt-xxs { margin-top: 2px; }
   .mt-xs { margin-top: 4px; }
   .mt-sm { margin-top: 8px; }
@@ -170,7 +173,7 @@
   .mt-xl { margin-top: 24px; }
   .mt-xxl { margin-top: 30px; }
   .mt-section { margin-top: 48px; }
-  
+
   .mb-xxs { margin-bottom: 2px; }
   .mb-xs { margin-bottom: 4px; }
   .mb-sm { margin-bottom: 8px; }
@@ -179,7 +182,7 @@
   .mb-xl { margin-bottom: 24px; }
   .mb-xxl { margin-bottom: 30px; }
   .mb-section { margin-bottom: 48px; }
-  
+
   /* Gap utilities */
   .gap-xxs { gap: 2px; }
   .gap-xs { gap: 4px; }
@@ -188,78 +191,90 @@
   .gap-lg { gap: 18px; }
   .gap-xl { gap: 24px; }
   .gap-xxl { gap: 30px; }
-  
-  /* Border Radius (Nike uses 0px, 18px, 24px, 30px, 9999px) */
-  .rounded-none { border-radius: 0; }
-  .rounded-sm { border-radius: 18px; }
-  .rounded-md { border-radius: 24px; }
-  .rounded-lg { border-radius: 30px; }
-  .rounded-full { border-radius: 9999px; }
-  
-  /* === Nike Components === */
-  
 
-  
-  /* Filter Chip */
+  /* Border Radius (Awesomic) */
+  .rounded-none { border-radius: 0; }
+  .rounded-sm { border-radius: 28px; }
+  .rounded-md { border-radius: 36px; }
+  .rounded-lg { border-radius: 36px; }
+  .rounded-full { border-radius: 9999px; }
+
+  /* Filter Chip — outlined pill (secondary action) */
   .filter-chip {
-    background: transparent;
-    color: var(--color-jeton-red);
-    padding: 8px 16px;
+    background: #ffffff;
+    color: #3f3f46;
+    padding: 10px 20px;
     border-radius: 9999px;
-    font: var(--text-button-md);
-    border: 1px solid var(--color-jeton-red);
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid #3f3f46;
     cursor: pointer;
     transition: all 0.2s ease;
   }
   .filter-chip:hover {
-    background: rgba(247, 59, 32, 0.06);
+    background: #f4f4f5;
   }
 
-  /* Product Card */
+  /* White card — primary surface */
   .card {
-    background: var(--color-canvas);
-    border: 1px solid var(--color-hairline);
-    border-radius: 16px;
+    background: #ffffff;
+    border-radius: 36px;
+    box-shadow: rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.04) 0px 4px 12px 0px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   .card:hover {
     transform: translateY(-2px);
-    box-shadow: rgba(247, 59, 32, 0.08) 0px 4px 16px 0px;
+    box-shadow: rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.08) 0px 8px 24px 0px;
   }
 
-  /* Soft Card (for backgrounds) */
+  /* Muted card — secondary surface */
   .card-soft {
-    background: var(--color-soft-cloud);
-    border-radius: 16px;
+    background: #ececee;
+    border-radius: 28px;
   }
 
-  /* Campaign Tile */
+  /* Dark card */
   .card-campaign {
-    background: var(--color-ink);
-    color: var(--color-on-primary);
-    border-radius: 16px;
+    background: #09090b;
+    color: #ffffff;
+    border-radius: 36px;
   }
-  
-  /* Badge */
+
+  /* Awesomic white card utility (alias for liquid-glass replacement) */
+  .awesomic-card {
+    background: #ffffff;
+    border-radius: 36px;
+    box-shadow: rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.04) 0px 4px 12px 0px;
+  }
+
+  /* Dark panel utility (alias for liquid-glass-dark replacement) */
+  .awesomic-dark {
+    background: #09090b;
+    border-radius: 36px;
+    color: #ffffff;
+  }
+
+  /* Badge — dark filled */
   .badge {
-    background: transparent;
-    color: var(--color-ink);
-    padding: 4px 12px;
-    border-radius: 9999px;
-    font: var(--text-caption-sm);
-    border: 1px solid var(--color-hairline);
+    background: #3f3f46;
+    color: #fafafa;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
     gap: 4px;
   }
 
-  /* Black Badge */
+  /* Badge — same dark filled (black variant kept as alias) */
   .badge-black {
-    background: var(--color-ink);
-    color: var(--color-on-primary);
-    padding: 4px 12px;
-    border-radius: 9999px;
-    font: var(--text-caption-sm);
+    background: #3f3f46;
+    color: #fafafa;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -275,7 +290,7 @@
   .font-extra-bold { font-weight: 900; }
   .font-bold { font-weight: 700; }
   .font-heavy { font-weight: 850; font-size: 40px; }
-  
+
   /* Responsive typography */
   @media (max-width: 768px) {
     .text-display-campaign {
@@ -285,8 +300,8 @@
       font-size: 24px;
     }
   }
-  
-  /* Temperature range slider */
+
+  /* Temperature range slider — Awesomic style */
   .temp-slider {
     -webkit-appearance: none;
     appearance: none;
@@ -294,8 +309,8 @@
     border-radius: 2px;
     background: linear-gradient(
       to right,
-      var(--color-jeton-red) var(--fill),
-      #e5e5e5 var(--fill)
+      #09090b var(--fill),
+      #d4d4d8 var(--fill)
     );
     outline: none;
     cursor: pointer;
@@ -305,54 +320,32 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #efefef;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.22);
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     cursor: pointer;
   }
   .temp-slider::-moz-range-thumb {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #efefef;
+    background: #ffffff;
     border: none;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.22);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     cursor: pointer;
   }
   .temp-slider::-webkit-slider-runnable-track { border-radius: 2px; }
   .temp-slider::-moz-range-track { border-radius: 2px; }
 
-  /* Liquid glass dark — same system, dark toning */
+  /* Legacy glass classes — replaced with flat Awesomic cards */
   .liquid-glass-dark {
-    background: linear-gradient(
-      145deg,
-      rgba(17, 17, 17, 0.88) 0%,
-      rgba(17, 17, 17, 0.78) 100%
-    );
-    backdrop-filter: blur(28px) saturate(150%) brightness(0.85);
-    -webkit-backdrop-filter: blur(28px) saturate(150%) brightness(0.85);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.2),
-      0 8px 32px rgba(0, 0, 0, 0.25),
-      0 2px 8px rgba(0, 0, 0, 0.15);
+    background: #09090b;
+    border-radius: 36px;
     color: #ffffff;
   }
 
-  /* Liquid glass — iOS 26 / Apple inspired */
   .liquid-glass {
-    background: linear-gradient(
-      145deg,
-      rgba(255, 248, 244, 0.55) 0%,
-      rgba(255, 238, 230, 0.40) 100%
-    );
-    backdrop-filter: blur(28px) saturate(200%) brightness(1.05);
-    -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.05);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    box-shadow:
-      inset 0 1.5px 0 rgba(255, 255, 255, 0.28),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.04),
-      0 8px 32px rgba(0, 0, 0, 0.10),
-      0 2px 8px rgba(0, 0, 0, 0.06);
+    background: #ffffff;
+    border-radius: 36px;
+    box-shadow: rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.04) 0px 4px 12px 0px;
   }
 }

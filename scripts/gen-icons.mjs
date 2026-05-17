@@ -7,11 +7,6 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const publicDir = resolve(__dirname, '../public');
 
-const BANANA_PATHS = `
-  <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.11 22 2 22 2 20c0-1.5 1.14-1.55 3.15-2.11Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-`;
-
 function deg2rad(d) { return d * Math.PI / 180; }
 function pt(cx, cy, r, deg) {
   return [cx + r * Math.cos(deg2rad(deg)), cy + r * Math.sin(deg2rad(deg))];
@@ -44,10 +39,26 @@ function iconHTML(size) {
   // Gradient bounds (horizontal, spans full arc width)
   const gx1 = cx - R, gx2 = cx + R, gy = cy;
 
-  // Banana: centered inside arc, slightly above arc center
-  const bs  = size * 0.32;              // banana SVG size
-  const bx  = cx - bs * 0.5;
-  const by  = cy - bs * 0.52;
+  // Skull — cranium + jaw, centered slightly above arc center
+  const sk_ccy  = cy - size * 0.062;          // cranium center y
+  const sk_cr   = size * 0.164;               // cranium radius
+  const sk_jaw_y = sk_ccy + size * 0.098;     // jaw top y
+  const sk_jaw_h = size * 0.078;              // jaw height
+  const sk_jaw_w = size * 0.266;              // jaw width
+  const sk_jaw_x = cx - sk_jaw_w / 2;         // jaw left x
+  const sk_jaw_rx = size * 0.027;             // jaw corner radius
+  const sk_ey   = sk_ccy - size * 0.016;      // eye center y
+  const sk_lex  = cx - size * 0.066;          // left eye center x
+  const sk_rex  = cx + size * 0.066;          // right eye center x
+  const sk_er   = size * 0.043;               // eye socket radius
+  const sk_ncy  = sk_ccy + size * 0.059;      // nose center y
+  const sk_nrx  = size * 0.020;               // nose rx
+  const sk_nry  = size * 0.023;               // nose ry
+  const sk_gy   = sk_jaw_y + size * 0.008;    // teeth gap top y
+  const sk_gw   = size * 0.023;               // teeth gap width
+  const sk_gh   = size * 0.059;               // teeth gap height
+  const sk_grx  = size * 0.006;               // teeth gap corner radius
+  const sk_goff = size * 0.0606;              // teeth gap x offset from center
 
   // Glow stdDeviation
   const gsd = (size * 0.015).toFixed(1);
@@ -66,9 +77,9 @@ function iconHTML(size) {
       <stop offset="100%" stop-color="#0f0f14"/>
     </radialGradient>
     <linearGradient id="arcG" x1="${gx1.toFixed(1)}" y1="${gy.toFixed(1)}" x2="${gx2.toFixed(1)}" y2="${gy.toFixed(1)}" gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="#e06500"/>
-      <stop offset="55%"  stop-color="#ffd700"/>
-      <stop offset="100%" stop-color="#ffe566"/>
+      <stop offset="0%"   stop-color="#c02010"/>
+      <stop offset="55%"  stop-color="#f73b20"/>
+      <stop offset="100%" stop-color="#fb6040"/>
     </linearGradient>
     <linearGradient id="rim" x1="0" y1="0" x2="0" y2="${size}" gradientUnits="userSpaceOnUse">
       <stop offset="0%"   stop-color="rgba(255,255,255,0.22)"/>
@@ -79,6 +90,9 @@ function iconHTML(size) {
       <feGaussianBlur in="SourceGraphic" stdDeviation="${gsd}" result="b"/>
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
+    <filter id="skull-shadow">
+      <feDropShadow dx="0" dy="0" stdDeviation="${(size*0.016).toFixed(1)}" flood-color="rgba(0,0,0,0.4)"/>
+    </filter>
   </defs>
 
   <!-- background -->
@@ -86,7 +100,7 @@ function iconHTML(size) {
 
   <!-- dim track -->
   <path d="${trackD}"
-    stroke="rgba(255,200,50,0.14)" stroke-width="${tw.toFixed(1)}"
+    stroke="rgba(247,59,32,0.18)" stroke-width="${tw.toFixed(1)}"
     stroke-linecap="round" fill="none"/>
 
   <!-- active arc + glow -->
@@ -96,14 +110,19 @@ function iconHTML(size) {
       stroke-linecap="round" fill="none"/>
   </g>
 
-  <!-- banana -->
-  <g transform="translate(${bx.toFixed(1)},${by.toFixed(1)})">
-    <svg width="${bs}" height="${bs}" viewBox="0 0 24 24" overflow="visible">
-      <g color="#FFD54F" style="filter:drop-shadow(0 0 ${(bs*0.07).toFixed(0)}px rgba(255,210,50,0.55))">
-        ${BANANA_PATHS}
-      </g>
-    </svg>
-  </g>
+  <!-- skull cranium -->
+  <circle cx="${cx.toFixed(1)}" cy="${sk_ccy.toFixed(1)}" r="${sk_cr.toFixed(1)}" fill="#ffffff" filter="url(#skull-shadow)"/>
+  <!-- skull jaw (overlaps cranium bottom → merges into one shape) -->
+  <rect x="${sk_jaw_x.toFixed(1)}" y="${sk_jaw_y.toFixed(1)}" width="${sk_jaw_w.toFixed(1)}" height="${sk_jaw_h.toFixed(1)}" rx="${sk_jaw_rx.toFixed(1)}" fill="#ffffff"/>
+  <!-- eye sockets -->
+  <circle cx="${sk_lex.toFixed(1)}" cy="${sk_ey.toFixed(1)}" r="${sk_er.toFixed(1)}" fill="#111111"/>
+  <circle cx="${sk_rex.toFixed(1)}" cy="${sk_ey.toFixed(1)}" r="${sk_er.toFixed(1)}" fill="#111111"/>
+  <!-- nose cavity -->
+  <ellipse cx="${cx.toFixed(1)}" cy="${sk_ncy.toFixed(1)}" rx="${sk_nrx.toFixed(1)}" ry="${sk_nry.toFixed(1)}" fill="#111111"/>
+  <!-- teeth gaps (3) -->
+  <rect x="${(cx - sk_goff - sk_gw/2).toFixed(1)}" y="${sk_gy.toFixed(1)}" width="${sk_gw.toFixed(1)}" height="${sk_gh.toFixed(1)}" rx="${sk_grx.toFixed(1)}" fill="#111111"/>
+  <rect x="${(cx - sk_gw/2).toFixed(1)}" y="${sk_gy.toFixed(1)}" width="${sk_gw.toFixed(1)}" height="${sk_gh.toFixed(1)}" rx="${sk_grx.toFixed(1)}" fill="#111111"/>
+  <rect x="${(cx + sk_goff - sk_gw/2).toFixed(1)}" y="${sk_gy.toFixed(1)}" width="${sk_gw.toFixed(1)}" height="${sk_gh.toFixed(1)}" rx="${sk_grx.toFixed(1)}" fill="#111111"/>
 
   <!-- glass rim -->
   <rect width="${size}" height="${size}" rx="${cr}" ry="${cr}"

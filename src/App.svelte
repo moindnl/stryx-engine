@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Banana, Zap, Gauge, Droplet, ChevronDown, ChevronRight, RotateCcw, User, Ruler, Scale, Wheat, CheckCircle, Check, Info, RefreshCw, X, Bike, ExternalLink, Trophy, Lock } from 'lucide-svelte';
+  import { Zap, Droplet, ChevronDown, ChevronRight, RotateCcw, User, Ruler, Scale, Wheat, CheckCircle, Check, RefreshCw, X, Bike, ExternalLink, Lock } from 'lucide-svelte';
   import { tweened } from 'svelte/motion';
-  import { linear, cubicOut } from 'svelte/easing';
+  import { linear, cubicOut, cubicIn } from 'svelte/easing';
   import { fly, fade, slide } from 'svelte/transition';
   import { onMount, onDestroy } from 'svelte';
   import { registerSW } from 'virtual:pwa-register';
@@ -43,67 +43,11 @@
   function dismissChangelog() {
     showChangelogSheet = false;
     showWhatsNew = false;
-    localStorage.setItem('bs-seen-build', BUILD_NAME);
+    localStorage.setItem('bp-seen-build', BUILD_NAME);
   }
 
-  type RiderInfo = { specialty: string; bio: string; wins: string[] };
-  const RIDER_INFO: Record<string, RiderInfo> = {
-    'Marianne Vos':              { specialty: 'All-rounder',    bio: 'The greatest women\'s cyclist of all time — world champion on road, track, and cyclo-cross.', wins: ['23× World Champion', '3× Olympic gold', '8× Giro Donne'] },
-    'Annemiek van Vleuten':      { specialty: 'Climber / TT',   bio: 'Dominant grand tour racer and Olympic champion who attacked relentlessly until her last race.', wins: ['Olympic TT gold 2020', '4× Giro Donne', 'Tour de France Femmes 2022'] },
-    'Anna van der Breggen':      { specialty: 'Climber',        bio: 'Six-time La Flèche Wallonne winner and Olympic champion, now shaping the next generation as a DS.', wins: ['Olympic gold 2016', '6× La Flèche Wallonne', 'World Champion 2018'] },
-    'Lizzie Deignan':            { specialty: 'Classics',       bio: 'Won the inaugural Paris–Roubaix Femmes in 2021 and is a former world champion.', wins: ['Paris–Roubaix 2021', 'World Champion 2015', 'La Flèche Wallonne 2016'] },
-    'Nicole Cooke':              { specialty: 'All-rounder',    bio: 'Won Olympic gold and the world title in the same year (2008), a feat never repeated.', wins: ['Olympic gold 2008', 'World Champion 2008', '2× Grande Boucle'] },
-    'Emma Pooley':               { specialty: 'Climber / TT',   bio: 'World TT champion and Olympic silver medallist — a tiny rider who punched far above her weight.', wins: ['World TT Champion 2010', 'Olympic silver 2008', 'La Flèche Wallonne 2010'] },
-    'Chantal van den Broek-Blaak': { specialty: 'Classics',    bio: '2018 world champion and winner of Strade Bianche and Paris–Roubaix Femmes.', wins: ['World Champion 2018', 'Paris–Roubaix 2022', 'Strade Bianche 2018'] },
-    'Amy Pieters':               { specialty: 'Track / Sprint', bio: 'World Madison champion whose comeback from a serious crash in 2021 has been an inspiration.', wins: ['World Madison Champion', 'Tour de Wallonie 2020', 'Omloop Het Nieuwsblad 2019'] },
-    'Ashleigh Moolman-Pasio':    { specialty: 'Climber',        bio: 'South Africa\'s greatest cyclist and a tireless advocate for growing women\'s professional racing.', wins: ['5× SA National Champion', 'Giro Donne stage wins', 'Commonwealth silver 2014'] },
-    'Demi Vollering':            { specialty: 'Climber',        bio: '2023 Tour de France Femmes winner and reigning world number one.', wins: ['Tour de France Femmes 2023', 'World Champion 2023', 'La Flèche Wallonne 2023'] },
-    'Lotte Kopecky':             { specialty: 'Classics',       bio: '2023–24 world champion, winner of Strade Bianche and Paris–Roubaix in the same season.', wins: ['World Champion 2023–24', 'Paris–Roubaix 2024', 'Strade Bianche 2022–23'] },
-    'Cecilie Uttrup Ludwig':     { specialty: 'Climber',        bio: 'Known for fearless mountain attacks and an expressive racing style that wins fans worldwide.', wins: ['La Flèche Wallonne 2021', 'Giro Donne stage wins', '4× Danish Champion'] },
-    'Elisa Longo Borghini':      { specialty: 'Classics',       bio: 'Paris–Roubaix winner and one of the most consistent podium riders of her generation.', wins: ['Paris–Roubaix 2021', 'Strade Bianche 2020', '3× Italian Champion'] },
-    'Pauline Ferrand-Prévot':    { specialty: 'All-terrain',    bio: 'The only rider to hold road, MTB, and cyclo-cross world titles simultaneously (2015).', wins: ['Road World Champion 2014', 'MTB World Champion 2015', 'CX World Champion 2015'] },
-    'Katarzyna Niewiadoma':      { specialty: 'Climber',        bio: '2024 Tour de France Femmes winner and Poland\'s greatest ever cyclist.', wins: ['Tour de France Femmes 2024', 'Vuelta Femenina podium', 'La Flèche Wallonne 2022'] },
-    'Grace Brown':               { specialty: 'TT / Classics',  bio: '2024 Olympic TT champion and a breakaway specialist who makes the race every time she starts.', wins: ['Olympic TT gold 2024', 'Paris–Roubaix 2023', 'Liège–Bastogne–Liège 2023'] },
-    'Elisa Balsamo':             { specialty: 'Sprinter',       bio: '2021 world champion and Paris–Roubaix winner with an explosive finish.', wins: ['World Champion 2021', 'Paris–Roubaix 2022', 'Tour de France Femmes stages'] },
-    'Lorena Wiebes':             { specialty: 'Sprinter',       bio: 'The most dominant sprinter of her era with an almost unbroken record in bunch finishes.', wins: ['30+ World Tour wins', 'Tour de France Femmes sprints', 'Scheldeprijs 2022–23'] },
-    'Ellen van Dijk':            { specialty: 'TT',             bio: 'Multiple world TT champion and former hour record holder — pure power on two wheels.', wins: ['4× World TT Champion', 'Hour record 2022', 'Olympic bronze 2020'] },
-    'Marlen Reusser':            { specialty: 'TT / Classics',  bio: 'Olympic TT silver medallist and multiple world TT medallist, late starter who made it count.', wins: ['Olympic TT silver 2020', '2× World TT silver', 'Paris–Roubaix 2022 podium'] },
-    'Kristen Faulkner':          { specialty: 'All-rounder',    bio: '2024 Olympic road race champion — a former Harvard rower who turned pro and took gold.', wins: ['Olympic road gold 2024', 'Giro Donne 2024', '2× US National Champion'] },
-    'Chloé Dygert':              { specialty: 'TT',             bio: 'The most dominant TT specialist of her generation, fighting back from a devastating crash.', wins: ['5× World TT Champion', 'Olympic silver 2020', 'Pan American gold 2019'] },
-    'Marta Cavalli':             { specialty: 'Climber',        bio: 'La Flèche Wallonne winner with a punchy, aggressive climbing style.', wins: ['La Flèche Wallonne 2022', 'Liège–Bastogne–Liège 2022', 'Giro Donne podium'] },
-    'Juliette Labous':           { specialty: 'Climber',        bio: 'France\'s most consistent grand tour climber, always close to the podium.', wins: ['Tour de France Femmes podium', 'Vuelta Femenina stage wins', '2× French Champion'] },
-    'Liane Lippert':             { specialty: 'Climber',        bio: 'German champion known for attacking racing and stage wins at the highest level.', wins: ['Strade Bianche 2021', '3× German Champion', 'Giro Donne stage wins'] },
-    'Leah Thomas':               { specialty: 'All-rounder',    bio: 'US national champion and grand tour stage winner with a smooth all-round skill set.', wins: ['2× US National Champion', 'Tour de France Femmes stage', 'Setmana Ciclista Valencia'] },
-    'Pfeiffer Georgi':           { specialty: 'Sprinter',       bio: 'British champion and rising sprint star making her mark on the World Tour.', wins: ['British National Champion', 'Tour de France Femmes stage 2024', 'Santos Women\'s Tour wins'] },
-    'Soraya Paladin':            { specialty: 'Classics',       bio: 'Breakaway specialist and Strade Bianche podium finisher with a fighter\'s mentality.', wins: ['Strade Bianche podium', 'Durango–Durango winner', 'Multiple WT stage wins'] },
-    'Marta Bastianelli':         { specialty: 'Sprinter',       bio: 'Veteran sprinter and former world champion still winning races after two decades as a pro.', wins: ['World Champion 2007', 'Multiple WT wins', 'Italian National Champion'] },
-    'Silvia Persico':            { specialty: 'All-rounder',    bio: 'Italian champion and one-day race specialist with a knack for the decisive move.', wins: ['Italian National Champion', 'Gran Piemonte winner', 'Giro Donne stage wins'] },
-    'Gaia Realini':              { specialty: 'Climber',        bio: 'Italy\'s brightest young climber — stage winner at the Vuelta Femenina before turning 23.', wins: ['Vuelta Femenina stage wins', 'Tour de Suisse Femmes', 'Italian U23 Champion'] },
-    'Puck Pieterse':             { specialty: 'All-terrain',    bio: 'Dutch superstar of the next generation dominating cross, MTB, and road alike.', wins: ['CX World Champion 2024', 'MTB World Cup wins', 'Amstel Gold Race 2024'] },
-    'Fem van Empel':             { specialty: 'Cyclo-cross',    bio: 'Dominant cyclo-cross world champion crossing over to road with the same ruthless efficiency.', wins: ['2× CX World Champion', 'CX World Cup overall', 'Tour de France Femmes stage 2024'] },
-    'Shirin van Anrooij':        { specialty: 'All-terrain',    bio: 'Cyclo-cross and road talent who is quietly building one of the most complete palmares in the peloton.', wins: ['CX World Champion 2023', 'Dutch CX Champion', 'Tour de France Femmes stage'] },
-    'Mischa Bredewold':          { specialty: 'Classics',       bio: '2023 Paris–Roubaix Femmes winner in only her second pro season.', wins: ['Paris–Roubaix 2023', 'Omloop Het Nieuwsblad 2024', 'Dutch National Champion'] },
-    'Niamh Fisher-Black':        { specialty: 'Climber',        bio: 'New Zealand\'s grand tour climber with a cool head in the hardest mountain finishes.', wins: ['NZ National Champion', 'Vuelta Femenina stage wins', 'Tour de Romandie podium'] },
-    'Riejanne Markus':           { specialty: 'All-rounder',    bio: 'Versatile rider who delivers as both a loyal domestique and a stage winner in her own right.', wins: ['Tour de France Femmes stage', 'Healthy Ageing Tour GC', 'Dutch CX podiums'] },
-    'Sara Martín':               { specialty: 'Climber',        bio: 'Spanish climbing talent pushing for a podium at her home race, La Vuelta Femenina.', wins: ['Vuelta Femenina stage wins', 'Spanish National Champion', 'Giro Donne stage'] },
-    'Brodie Chapman':            { specialty: 'All-rounder',    bio: 'Australian all-rounder who combines breakaway instinct with solid grand tour climbing.', wins: ['Tour de France Femmes stage 2022', 'Santos Women\'s Tour stage', 'Australian podiums'] },
-    'Laura Kenny':               { specialty: 'Track',          bio: 'Britain\'s most decorated female Olympian — six Olympic golds on the velodrome.', wins: ['6× Olympic gold', '14× World Champion', 'Commonwealth gold 2022'] },
-    'Katie Archibald':           { specialty: 'Track',          bio: 'Olympic and world champion on the track, and increasingly dangerous on the road too.', wins: ['Olympic gold 2020 & 2024', '10× World Champion', 'European Champion'] },
-    'Elinor Barker':             { specialty: 'Track',          bio: 'Multiple Olympic gold medallist on the track and a key part of Britain\'s team pursuit dynasty.', wins: ['Olympic gold 2016 & 2020', '5× World Champion', 'Commonwealth gold'] },
-    'Amanda Spratt':             { specialty: 'Climber',        bio: 'Australian climbing specialist and Strade Bianche winner who led the sport with quiet excellence.', wins: ['Strade Bianche 2019', '2× Oceania Champion', 'Giro Donne GC podium'] },
-    'Georgia Baker':             { specialty: 'Track / Sprint', bio: 'Australian track champion converting velodrome speed into road race wins.', wins: ['Olympic gold 2024', 'World Madison Champion', 'Australian National Champion'] },
-    'Alison Jackson':            { specialty: 'Sprinter',       bio: '2024 Paris–Roubaix Femmes winner — proof that anything can happen on the cobbles.', wins: ['Paris–Roubaix 2024', 'Tour de France Femmes stage 2023', 'Canadian National Champion'] },
-    'Neve Bradbury':             { specialty: 'Track',          bio: 'Australian track specialist with Olympic and world championship medals to her name.', wins: ['Olympic silver 2020', 'World Championship medals', 'Australian Track Champion'] },
-    'Clara Koppenburg':          { specialty: 'Climber',        bio: 'German climbing specialist who shines on the steepest gradients in women\'s racing.', wins: ['German National Champion', 'Tour de France Femmes stage', 'Giro Donne stage wins'] },
-    'Vittoria Bussi':            { specialty: 'TT / Hour record', bio: 'Hour record holder and TT specialist who combines athletic power with an academic\'s precision.', wins: ['Hour record 2018 & 2022', 'Italian TT Champion', 'World TT podiums'] },
-    'Leah Kirchmann':            { specialty: 'All-rounder',    bio: 'Canadian veteran and grand tour stage winner who helped build women\'s cycling in North America.', wins: ['Canadian National Champion', 'Giro Donne stage wins', 'Colorado Classic GC'] },
-    'Alexis Ryan':               { specialty: 'All-rounder',    bio: 'American stage race specialist known for smart racing and aggressive attacking from distance.', wins: ['Tour de Yorkshire stage', 'Setmana Ciclista Valencia stage', 'US podiums'] },
-    'Hannah Barnes':             { specialty: 'All-rounder',    bio: 'British veteran who combined a long pro career with advocacy for better conditions in women\'s cycling.', wins: ['British National Champion', 'Tour de Yorkshire stage', 'OVO Women\'s Tour stage'] },
-  };
-  let showRiderCard = false;
-  const currentRider = RIDER_INFO[BUILD_NAME];
+  let showAboutSheet = false;
 
-  const PCS_SLUG = BUILD_NAME.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
   // Piecewise linear carb oxidation by IF (Jeukendrup 2004 / ACSM guidelines)
   function carbsFromIF(if_val: number): number {
@@ -130,9 +74,9 @@
   } as const;
 
   // Per-ride inputs (reset on Reset)
-  let distance = 0;
+  let distance: number | undefined = undefined;
   let durationRaw = ''; // what user types — e.g. "1.30" or "1:30" or "1.5"
-  let power = 0;
+  let power: number | undefined = undefined;
   let temperature = 20; // °C — no heat bonus below 20°C; resets with ride
 
   // Parse "1:30", "1.30" (dot = minutes when 2+ digits), or "1.5" → decimal hours
@@ -170,15 +114,16 @@
 
   // Rider profile (persists via localStorage — read synchronously so guide renders correctly on first paint)
   let _savedProfile: Record<string, any> = {};
-  try { _savedProfile = JSON.parse(localStorage.getItem('bs-profile') || '{}'); } catch { /* ignore */ }
-  let weight: number = _savedProfile.weight > 0 ? _savedProfile.weight : 0;
-  let ftp: number = _savedProfile.ftp > 0 ? _savedProfile.ftp : 0;
+  try { _savedProfile = JSON.parse(localStorage.getItem('bp-profile') || '{}'); } catch { /* ignore */ }
+  let weight: number | undefined = _savedProfile.weight > 0 ? _savedProfile.weight : undefined;
+  let ftp: number | undefined = _savedProfile.ftp > 0 ? _savedProfile.ftp : undefined;
   let imperial: boolean = typeof _savedProfile.imperial === 'boolean' ? _savedProfile.imperial : false;
   let sweatRate: 'light' | 'moderate' | 'heavy' = _savedProfile.sweatRate || 'moderate';
 
   // UI state
   let showMathSheet = false;
-  let profileOpen = false;
+  let showImpressumSheet = false;
+  let profileOpen = !(weight > 0 || ftp > 0); // auto-open on first visit
   let rideOpen = false;
   let rideAutoCollapsed = false;
   let neuralizer = false;        // easter egg F: neuralyzer flash
@@ -190,7 +135,6 @@
     checkedPack = checkedPack;
   }
   function resetPack() { checkedPack.clear(); checkedPack = checkedPack; }
-  let showGuide = false;
 
   const SWEAT_LEVELS = [
     { value: 'light',    drops: 1 },
@@ -222,14 +166,24 @@
   // PWA install bottom sheet (null = hidden)
   let installPlatform: 'ios' | 'android' | null = null;
   let installSheetTimer: ReturnType<typeof setTimeout> | null = null;
+  let _installOS: 'ios' | 'android' | null = null; // set in onMount if eligible
+  let _installFired = false;
+
+  // Fire install prompt on first meaningful engagement (profile complete)
+  $: if (_installOS && !_installFired && weight > 0 && ftp > 0) {
+    _installFired = true;
+    installSheetTimer = setTimeout(() => { installPlatform = _installOS!; }, 800);
+  }
   let deferredInstallPrompt: any = null;
   const onBeforeInstallPrompt = (e: Event) => { e.preventDefault(); deferredInstallPrompt = e; };
   const onAppInstalled = () => { installPlatform = null; };
   let sheetDragStartY = 0;
   let sheetDragOffsetY = 0;
   let sheetIsDragging = false;
+  let _sheetDismiss: (() => void) | null = null;
 
-  function onSheetDragStart(e: TouchEvent) {
+  function onSheetDragStart(e: TouchEvent, dismiss: () => void) {
+    _sheetDismiss = dismiss;
     sheetDragStartY = e.touches[0].clientY;
     sheetDragOffsetY = 0;
     sheetIsDragging = true;
@@ -245,10 +199,8 @@
     if (sheetDragOffsetY > 80) {
       sheetDragOffsetY = window.innerHeight;
       setTimeout(() => {
-        if (installPlatform) dismissInstallSheet();
-        else if (showRiderCard) showRiderCard = false;
-        else if (showChangelogSheet) dismissChangelog();
-        else if (showMathSheet) showMathSheet = false;
+        _sheetDismiss?.();
+        _sheetDismiss = null;
         sheetDragOffsetY = 0;
       }, 260);
     } else {
@@ -259,23 +211,24 @@
   onMount(() => {
     // Easter egg: console greeting
     console.log(
-      '%cBananaSprocket — Cycling Nutrition Planner\n\nPsst. You\'re looking at the source.\nWhy are you not riding your bike?\n\nBuilt by Daniel Muschinski\nhttps://github.com/moindnl',
+      '%cbonkproof — Cycling Nutrition Planner\n\nPsst. You\'re looking at the source.\nWhy are you not riding your bike?\n\nBuilt by Daniel Muschinski\nhttps://github.com/moindnl',
       'color:#FFD700;background:#111111;font-family:monospace;font-size:12px;padding:16px 20px;border-radius:8px;line-height:1.6;'
     );
 
-    if (localStorage.getItem('bs-seen-build') !== BUILD_NAME) showWhatsNew = true;
+    if (localStorage.getItem('bp-seen-build') !== BUILD_NAME) showWhatsNew = true;
 
     const isMobile = window.innerWidth < 768;
     const standalone = window.matchMedia('(display-mode: standalone)').matches
       || (navigator as any).standalone === true;
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
     const isAndroid = /android/i.test(navigator.userAgent);
-    if (isMobile && !standalone && (isIos || isAndroid) && !localStorage.getItem('bs-install-dismissed')) {
-      installSheetTimer = setTimeout(() => { installPlatform = isIos ? 'ios' : 'android'; }, 1200);
+    if (isMobile && !standalone && (isIos || isAndroid) && !localStorage.getItem('bp-install-dismissed')) {
+      _installOS = isIos ? 'ios' : 'android'; // reactive block fires when profile complete
     }
 
     window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
     window.addEventListener('appinstalled', onAppInstalled);
+    _profileReady = true;
   });
 
   onDestroy(() => {
@@ -288,7 +241,7 @@
     installPlatform = null;
     sheetDragOffsetY = 0;
     sheetIsDragging = false;
-    localStorage.setItem('bs-install-dismissed', '1');
+    localStorage.setItem('bp-install-dismissed', '1');
   }
   async function triggerInstall() {
     if (!deferredInstallPrompt) return;
@@ -297,12 +250,13 @@
     deferredInstallPrompt = null;
     if (outcome === 'accepted') installPlatform = null;
   }
-  // Guard: only save after profile has been loaded from storage
-  $: localStorage.setItem('bs-profile', JSON.stringify({ weight, ftp, imperial, sweatRate }));
+  // Only save after initial load — prevents wiping storage during init
+  let _profileReady = false;
+  $: if (_profileReady) localStorage.setItem('bp-profile', JSON.stringify({ weight, ftp, imperial, sweatRate }));
 
   // Reset per-ride inputs only; profile persists
   function resetInputs() {
-    distance = 0; durationRaw = ''; power = 0; temperature = 20;
+    distance = undefined; durationRaw = ''; power = undefined; temperature = 20;
     rideOpen = true; rideAutoCollapsed = false;
   }
 
@@ -321,18 +275,18 @@
   // Imperial ↔ metric: convert displayed values on toggle
   function toggleImperial() {
     if (!imperial) {
-      if (weight > 0)   weight   = Math.round(weight * 2.20462);
-      if (distance > 0) distance = Math.round(distance * 0.621371 * 10) / 10;
+      if (weight != null && weight > 0)   weight   = Math.round(weight * 2.20462);
+      if (distance != null && distance > 0) distance = Math.round(distance * 0.621371 * 10) / 10;
     } else {
-      if (weight > 0)   weight   = Math.round(weight / 2.20462);
-      if (distance > 0) distance = Math.round(distance * 1.60934);
+      if (weight != null && weight > 0)   weight   = Math.round(weight / 2.20462);
+      if (distance != null && distance > 0) distance = Math.round(distance * 1.60934);
     }
     imperial = !imperial;
   }
 
   // Metric-normalised values used in all calculations
-  $: weightKg   = imperial ? weight / 2.20462 : weight;
-  $: distanceKm = imperial ? distance * 1.60934 : distance;
+  $: weightKg   = imperial ? (weight ?? 0) / 2.20462 : (weight ?? 0);
+  $: distanceKm = imperial ? (distance ?? 0) * 1.60934 : (distance ?? 0);
   $: speedKmh   = distanceKm > 0 && duration > 0 ? distanceKm / duration : 0;
   $: speedUnit  = imperial ? 'mph' : 'km/h';
   $: heatBonus  = temperature > 20 ? Math.round((temperature - 20) / 5 * 0.3 * 10) / 10 : 0;
@@ -360,9 +314,9 @@
       ? 'background:#f0c000;color:#111111;transition:background 0.35s ease,color 0.35s ease'
       : `background:${
           intensityFactor < 0.55 ? '#4b4b4d' :
-          intensityFactor < 0.75 ? '#1151ff' :
-          intensityFactor < 0.90 ? '#007d48' :
-          intensityFactor < 1.05 ? '#c2410c' : '#d30005'
+          intensityFactor < 0.75 ? '#477ee9' :
+          intensityFactor < 0.90 ? '#34c771' :
+          intensityFactor < 1.05 ? '#f73b20' : '#fb2d54'
         };color:#ffffff;transition:background 0.35s ease,color 0.35s ease`;
 
 
@@ -377,7 +331,7 @@
   $: fluidPerHour = weight > 0 && duration > 0 ? baseFluid * (weightKg / 70) * sweatMultiplier + heatBonus : 0;
 
   // Carbs: IF-based piecewise when power available, zone midpoint fallback
-  $: carbsPerHour = duration <= 0 || weight <= 0 ? 0 :
+  $: carbsPerHour = !duration || !(weight > 0) ? 0 :
     powerDerived
       ? carbsFromIF(intensityFactor)
       : Math.round((CARB_RANGES[intensity].min + CARB_RANGES[intensity].max) / 2);
@@ -496,7 +450,7 @@
 
   // Fueling schedule: 20-min intake slots (solid food only)
   $: fuelingEvents = (() => {
-    if (duration <= 0 || weight <= 0) return [] as { time: string; carbs: number; units: number }[];
+    if (!duration || !(weight > 0)) return [] as { time: string; carbs: number; units: number }[];
     const events: { time: string; carbs: number; units: number }[] = [];
     const totalMins = Math.round(duration * 60);
     const carbsPerSlot = Math.round(solidCarbsPerHour / 3);
@@ -524,7 +478,7 @@
   ];
 
   function tabStyle(tab: string, active: string): string {
-    return `${active === tab ? 'background:#FFD700;color:#111111;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;`;
+    return `${active === tab ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;`;
   }
 </script>
 
@@ -535,12 +489,12 @@
     <div class="fixed top-0 left-0 right-0 z-[1000] flex justify-center pt-3 px-4 pointer-events-none"
       transition:fly={{ y: -48, duration: 300, easing: cubicOut }}>
       <div class="inline-flex items-center gap-md rounded-full px-md py-sm pointer-events-auto"
-        style="background:#111111;color:#ffffff;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
-        <RefreshCw class="w-3.5 h-3.5 flex-shrink-0" style="color:#FFD700;" />
+        style="background:#f73b20;color:#ffffff;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
+        <RefreshCw class="w-3.5 h-3.5 flex-shrink-0" style="color:#ffffff;" />
         <span class="text-caption-sm" style="color:rgba(255,255,255,0.85);">Update available</span>
         <button on:click={() => doUpdateSW()}
           class="text-caption-sm font-extra-bold rounded-full px-sm py-xxs"
-          style="background:#FFD700;color:#111111;">Refresh</button>
+          style="background:#f73b20;color:#ffffff;">Refresh</button>
         <button on:click={() => updateAvailable = false} aria-label="Dismiss">
           <X class="w-3.5 h-3.5" style="color:rgba(255,255,255,0.45);" />
         </button>
@@ -548,51 +502,49 @@
     </div>
   {/if}
 
-  <!-- App Header -->
-  <header class="w-full py-xl text-center rounded-b-[28px]" style="background:var(--color-soft-cloud);">
-    <div class="flex items-center justify-center mb-sm">
-      <h1 class="text-heading-xl md:text-display-campaign font-extra-bold flex items-center gap-sm md:gap-md" style="color:var(--color-ink);">
-        Banana
+  <!-- App Header — compact bar -->
+  <header class="w-full rounded-b-[20px]" style="height:56px;background:var(--color-soft-cloud);">
+    <div class="max-w-6xl mx-auto px-lg h-full flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center gap-sm">
         <img src="/favicon.svg" alt=""
-          class="w-9 h-9 md:w-[86px] md:h-[86px] flex-shrink-0"
-          style="border-radius:18%;box-shadow:0 0 0 1px rgba(180,100,0,0.25),0 0 10px rgba(180,100,0,0.12);" />
-        Sprocket
-      </h1>
-    </div>
-    <p class="text-caption-md mb-sm" style="color:var(--color-mute);">Precise carb &amp; fluid targets from your FTP and power.</p>
-    <div class="flex items-center justify-center gap-md flex-wrap">
-      {#if weight > 0 || ftp > 0}
-        <button class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone] underline underline-offset-[3px]"
-          on:click={() => (showGuide = !showGuide)}>
-          {#if showGuide}
-            <X class="w-3.5 h-3.5" />Hide guide
-          {:else}
-            <Info class="w-3.5 h-3.5" />Guide
-          {/if}
-        </button>
-      {/if}
-      {#if showWhatsNew}
-        <button class="inline-flex items-center gap-xs text-caption-sm text-[--color-stone] underline underline-offset-[3px]"
-          on:click={() => (showChangelogSheet = true)}>
-          v{VERSION} · {BUILD_NAME} <ChevronRight class="w-3 h-3" />
-        </button>
-      {/if}
+          class="w-7 h-7 flex-shrink-0"
+          style="border-radius:18%;box-shadow:0 0 0 1px rgba(180,100,0,0.20),0 0 8px rgba(180,100,0,0.10);" />
+        <h1 class="text-body-strong font-extra-bold" style="color:var(--color-ink);margin:0;">bonkproof</h1>
+      </div>
+      <!-- Right chips -->
+      <div class="flex items-center gap-sm">
+        {#if weight > 0 && ftp > 0}
+          <button class="badge text-caption-sm flex items-center gap-xs"
+            on:click={() => { profileOpen = true; rideOpen = false; }}>
+            <User class="w-3 h-3" />
+            {weight}{imperial ? 'lb' : 'kg'} · {ftp}W
+          </button>
+        {/if}
+        {#if showWhatsNew}
+          <button class="badge text-caption-sm flex items-center gap-xs"
+            on:click={() => (showChangelogSheet = true)}>
+            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#fb2d54;"></span>
+            New
+          </button>
+        {/if}
+      </div>
     </div>
   </header>
 
   <div class="max-w-6xl mx-auto p-sm md:p-md lg:p-lg">
 
     <!-- 3-step how-to — shown on first visit or on demand -->
-    {#if !(weight > 0 || ftp > 0) || showGuide}
+    {#if !(weight > 0 || ftp > 0)}
     <div transition:fade={{ duration: 200 }} class="mb-lg md:mb-section card-enter card-enter-1">
       <!-- Mobile: horizontal swipe cards -->
-      <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;">
+      <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;" tabindex="0" role="region" aria-label="Result cards">
         {#each HOW_TO_STEPS as step, i}
           <div class="snap-center shrink-0 w-[78%] card-soft rounded-sm overflow-hidden shimmer-once flex"
             style="--shimmer-delay:{0.5 + i * 0.1}s"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
-            <div class="flex items-center justify-center flex-shrink-0" style="background:#FFD700;min-width:56px;padding:0 18px 0 14px;clip-path:polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);">
-              <span class="text-lg font-bold" style="color:#111111;">{step.n}</span>
+            <div class="flex items-center justify-center flex-shrink-0" style="background:#f73b20;min-width:56px;padding:0 18px 0 14px;clip-path:polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);">
+              <span class="text-lg font-bold" style="color:#ffffff;">{step.n}</span>
             </div>
             <div class="p-lg space-y-xs">
               <h2 class="text-body-strong font-bold text-[--color-ink]">{step.title}</h2>
@@ -606,8 +558,8 @@
         {#each HOW_TO_STEPS as step, i}
           <div class="flex flex-col"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
-            <div class="flex items-center justify-center py-md" style="background:#FFD700;">
-              <span class="text-lg font-bold" style="color:#111111;">{step.n}</span>
+            <div class="flex items-center justify-center py-md" style="background:#f73b20;">
+              <span class="text-lg font-bold" style="color:#ffffff;">{step.n}</span>
             </div>
             <div class="p-lg space-y-xs flex-1">
               <h2 class="text-body-strong font-bold text-[--color-ink]">{step.title}</h2>
@@ -621,11 +573,6 @@
 
     <!-- Input section -->
     <div class="mb-lg card-enter card-enter-2">
-      <div class="flex items-center gap-md mb-lg">
-        <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
-        <span class="badge text-utility-xs font-bold uppercase tracking-widest">Setup</span>
-        <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
-      </div>
 
     <!-- Unified setup card -->
     <div class="rounded-sm overflow-hidden mb-lg"
@@ -709,10 +656,10 @@
               </div>
               <div style="display:flex;border-radius:20px;border:1px solid #cacacb;overflow:hidden;background:#f5f5f5;">
                 <button
-                  style="{!imperial ? 'background:#111111;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                  style="{!imperial ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
                   on:click={() => { if (imperial) toggleImperial(); }}>km / kg</button>
                 <button
-                  style="{imperial ? 'background:#111111;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                  style="{imperial ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
                   on:click={() => { if (!imperial) toggleImperial(); }}>mi / lbs</button>
               </div>
             </div>
@@ -734,7 +681,9 @@
                 {#each SWEAT_LEVELS as { value, drops }}
                   <button
                     class="flex items-center gap-[2px]"
-                    style="{sweatRate === value ? 'background:#111111;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;transition:background 0.15s,color 0.15s;"
+                    style="{sweatRate === value ? 'background:#f73b20;color:#ffffff;' : 'background:transparent;color:#707072;'}padding:7px 16px;transition:background 0.15s,color 0.15s;"
+                    aria-label="{value.charAt(0).toUpperCase() + value.slice(1)} sweat rate"
+                    aria-pressed={sweatRate === value}
                     on:click={() => (sweatRate = value)}>
                     {#each { length: drops } as _}<Droplet class="w-3.5 h-3.5" />{/each}
                   </button>
@@ -745,7 +694,7 @@
           </div>
           <div class="flex items-center gap-xs px-lg pt-xl pb-lg">
             <Lock class="w-3 h-3 text-[--color-stone] flex-shrink-0" />
-            <p class="text-caption-sm text-[--color-stone]">Saved locally on this device. Nothing sent to any server.</p>
+            <p class="text-caption-sm text-[--color-stone]">Stored locally. No server.</p>
           </div>
         </div>
       {/if}
@@ -795,9 +744,11 @@
             <!-- Row 1: Distance / Duration -->
             <div class="grid grid-cols-1 md:grid-cols-2">
               <div class="flex items-center justify-between px-lg py-lg md:border-r border-[var(--color-hairline)]">
-                <label for="distance" class="text-caption-md text-[--color-ink]">Distance</label>
+                <label for="distance" class="text-caption-md text-[--color-ink]">
+                  Distance <span class="text-caption-sm text-[--color-mute]">(optional)</span>
+                </label>
                 <div class="flex items-center gap-xs">
-                  <input id="distance" type="number" bind:value={distance} min="1" max="500" step="1"
+                  <input id="distance" type="number" bind:value={distance} min="1" max="500" step="1" placeholder="0"
                     class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
                     style="height:36px;border-radius:20px;border:1px solid #cacacb;padding:0 12px;background:#fff;"
                     on:focus={focusInput} />
@@ -828,7 +779,7 @@
                   <span class="text-caption-sm text-[--color-mute]">Planned average</span>
                 </div>
                 <div class="flex items-center gap-xs">
-                  <input id="power" type="number" bind:value={power} min="0" max="600" step="1"
+                  <input id="power" type="number" bind:value={power} min="0" max="600" step="1" placeholder="200"
                     class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
                     style="height:36px;border-radius:20px;border:1px solid #cacacb;padding:0 12px;background:#fff;"
                     on:focus={focusInput} />
@@ -840,8 +791,12 @@
                 <div class="flex items-center h-10">
                   {#if powerDerived && zoneLabel}
                     <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}%</span>
-                  {:else if ftp === 0}
-                    <span class="text-[--color-mute] text-caption-sm">Enter FTP first</span>
+                  {:else if !(ftp > 0)}
+                    <button class="text-caption-sm flex items-center gap-xxs"
+                      style="color:var(--color-sale);"
+                      on:click={() => { profileOpen = true; rideOpen = false; }}>
+                      Set FTP in profile <ChevronRight class="w-3 h-3" />
+                    </button>
                   {:else}
                     <span class="text-[--color-mute] text-caption-sm">Enter power</span>
                   {/if}
@@ -853,6 +808,7 @@
             <div class="px-lg py-lg">
               <div class="flex items-center justify-between mb-sm">
                 <label for="temperature" class="text-caption-md text-[--color-ink]">Temperature</label>
+                <!-- °C intentional — heat formula is Celsius-based regardless of unit preference -->
                 <span class="text-caption-md font-bold text-[--color-ink]">{temperature}°C</span>
               </div>
               <input id="temperature" type="range" bind:value={temperature} min="0" max="45" step="1"
@@ -885,73 +841,10 @@
 
     </div><!-- /Input section -->
 
-    <!-- Results divider -->
-    <div class="flex items-center gap-md mb-lg card-enter card-enter-4">
-      <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
-      <span class="badge text-utility-xs font-bold uppercase tracking-widest">Results</span>
-      <div class="flex-1 h-px" style="background:var(--color-hairline);"></div>
-    </div>
+    {#if duration > 0 && (weight > 0)}
 
-    <!-- Results Row 1: Speed + Power -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-4">
-
-      <!-- Speed card -->
-      <div class="card p-lg">
-        <div class="flex items-start gap-md mb-lg">
-          <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
-            <Gauge class="w-7 h-7 text-[--color-ink]" />
-          </div>
-          <div class="min-w-0">
-            <h2 class="text-heading-lg font-bold text-[--color-ink]">Speed</h2>
-            <p class="text-caption-sm text-[--color-mute]">Average pace for your ride</p>
-          </div>
-        </div>
-        <div class="mb-lg">
-          <div class="flex items-baseline gap-sm">
-            <span class="text-7xl md:text-8xl font-extra-bold" style="color:{speedKmh > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{Math.round($animatedSpeed)}</span>
-            <span class="text-3xl text-[--color-mute]">{speedUnit}</span>
-          </div>
-        </div>
-        {#if speedSlogan}
-          <a href={animalLinks[speedSlogan]} target="_blank" rel="noopener noreferrer">
-            <span class="badge-black inline-flex items-center gap-xs">
-              {speedSlogan}
-              <ExternalLink class="w-3 h-3" />
-            </span>
-          </a>
-        {/if}
-      </div>
-
-      <!-- Power card -->
-      <div class="card p-lg">
-        <div class="flex items-start gap-md mb-lg">
-          <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
-            <Zap class="w-7 h-7 text-[--color-ink]" />
-          </div>
-          <div class="min-w-0">
-            <h2 class="text-heading-lg font-bold text-[--color-ink]">Power</h2>
-            <p class="text-caption-sm text-[--color-mute]">Ride intensity based on your FTP</p>
-          </div>
-        </div>
-        <div class="mb-md">
-          <div class="flex items-baseline gap-sm">
-            <span class="text-7xl md:text-8xl font-extra-bold" style="color:{power > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{power}</span>
-            <span class="text-3xl text-[--color-mute]">W</span>
-          </div>
-        </div>
-        {#if powerDerived}
-          <div class="flex items-center gap-sm flex-wrap">
-            <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}% FTP</span>
-            <span class="badge-black" style="background:#c2410c;color:#ffffff;">~{Math.round($animatedKcalPerHour)} kcal/h</span>
-          </div>
-        {:else}
-          <p class="text-caption-sm text-[--color-mute]">Enter FTP in Rider Profile & ride power above</p>
-        {/if}
-      </div>
-    </div>
-
-    <!-- Results Row 2: Carbs + Fluids -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-5">
+    <!-- Results Row 1: Carbs + Fluids (primary output) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-3">
 
       <!-- Carbs card -->
       <div class="card p-lg">
@@ -1013,14 +906,57 @@
       </div>
     </div>
 
+    <!-- Results Row 2: Power (+ speed when available) -->
+    <div class="card p-lg mb-lg card-enter card-enter-4">
+      <div class="flex items-start gap-md mb-lg">
+        <div class="w-12 h-12 rounded-sm bg-[--color-soft-cloud] flex items-center justify-center flex-shrink-0">
+          <Zap class="w-7 h-7 text-[--color-ink]" />
+        </div>
+        <div class="min-w-0">
+          <h2 class="text-heading-lg font-bold text-[--color-ink]">Power</h2>
+          <p class="text-caption-sm text-[--color-mute]">Ride intensity based on your FTP</p>
+        </div>
+      </div>
+      <div class="mb-md">
+        <div class="flex items-baseline gap-sm">
+          <span class="text-7xl md:text-8xl font-extra-bold" style="color:{power > 0 ? 'var(--color-ink)' : 'var(--color-hairline)'};transition:color 0.3s ease;">{power ?? 0}</span>
+          <span class="text-3xl text-[--color-mute]">W</span>
+        </div>
+      </div>
+      {#if powerDerived}
+        <div class="flex items-center gap-sm flex-wrap">
+          <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}% FTP</span>
+          <span class="badge-black" style="background:#f73b20;color:#ffffff;">~{Math.round($animatedKcalPerHour)} kcal/h</span>
+        </div>
+      {:else}
+        <p class="text-caption-sm text-[--color-mute]">Enter FTP and ride power to see zone</p>
+      {/if}
+      {#if speedKmh > 0}
+        <div class="flex items-center justify-between mt-md pt-md" style="border-top:1px solid var(--color-hairline);">
+          <div class="flex items-baseline gap-sm">
+            <span class="text-heading-md font-bold text-[--color-ink]">{Math.round($animatedSpeed)}</span>
+            <span class="text-caption-md text-[--color-mute]">{speedUnit}</span>
+          </div>
+          {#if speedSlogan}
+            <a href={animalLinks[speedSlogan]} target="_blank" rel="noopener noreferrer">
+              <span class="badge-black inline-flex items-center gap-xs">
+                {speedSlogan}
+                <ExternalLink class="w-3 h-3" />
+              </span>
+            </a>
+          {/if}
+        </div>
+      {/if}
+    </div>
+
     <!-- Totals + Fueling Schedule + Bottle Planner — tabbed dark card -->
-    <div class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-6">
+    <div class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-5">
 
       <!-- Tab bar -->
       <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:20px;padding:3px;">
         <button
           style={tabStyle('summary', totalsTab)}
-          on:click={() => (totalsTab = 'summary')}>Summary</button>
+          on:click={() => (totalsTab = 'summary')}>Totals</button>
         <button
           style={tabStyle('schedule', totalsTab)}
           on:click={() => (totalsTab = 'schedule')}>Schedule</button>
@@ -1029,10 +965,10 @@
           on:click={() => (totalsTab = 'pack')}>Pack</button>
       </div>
 
-      <!-- Summary tab -->
+      <!-- Totals tab -->
       {#if totalsTab === 'summary'}
         <div in:fade={{ duration: 250 }}>
-        <h2 class="text-caption-md mb-lg text-[--color-on-primary]">Total needs for {duration > 0 ? formatDuration(duration) : '—'}</h2>
+        <h2 class="text-caption-md mb-lg text-[--color-on-primary]">Total needs for {formatDuration(duration)}</h2>
         <div class="grid grid-cols-3 gap-md">
           <div class="bg-[--color-on-primary] rounded-md p-md text-center">
             <div class="text-4xl md:text-5xl font-extra-bold text-[--color-ink] mb-xs">{Math.round($animatedTotalCarbs)}g</div>
@@ -1066,7 +1002,7 @@
           </div>
         </div>
         {#if fuelingEvents.length === 0}
-          <p style="color:rgba(255,255,255,0.5);font-size:14px;">Enter weight and duration to generate schedule.</p>
+          <p style="color:rgba(255,255,255,0.5);font-size:14px;">Ride too short for a fueling schedule.</p>
         {:else if fuelingEvents[0].carbs === 0}
           <p style="color:rgba(255,255,255,0.5);font-size:14px;">No solid food needed — drink covers all carbs.</p>
         {:else}
@@ -1088,14 +1024,13 @@
             <p style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:6px;">↑ reduced by {drinkCarbsPerHour}g/h from drink</p>
           {/if}
         {/if}
-
         </div>
 
       <!-- Pack tab (bottles + checklist) -->
       {:else if totalsTab === 'pack'}
         <div in:fade={{ duration: 250 }}>
         {#if bottleCount === 0}
-          <p style="color:rgba(255,255,255,0.5);font-size:14px;">Enter weight and duration to plan bottles.</p>
+          <p style="color:rgba(255,255,255,0.5);font-size:14px;">No bottles needed at this intensity.</p>
         {:else}
           <!-- Drink product picker -->
           <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
@@ -1158,7 +1093,7 @@
                   <button
                     class="flex items-center gap-md text-left"
                     on:click={() => togglePack(item.id)}>
-                    <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid {checked ? '#FFD700' : 'rgba(255,255,255,0.25)'};background:{checked ? '#FFD700' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+                    <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid {checked ? '#f73b20' : 'rgba(255,255,255,0.25)'};background:{checked ? '#f73b20' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
                       {#if checked}
                         <Check class="w-3 h-3" style="color:#111111;" />
                       {/if}
@@ -1174,56 +1109,80 @@
       {/if}
     </div>
 
+    {:else}
+    <!-- Results empty state -->
+    <div class="card p-xl text-center mb-xl card-enter card-enter-3"
+      transition:fade={{ duration: 200 }}>
+      <p class="text-caption-md text-[--color-mute]">Enter duration and weight to see results.</p>
+    </div>
+    {/if}
+
     <!-- Footer -->
-    <div class="text-center -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));padding-top:1.5rem;">
-      <div class="flex items-center justify-center gap-xs mb-lg">
-        <span class="text-caption-sm text-[--color-stone]" style="font-weight:600;">Banana</span>
-        <img src="/favicon.svg" alt=""
-          class="w-5 h-5 flex-shrink-0"
-          style="border-radius:18%;box-shadow:0 0 0 1px rgba(180,100,0,0.25),0 0 6px rgba(180,100,0,0.12);" />
-        <span class="text-caption-sm text-[--color-stone]" style="font-weight:600;">Sprocket</span>
-      </div>
-      <div class="flex justify-center items-center gap-md">
+    <div class="flex flex-col items-center gap-sm -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-top:1.25rem;padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));">
+      <div class="flex items-center gap-lg">
         <button on:click={() => showMathSheet = true}
-          class="text-caption-sm text-[--color-mute]"
-          style="padding:6px 16px;border-radius:9999px;border:1px solid var(--color-hairline);transition:background 0.2s ease;">How the math works</button>
-        <button on:click={() => showRiderCard = true}
-          class="text-caption-sm text-[--color-mute]"
-          style="padding:6px 16px;border-radius:9999px;border:1px solid var(--color-hairline);transition:background 0.2s ease;">v{VERSION} · {BUILD_NAME}</button>
+          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">How the math works</button>
+        <button on:click={() => showAboutSheet = true}
+          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">About · v{VERSION}</button>
+      </div>
+      <div class="flex items-center gap-lg">
+        <span class="text-caption-sm text-[--color-stone]">© 2026 bonkproof</span>
+        <button on:click={() => showImpressumSheet = true}
+          class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">Legal Notice</button>
       </div>
     </div>
 
   </div>
 
-  <!-- Rider card -->
-  {#if showRiderCard && currentRider}
+  <!-- About sheet -->
+  {#if showAboutSheet}
     <div class="fixed inset-0 z-[995] bg-black/40" style="backdrop-filter:blur(2px);"
-      on:click={() => showRiderCard = false} role="presentation"
+      on:click={() => showAboutSheet = false} role="presentation"
       transition:fade={{ duration: 200 }}></div>
-    <div class="fixed bottom-0 left-0 right-0 z-[996] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto text-center"
-      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
-      on:touchstart={onSheetDragStart}
+    <div class="fixed bottom-0 left-0 right-0 z-[996] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
+      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      on:touchstart={(e) => onSheetDragStart(e, () => showAboutSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
-      transition:fly={{ duration: 300, y: 80 }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
-      <p class="text-heading-md font-extra-bold mb-xs" style="color:#ffffff;">{BUILD_NAME}</p>
-      <span style="display:inline-block;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);padding:4px 14px;border-radius:9999px;font-size:13px;font-weight:500;">{currentRider.specialty}</span>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px;">
-        {#each currentRider.wins as win}
-          <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.65);padding:4px 12px;border-radius:9999px;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:5px;"><Trophy size={11} />{win}</span>
-        {/each}
+      in:fly={{ y: 420, duration: 380, easing: cubicOut }}
+      out:fly={{ y: 420, duration: 260, easing: cubicIn }}>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
+
+      <!-- App identity -->
+      <div class="flex items-center gap-md mb-lg">
+        <img src="/favicon.svg" alt="" class="w-10 h-10 flex-shrink-0" style="border-radius:18%;" />
+        <div>
+          <p class="text-heading-md font-extra-bold" style="color:#111111;">bonkproof</p>
+          <p class="text-caption-sm" style="color:rgba(17,17,17,0.65);">v{VERSION}</p>
+        </div>
       </div>
-      <p class="text-body-md mt-lg" style="color:rgba(255,255,255,0.75);">{currentRider.bio}</p>
-      <div class="mt-lg flex gap-sm">
-        <a href="https://www.procyclingstats.com/rider/{PCS_SLUG}" target="_blank" rel="noopener noreferrer"
+
+      <p class="text-body-md mb-lg" style="color:rgba(17,17,17,0.6);">Precision carbohydrate and fluid targets for cyclists — calculated from your FTP and planned ride power.</p>
+
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);margin-bottom:24px;">
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
+          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Data storage</span>
+          <span style="color:#111111;font-weight:600;font-size:14px;">Device only</span>
+        </div>
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
+          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Server requests</span>
+          <span style="color:#111111;font-weight:600;font-size:14px;">None</span>
+        </div>
+        <div class="flex items-center justify-between px-lg py-md">
+          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Works offline</span>
+          <span style="color:#111111;font-weight:600;font-size:14px;">Yes</span>
+        </div>
+      </div>
+
+      <div class="flex gap-sm">
+        <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
           class="flex-1 py-3 rounded-full text-button-md font-extra-bold text-center"
-          style="background:#FFD700;color:#111111;text-decoration:none;">
-          PCS profile <ExternalLink size={14} style="display:inline;vertical-align:middle;margin-left:4px;" />
+          style="background:#f73b20;color:#ffffff;text-decoration:none;">
+          GitHub <ExternalLink size={14} style="display:inline;vertical-align:middle;margin-left:4px;" />
         </a>
-        <button on:click={() => showRiderCard = false}
+        <button on:click={() => showAboutSheet = false}
           class="flex-1 py-3 rounded-full text-button-md font-extra-bold"
-          style="background:rgba(255,255,255,0.12);color:#ffffff;">
+          style="background:rgba(17,17,17,0.06);color:#111111;">
           Close
         </button>
       </div>
@@ -1235,25 +1194,26 @@
     <div class="fixed inset-0 z-[990] bg-black/40" style="backdrop-filter:blur(2px);"
       on:click={dismissChangelog} role="presentation" transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
-      on:touchstart={onSheetDragStart}
+      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      on:touchstart={(e) => onSheetDragStart(e, dismissChangelog)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
-      transition:fly={{ duration: 300, y: 80 }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
-      <p class="text-heading-md font-extra-bold mb-xs" style="color:#ffffff;">What's new</p>
-      <p class="text-caption-md mb-lg" style="color:rgba(255,255,255,0.5);">v{VERSION} · {BUILD_NAME}</p>
+      in:fly={{ y: 420, duration: 380, easing: cubicOut }}
+      out:fly={{ y: 420, duration: 260, easing: cubicIn }}>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
+      <p class="text-heading-md font-extra-bold mb-xs" style="color:#111111;">What's new</p>
+      <p class="text-caption-md mb-lg" style="color:rgba(17,17,17,0.65);">v{VERSION} · {BUILD_NAME}</p>
       <ul style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
         {#each CHANGELOG_ITEMS as item}
           <li class="flex items-start gap-md">
-            <span style="color:#FFD700;font-size:16px;line-height:1.4;flex-shrink:0;">·</span>
-            <span style="font-size:15px;color:rgba(255,255,255,0.85);line-height:1.5;">{item}</span>
+            <span style="color:#f73b20;font-size:16px;line-height:1.4;flex-shrink:0;">·</span>
+            <span style="font-size:15px;color:rgba(17,17,17,0.8);line-height:1.5;">{item}</span>
           </li>
         {/each}
       </ul>
       <button on:click={dismissChangelog}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:#FFD700;color:#111111;">
+        style="background:rgba(17,17,17,0.06);color:#111111;">
         Got it
       </button>
     </div>
@@ -1265,60 +1225,61 @@
       on:click={dismissInstallSheet} role="presentation" transition:fade={{ duration: 200 }}>
     </div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
-      on:touchstart={onSheetDragStart}
+      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      on:touchstart={(e) => onSheetDragStart(e, dismissInstallSheet)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
-      transition:fly={{ duration: 300, y: 80 }}>
+      in:fly={{ y: 420, duration: 380, easing: cubicOut }}
+      out:fly={{ y: 420, duration: 260, easing: cubicIn }}>
       <!-- Drag handle -->
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
 
       <div class="mb-4">
-        <p class="text-heading-md font-extra-bold" style="color:#ffffff;">Works offline</p>
-        <p class="text-caption-md mt-1" style="color:rgba(255,255,255,0.6);">Save to home screen for instant access.</p>
+        <p class="text-heading-md font-extra-bold" style="color:#111111;">Works offline</p>
+        <p class="text-caption-md mt-1" style="color:rgba(17,17,17,0.65);">Save to home screen for instant access.</p>
       </div>
 
       {#if installPlatform === 'ios'}
         <ol class="space-y-3 text-body-md">
           <li class="flex items-start gap-3">
-            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">1</span>
+            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">1</span>
             <span>Tap the <strong>Share</strong> button at the bottom of Safari</span>
           </li>
           <li class="flex items-start gap-3">
-            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">2</span>
+            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">2</span>
             <span>Scroll down and tap <strong>Add to Home Screen</strong></span>
           </li>
           <li class="flex items-start gap-3">
-            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">3</span>
+            <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">3</span>
             <span>Tap <strong>Add</strong> — done</span>
           </li>
         </ol>
-        <p class="text-caption-sm mt-4" style="color:rgba(255,255,255,0.5);">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
+        <p class="text-caption-sm mt-4" style="color:rgba(17,17,17,0.65);">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
       {:else}
         {#if deferredInstallPrompt}
           <button on:click={triggerInstall}
             class="w-full py-3 rounded-full text-button-md font-extra-bold mb-4"
-            style="background:#FFD700;color:#111111;">
+            style="background:#f73b20;color:#ffffff;">
             Install now
           </button>
         {:else}
           <ol class="space-y-3 text-body-md">
             <li class="flex items-start gap-3">
-              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">1</span>
-              <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:rgba(255,255,255,0.5);">(top-right corner)</span></span>
+              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">1</span>
+              <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:rgba(17,17,17,0.65);">(top-right corner)</span></span>
             </li>
             <li class="flex items-start gap-3">
-              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(255,255,255,0.15);color:#fff;border:none;">2</span>
+              <span class="badge-black text-xs shrink-0 mt-0.5" style="background:rgba(17,17,17,0.07);color:#111111;border:none;">2</span>
               <span>Tap <strong>Add to Home screen</strong> → <strong>Add</strong></span>
             </li>
           </ol>
-          <p class="text-caption-sm mt-4" style="color:rgba(255,255,255,0.5);">Chrome may also show an install banner at the bottom automatically.</p>
+          <p class="text-caption-sm mt-4" style="color:rgba(17,17,17,0.65);">Chrome may also show an install banner at the bottom automatically.</p>
         {/if}
       {/if}
 
       <button on:click={dismissInstallSheet}
         class="mt-6 w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:rgba(255,255,255,0.12);color:#ffffff;">
+        style="background:rgba(17,17,17,0.06);color:#111111;">
         Not now
       </button>
     </div>
@@ -1334,22 +1295,62 @@
     </div>
   {/if}
 
+  <!-- Impressum sheet -->
+  {#if showImpressumSheet}
+    <div class="fixed inset-0 z-[990] bg-black/40" style="backdrop-filter:blur(2px);"
+      on:click={() => showImpressumSheet = false} role="presentation"
+      transition:fade={{ duration: 200 }}></div>
+    <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
+      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      on:touchstart={(e) => onSheetDragStart(e, () => showImpressumSheet = false)}
+      on:touchmove|preventDefault={onSheetDragMove}
+      on:touchend={onSheetDragEnd}
+      in:fly={{ y: 420, duration: 380, easing: cubicOut }}
+      out:fly={{ y: 420, duration: 260, easing: cubicIn }}>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:#111111;">Impressum</p>
+
+      <p class="text-caption-sm mb-xs" style="color:rgba(17,17,17,0.65);">Legal disclosure · § 5 TMG</p>
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);margin-bottom:20px;">
+        <div class="px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
+          <p style="color:#111111;font-size:14px;font-weight:600;">Daniel Muschinski</p>
+          <p style="color:rgba(17,17,17,0.65);font-size:13px;margin-top:2px;">Freudenbegrstraße 4, 28213 Bremen</p>
+        </div>
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(17,17,17,0.07);">
+          <span style="color:rgba(17,17,17,0.65);font-size:14px;">Contact</span>
+          <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
+            style="color:#f73b20;font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
+        </div>
+        <div class="px-lg py-md">
+          <p style="color:rgba(17,17,17,0.65);font-size:13px;line-height:1.5;">Private, non-commercial project. No personal data is collected or shared with third parties.</p>
+        </div>
+      </div>
+
+      <button on:click={() => showImpressumSheet = false}
+        class="w-full py-3 rounded-full text-button-md font-extra-bold"
+        style="background:rgba(17,17,17,0.06);color:#111111;">
+        Close
+      </button>
+    </div>
+  {/if}
+
   <!-- Math sheet -->
   {#if showMathSheet}
     <div class="fixed inset-0 z-[990] bg-black/40" style="backdrop-filter:blur(2px);"
       on:click={() => showMathSheet = false} role="presentation"
       transition:fade={{ duration: 200 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
-      on:touchstart={onSheetDragStart}
+      style="background:rgba(255,255,255,0.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);color:#111111;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      on:touchstart={(e) => onSheetDragStart(e, () => showMathSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
-      transition:fly={{ duration: 300, y: 80 }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
-      <p class="text-heading-md font-extra-bold mb-lg" style="color:#ffffff;">How the math works</p>
+      in:fly={{ y: 420, duration: 380, easing: cubicOut }}
+      out:fly={{ y: 420, duration: 260, easing: cubicIn }}>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(17,17,17,0.12);"></div>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:#111111;">How the math works</p>
 
-      <div class="mb-lg" style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);">
-        <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:1fr auto auto;background:rgba(255,255,255,0.08);padding:8px 14px;color:rgba(255,255,255,0.45);letter-spacing:0.05em;">
+      <div class="mb-lg" style="border-radius:12px;overflow:hidden;border:1px solid rgba(17,17,17,0.08);">
+        <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:1fr auto auto;background:rgba(17,17,17,0.04);padding:8px 14px;color:rgba(17,17,17,0.65);letter-spacing:0.05em;">
           <span>Zone</span><span class="text-right pr-4">% FTP</span><span class="text-right">Carbs</span>
         </div>
         {#each [
@@ -1359,20 +1360,21 @@
           { zone: 'Threshold', ftp: '90–105%', carbs: '60–90 g/h' },
           { zone: 'VO₂max+',   ftp: '>105%',   carbs: '90–120 g/h' },
         ] as row, i}
-          <div class="grid text-caption-sm" style="grid-template-columns:1fr auto auto;padding:10px 14px;{i % 2 === 1 ? 'background:rgba(255,255,255,0.04);' : ''}border-top:1px solid rgba(255,255,255,0.07);">
-            <span style="color:#ffffff;">{row.zone}</span>
-            <span class="text-right pr-4" style="color:rgba(255,255,255,0.5);">{row.ftp}</span>
-            <span class="text-right" style="color:rgba(255,255,255,0.75);">{row.carbs}</span>
+          <div class="grid text-caption-sm" style="grid-template-columns:1fr auto auto;padding:10px 14px;{i % 2 === 1 ? 'background:rgba(17,17,17,0.03);' : ''}border-top:1px solid rgba(17,17,17,0.06);">
+            <span style="color:#111111;">{row.zone}</span>
+            <span class="text-right pr-4" style="color:rgba(17,17,17,0.65);">{row.ftp}</span>
+            <span class="text-right" style="color:rgba(17,17,17,0.7);">{row.carbs}</span>
           </div>
         {/each}
       </div>
 
-      <p class="text-caption-sm mb-sm" style="color:rgba(255,255,255,0.55);">Fluids scale with body weight — sweat modifier adjusts ±20–30%.</p>
-      <p class="text-caption-sm mb-lg" style="color:rgba(255,255,255,0.55);">Rides &gt;2h: add electrolytes — plain water dilutes sodium balance on long efforts.</p>
+      <p class="text-caption-sm mb-sm" style="color:rgba(17,17,17,0.65);">Fluids scale with body weight — sweat modifier adjusts ±20–30%.</p>
+      <p class="text-caption-sm mb-sm" style="color:rgba(17,17,17,0.65);">Heat: +0.3 L/h per 5°C above 20°C added to fluid target.</p>
+      <p class="text-caption-sm mb-lg" style="color:rgba(17,17,17,0.65);">Rides &gt;2h: add electrolytes — plain water dilutes sodium balance on long efforts.</p>
 
       <button on:click={() => showMathSheet = false}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:rgba(255,255,255,0.12);color:#ffffff;">
+        style="background:rgba(17,17,17,0.06);color:#111111;">
         Close
       </button>
     </div>

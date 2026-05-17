@@ -1,54 +1,49 @@
 <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Warm dark background gradient -->
-    <radialGradient id="bg" cx="50%" cy="52%" r="52%">
-      <stop offset="0%"   stop-color="#2a1800"/>
-      <stop offset="100%" stop-color="#0f0f0f"/>
+    <radialGradient id="bg" cx="38%" cy="32%" r="72%">
+      <stop offset="0%"  stop-color="#252530"/>
+      <stop offset="100%" stop-color="#0f0f14"/>
     </radialGradient>
-
-    <!-- Arc gradient: dark orange (E side) → bright gold → amber (F side) -->
     <linearGradient id="arc-grad" x1="87" y1="354" x2="425" y2="61" gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="#B03A00"/>
-      <stop offset="45%"  stop-color="#FFD700"/>
-      <stop offset="100%" stop-color="#FF7800"/>
+      <stop offset="0%"   stop-color="#c02010"/>
+      <stop offset="55%"  stop-color="#f73b20"/>
+      <stop offset="100%" stop-color="#fb6040"/>
     </linearGradient>
-
-    <!-- Arc glow -->
     <filter id="glow-arc" x="-30%" y="-30%" width="160%" height="160%">
       <feGaussianBlur in="SourceGraphic" stdDeviation="11" result="b"/>
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-
-    <!-- Banana glow (stronger) -->
-    <filter id="glow-banana" x="-35%" y="-35%" width="170%" height="170%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    <filter id="skull-shadow">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="rgba(0,0,0,0.4)"/>
     </filter>
   </defs>
 
   <!-- Background -->
   <rect width="512" height="512" rx="90" fill="url(#bg)"/>
 
-  <!-- Dim track — full 240° arc shows total gauge range -->
+  <!-- Dim track — full 270° arc -->
   <path d="M 87 354 A 195 195 0 1 1 425 354"
-    fill="none" stroke="rgba(255,160,0,0.20)" stroke-width="18" stroke-linecap="round"/>
+    fill="none" stroke="rgba(247,59,32,0.18)" stroke-width="18" stroke-linecap="round"/>
 
-  <!-- Active arc halo — 75% filled (180° of 240°), ends at 330° → (425,159) -->
-  <path d="M 87 354 A 195 195 0 1 1 425 159"
-    fill="none" stroke="#FF8C00" stroke-width="38" stroke-linecap="round"
-    opacity="0.12"/>
-
-  <!-- Active arc — 75% filled, sharp + glow -->
+  <!-- Active arc — 75% filled, Jeton Red -->
   <path d="M 87 354 A 195 195 0 1 1 425 159"
     fill="none" stroke="url(#arc-grad)" stroke-width="18" stroke-linecap="round"
     filter="url(#glow-arc)"/>
 
-  <!-- Banana — smaller (scale 10), centered -->
-  <g transform="translate(136,120) scale(10)"
-     fill="none" stroke="#FFD700" stroke-width="1.75"
-     stroke-linecap="round" stroke-linejoin="round"
-     filter="url(#glow-banana)">
-    <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
-    <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.11 22 2 22 2 20c0-1.5 1.14-1.55 3.15-2.11Z"/>
-  </g>
+  <!-- Skull cranium -->
+  <circle cx="256" cy="232" r="84" fill="#ffffff" filter="url(#skull-shadow)"/>
+  <!-- Skull jaw (overlaps cranium bottom → merges) -->
+  <rect x="188" y="282" width="136" height="40" rx="14" fill="#ffffff"/>
+
+  <!-- Eye sockets -->
+  <circle cx="222" cy="224" r="22" fill="#111111"/>
+  <circle cx="290" cy="224" r="22" fill="#111111"/>
+
+  <!-- Nose cavity -->
+  <ellipse cx="256" cy="262" rx="10" ry="12" fill="#111111"/>
+
+  <!-- Teeth gaps (3) -->
+  <rect x="219" y="286" width="12" height="30" rx="3" fill="#111111"/>
+  <rect x="250" y="286" width="12" height="30" rx="3" fill="#111111"/>
+  <rect x="281" y="286" width="12" height="30" rx="3" fill="#111111"/>
 </svg>

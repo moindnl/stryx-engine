@@ -212,7 +212,7 @@
   onMount(() => {
     // Easter egg: console greeting
     console.log(
-      '%cBonkProof — Cycling Nutrition Planner\n\nPsst. You\'re looking at the source.\nWhy are you not riding your bike?\n\nBuilt by Daniel Muschinski\nhttps://github.com/moindnl',
+      '%cbonkproof — Cycling Nutrition Planner\n\nPsst. You\'re looking at the source.\nWhy are you not riding your bike?\n\nBuilt by Daniel Muschinski\nhttps://github.com/moindnl',
       'color:#FFD700;background:#111111;font-family:monospace;font-size:12px;padding:16px 20px;border-radius:8px;line-height:1.6;'
     );
 
@@ -509,7 +509,7 @@
         <img src="/favicon.svg" alt=""
           class="w-7 h-7 flex-shrink-0"
           style="border-radius:18%;box-shadow:0 0 0 1px rgba(180,100,0,0.20),0 0 8px rgba(180,100,0,0.10);" />
-        <h1 class="text-body-strong font-extra-bold" style="color:var(--color-ink);margin:0;">BonkProof</h1>
+        <h1 class="text-body-strong font-extra-bold" style="color:var(--color-ink);margin:0;">bonkproof</h1>
       </div>
       <!-- Right chips -->
       <div class="flex items-center gap-sm">
@@ -1124,7 +1124,7 @@
           class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">About · v{VERSION}</button>
       </div>
       <div class="flex items-center gap-lg">
-        <span class="text-caption-sm text-[--color-stone]">© 2026 BonkProof</span>
+        <span class="text-caption-sm text-[--color-stone]">© 2026 bonkproof</span>
         <button on:click={() => showImpressumSheet = true}
           class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">Legal Notice</button>
       </div>
@@ -1150,7 +1150,7 @@
       <div class="flex items-center gap-md mb-lg">
         <img src="/favicon.svg" alt="" class="w-10 h-10 flex-shrink-0" style="border-radius:18%;" />
         <div>
-          <p class="text-heading-md font-extra-bold" style="color:#111111;">BonkProof</p>
+          <p class="text-heading-md font-extra-bold" style="color:#111111;">bonkproof</p>
           <p class="text-caption-sm" style="color:rgba(17,17,17,0.65);">v{VERSION}</p>
         </div>
       </div>

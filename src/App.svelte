@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Zap, Droplet, ChevronDown, ChevronRight, RotateCcw, User, UserX, Wheat, Check, RefreshCw, ExternalLink } from 'lucide-svelte';
+  import { Zap, Droplet, ChevronDown, ChevronRight, RotateCcw, User, UserX, Wheat, Check, RefreshCw, ExternalLink, Moon, Sun } from 'lucide-svelte';
   import { tweened } from 'svelte/motion';
   import { linear, cubicOut, cubicIn, quintOut } from 'svelte/easing';
   import { fly, fade, slide } from 'svelte/transition';
@@ -42,6 +42,14 @@
     langFlipping = true;
     lang.update(l => l === 'en' ? 'de' : 'en');
   }
+
+  // Dark / light mode
+  let isDark: boolean = localStorage.getItem('bp-theme') === 'dark';
+  function applyTheme(dark: boolean) {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    localStorage.setItem('bp-theme', dark ? 'dark' : 'light');
+  }
+  function toggleTheme() { isDark = !isDark; applyTheme(isDark); }
 
 
   // Piecewise linear carb oxidation by IF (Jeukendrup 2004 / ACSM guidelines)
@@ -214,6 +222,9 @@
   }
 
   onMount(() => {
+    // Apply persisted theme immediately (before paint if possible — also done inline for SSR safety)
+    applyTheme(isDark);
+
     // Easter egg: console greeting
     console.log('bonkproof — Cycling Nutrition Planner\n\nPsst. You\'re looking at the source.\nWhy are you not riding your bike?\n\nBuilt by Daniel Muschinski\nhttps://github.com/moindnl');
 
@@ -233,6 +244,8 @@
 
   onDestroy(() => {
     if (installSheetTimer) clearTimeout(installSheetTimer);
+    if (_saveTimer) clearTimeout(_saveTimer);
+    if (holdTimer) clearTimeout(holdTimer);
     window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
     window.removeEventListener('appinstalled', onAppInstalled);
   });
@@ -303,13 +316,13 @@
   $: heatBonus  = temperature > 20 ? Math.round((temperature - 20) / 5 * 0.3 * 10) / 10 : 0;
   $: sweatMultiplier = sweatRate === 'light' ? 0.8 : sweatRate === 'heavy' ? 1.3 : 1.0;
 
-  // Temperature slider: track fill color #09090b → #f73b20 above 20°C
-  function tempColor(t: number): string {
-    if (t <= 20) return '#09090b';
+  // Temperature slider: track fill color neutral → #f73b20 above 20°C
+  function tempColor(t: number, dark: boolean): string {
+    if (t <= 20) return dark ? '#f4f4f5' : '#09090b';
     const p = Math.min((t - 20) / 25, 1);
     return `rgb(${Math.round(9 + 238 * p)},${Math.round(9 + 50 * p)},${Math.round(11 + 21 * p)})`;
   }
-  $: tempFillColor = tempColor(temperature);
+  $: tempFillColor = tempColor(temperature, isDark);
 
   // Ping value display when crossing 20°C threshold
   let heatPing = false;
@@ -330,7 +343,6 @@
 
   // Power-derived zone
   $: intensityFactor = ftp > 0 && power > 0 ? power / ftp : 0;
-  $: powerDerived = intensityFactor > 0;
 
   // 🥚 Easter egg B: Tadej mode at ≥500W
   $: tadejMode = power >= 500;
@@ -366,12 +378,12 @@
 
   // Carbs: IF-based piecewise when power available, zone midpoint fallback
   $: carbsPerHour = !duration || !(weight > 0) ? 0 :
-    powerDerived
+    intensityFactor > 0
       ? carbsFromIF(intensityFactor)
       : Math.round((CARB_RANGES[intensity].min + CARB_RANGES[intensity].max) / 2);
 
   // Energy: kJ mechanical ≈ kcal (cycling standard: 1W × 1h = 3.6 kJ ≈ 3.6 kcal)
-  $: kcalPerHour = powerDerived ? Math.round(power * 3.6) : 0;
+  $: kcalPerHour = intensityFactor > 0 ? Math.round(power * 3.6) : 0;
 
   // Speed (display unit depends on imperial; animal thresholds always km/h)
   $: speedDisplay = Math.round(imperial ? speedKmh * 0.621371 : speedKmh);
@@ -400,44 +412,23 @@
   $: animatedKcalPerHour.set(kcalPerHour);
 
   const SPEED_LEVELS = [
-    { minKmh: 0,   maxKmh: 10,  key: 'turtle',      wikiSlug: 'Turtle' },
-    { minKmh: 10,  maxKmh: 15,  key: 'penguin',     wikiSlug: 'Penguin' },
-    { minKmh: 15,  maxKmh: 20,  key: 'gazelle',     wikiSlug: 'Gazelle' },
-    { minKmh: 20,  maxKmh: 25,  key: 'cheetah',     wikiSlug: 'Cheetah' },
-    { minKmh: 25,  maxKmh: 30,  key: 'falcon',      wikiSlug: 'Falcon' },
-    { minKmh: 30,  maxKmh: 40,  key: 'peregrine',   wikiSlug: 'Peregrine_falcon' },
-    { minKmh: 40,  maxKmh: 55,  key: 'greyhound',   wikiSlug: 'Greyhound' },
-    { minKmh: 55,  maxKmh: 75,  key: 'downhill',    wikiSlug: '%C3%89ric_Barone' },
-    { minKmh: 75,  maxKmh: 100, key: 'motorcycle',  wikiSlug: 'Motorcycle' },
-    { minKmh: 100, maxKmh: Infinity, key: 'ambulance', wikiSlug: 'Ambulance' },
+    { minKmh: 0,   maxKmh: 10,  key: 'turtle',      tKey: 'turtlePace',        wikiSlug: 'Turtle' },
+    { minKmh: 10,  maxKmh: 15,  key: 'penguin',     tKey: 'penguinCruise',     wikiSlug: 'Penguin' },
+    { minKmh: 15,  maxKmh: 20,  key: 'gazelle',     tKey: 'gazellePace',       wikiSlug: 'Gazelle' },
+    { minKmh: 20,  maxKmh: 25,  key: 'cheetah',     tKey: 'cheetahChase',      wikiSlug: 'Cheetah' },
+    { minKmh: 25,  maxKmh: 30,  key: 'falcon',      tKey: 'falconFlight',      wikiSlug: 'Falcon' },
+    { minKmh: 30,  maxKmh: 40,  key: 'peregrine',   tKey: 'peregrineSpeed',    wikiSlug: 'Peregrine_falcon' },
+    { minKmh: 40,  maxKmh: 55,  key: 'greyhound',   tKey: 'greyhoundSprint',   wikiSlug: 'Greyhound' },
+    { minKmh: 55,  maxKmh: 75,  key: 'downhill',    tKey: 'downhillRecord',    wikiSlug: '%C3%89ric_Barone' },
+    { minKmh: 75,  maxKmh: 100, key: 'motorcycle',  tKey: 'motorcycleTerritory', wikiSlug: 'Motorcycle' },
+    { minKmh: 100, maxKmh: Infinity, key: 'ambulance', tKey: 'callAmbulance',  wikiSlug: 'Ambulance' },
   ] as const;
-
-  type SpeedKey = typeof SPEED_LEVELS[number]['key'];
-
-  const speedWikiUrls: Record<SpeedKey, string> = {
-    turtle:     'https://en.wikipedia.org/wiki/Turtle',
-    penguin:    'https://en.wikipedia.org/wiki/Penguin',
-    gazelle:    'https://en.wikipedia.org/wiki/Gazelle',
-    cheetah:    'https://en.wikipedia.org/wiki/Cheetah',
-    falcon:     'https://en.wikipedia.org/wiki/Falcon',
-    peregrine:  'https://en.wikipedia.org/wiki/Peregrine_falcon',
-    greyhound:  'https://en.wikipedia.org/wiki/Greyhound',
-    downhill:   'https://en.wikipedia.org/wiki/%C3%89ric_Barone',
-    motorcycle: 'https://en.wikipedia.org/wiki/Motorcycle',
-    ambulance:  'https://en.wikipedia.org/wiki/Ambulance',
-  };
 
   $: speedLevel = speedKmh === 0 ? null :
     SPEED_LEVELS.find(s => speedKmh < s.maxKmh) ?? SPEED_LEVELS[SPEED_LEVELS.length - 1];
 
-  $: speedSloganText = speedLevel ? ({
-    turtle: $t.turtlePace, penguin: $t.penguinCruise, gazelle: $t.gazellePace,
-    cheetah: $t.cheetahChase, falcon: $t.falconFlight, peregrine: $t.peregrineSpeed,
-    greyhound: $t.greyhoundSprint, downhill: $t.downhillRecord,
-    motorcycle: $t.motorcycleTerritory, ambulance: $t.callAmbulance,
-  } as Record<SpeedKey, string>)[speedLevel.key] : '';
-
-  $: speedSloganUrl = speedLevel ? speedWikiUrls[speedLevel.key] : '';
+  $: speedSloganText = speedLevel ? ($t[speedLevel.tKey] as string) : '';
+  $: speedSloganUrl  = speedLevel ? `https://en.wikipedia.org/wiki/${speedLevel.wikiSlug}` : '';
 
   $: multiCarbNote = intensityFactor >= 0.90;
 
@@ -467,6 +458,8 @@
   $: carbsPerBottle    = bottleCount > 0 ? Math.round((totalCarbs - drinkCarbsPerHour * duration) / bottleCount) : 0;
   $: totalSolidUnits = duration > 0 && activeSolid.carbs > 0 ? Math.ceil(solidCarbsPerHour * duration / activeSolid.carbs) : 0;
 
+  $: heatWarning = temperature >= 28; // isolated so packItems doesn't recompute on every slider tick
+
   $: packItems = (() => {
     if (!duration || !weight) return [] as { id: string; label: string }[];
     const items: { id: string; label: string }[] = [];
@@ -480,7 +473,7 @@
       items.push({ id: 'bottles', label: $t.packItemBottle(bottleCount, bottleSize) });
     if (drinkProduct !== 'water' && bottleCount > 0)
       items.push({ id: 'carbdrink', label: $t.packItemCarbDrink(activeDrink.label, bottleCount) });
-    if (temperature >= 28)
+    if (heatWarning)
       items.push({ id: 'electrolytes', label: $t.packItemElectrolytes });
     if (duration >= 3)
       items.push({ id: 'cash', label: $t.packItemCash });
@@ -488,12 +481,15 @@
     items.push({ id: 'phone', label: $t.packItemPhone });
     return items;
   })();
+
   // Prune checked state for items that no longer exist
   $: {
-    const validIds = new Set(packItems.map(i => i.id));
-    let pruned = false;
-    checkedPack.forEach(id => { if (!validIds.has(id)) { checkedPack.delete(id); pruned = true; } });
-    if (pruned) checkedPack = checkedPack;
+    if (checkedPack.size > 0) {
+      const validIds = new Set(packItems.map(i => i.id));
+      let pruned = false;
+      checkedPack.forEach(id => { if (!validIds.has(id)) { checkedPack.delete(id); pruned = true; } });
+      if (pruned) checkedPack = checkedPack;
+    }
   }
 
   // Fueling schedule: 20-min intake slots (solid food only)
@@ -519,11 +515,11 @@
   }
 
 
-  $: HOW_TO_STEPS = [
-    { n: '1', title: $t.step1Title, body: $t.step1Body },
-    { n: '2', title: $t.step2Title, body: $t.step2Body },
-    { n: '3', title: $t.step3Title, body: $t.step3Body },
-  ];
+  const HOW_TO_STEPS = [
+    { n: '1', tTitle: 'step1Title', tBody: 'step1Body' },
+    { n: '2', tTitle: 'step2Title', tBody: 'step2Body' },
+    { n: '3', tTitle: 'step3Title', tBody: 'step3Body' },
+  ] as const;
 
   function tabStyle(tab: string, active: string): string {
     return `${active === tab ? 'background:#ffffff;color:#09090b;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;`;
@@ -546,7 +542,7 @@
   {/if}
 
   <!-- App Header — floating bar -->
-  <header class="w-full" style="padding:calc(env(safe-area-inset-top) + 12px) 16px 0;position:sticky;top:0;z-index:995;background:#f4f4f5;">
+  <header class="w-full" style="padding:calc(env(safe-area-inset-top) + 12px) 16px 0;position:sticky;top:0;z-index:995;background:var(--c-bg);">
     <div style="max-width:640px;margin:0 auto;height:52px;background:#09090b;border-radius:9999px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">
       <!-- Logo -->
       <div class="flex items-center gap-sm">
@@ -558,13 +554,24 @@
         <!-- Profile icon: User when set, UserX when empty -->
         <button
           class="flex items-center justify-center"
-          style="width:34px;height:34px;border-radius:50%;background:#ffffff;"
+          style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.15);"
           on:click={() => { profileOpen = !profileOpen; if (profileOpen) { rideOpen = false; setTimeout(() => setupCard?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); } }}
           aria-label="{weight > 0 && ftp > 0 ? $t.ariaRiderProfile : $t.ariaSetupProfile}">
           {#if weight > 0 && ftp > 0}
-            <User class="w-4 h-4" style="color:#09090b;" />
+            <User class="w-4 h-4" style="color:#ffffff;" />
           {:else}
-            <UserX class="w-4 h-4" style="color:#09090b;" />
+            <UserX class="w-4 h-4" style="color:#ffffff;" />
+          {/if}
+        </button>
+        <!-- Theme toggle -->
+        <button
+          on:click={toggleTheme}
+          style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.12);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;"
+          aria-label="Toggle dark mode">
+          {#if isDark}
+            <Sun class="w-4 h-4" style="color:#ffffff;" />
+          {:else}
+            <Moon class="w-4 h-4" style="color:#ffffff;" />
           {/if}
         </button>
         <button
@@ -588,20 +595,20 @@
       <!-- Mobile: horizontal swipe cards -->
       <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;" tabindex="0" role="region" aria-label="Result cards">
         {#each HOW_TO_STEPS as step, i}
-          <div class="snap-center shrink-0 w-[78%] overflow-hidden shimmer-once flex" style="background:#ececee;border-radius:28px;--shimmer-delay:{0.5 + i * 0.1}s"
+          <div class="snap-center shrink-0 w-[78%] overflow-hidden shimmer-once flex" style="background:var(--c-surface-soft);border-radius:28px;--shimmer-delay:{0.5 + i * 0.1}s"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
             <div class="flex items-center justify-center flex-shrink-0" style="background:#09090b;min-width:56px;padding:0 18px 0 14px;clip-path:polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);">
               <span class="text-lg font-bold" style="color:#ffffff;">{step.n}</span>
             </div>
             <div class="p-lg space-y-xs">
-              <h2 class="text-body-strong font-bold text-[--color-ink]">{step.title}</h2>
-              <p class="text-caption-md text-[--color-charcoal]">{step.body}</p>
+              <h2 class="text-body-strong font-bold text-[--color-ink]">{$t[step.tTitle]}</h2>
+              <p class="text-caption-md text-[--color-charcoal]">{$t[step.tBody]}</p>
             </div>
           </div>
         {/each}
       </div>
       <!-- Desktop: 3-column grid -->
-      <div class="hidden md:grid grid-cols-3 gap-lg overflow-hidden" style="background:#ececee;border-radius:28px;">
+      <div class="hidden md:grid grid-cols-3 gap-lg overflow-hidden" style="background:var(--c-surface-soft);border-radius:28px;">
         {#each HOW_TO_STEPS as step, i}
           <div class="flex flex-col"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
@@ -609,8 +616,8 @@
               <span class="text-lg font-bold" style="color:#ffffff;">{step.n}</span>
             </div>
             <div class="p-lg space-y-xs flex-1">
-              <h2 class="text-body-strong font-bold text-[--color-ink]">{step.title}</h2>
-              <p class="text-caption-md text-[--color-charcoal]">{step.body}</p>
+              <h2 class="text-body-strong font-bold text-[--color-ink]">{$t[step.tTitle]}</h2>
+              <p class="text-caption-md text-[--color-charcoal]">{$t[step.tBody]}</p>
             </div>
           </div>
         {/each}
@@ -619,7 +626,7 @@
     {/if}
 
     <!-- Unified setup card -->
-    <div bind:this={setupCard} class="mb-lg card-enter card-enter-2" style="background:#ffffff;border-radius:36px;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.04) 0px 4px 12px 0px;overflow:hidden;">
+    <div bind:this={setupCard} class="mb-lg card-enter card-enter-2" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);overflow:hidden;">
 
     <!-- Rider Profile -->
     <div>
@@ -652,14 +659,14 @@
             <div class="flex items-center gap-xs">
               <input id="weight" type="number" bind:value={weight} min="1" max="400" step="1" placeholder="75"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid #d4d4d8;padding:0 14px;background:#fff;"
+                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">{imperial ? 'lbs' : 'kg'}</span>
             </div>
           </div>
 
           <!-- FTP -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid #ececee;">
+          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--c-border);">
             <div>
               <label for="ftp" class="text-caption-md font-bold text-[--color-ink] block">{$t.ftpLabel}</label>
               <span class="text-caption-sm text-[--color-mute]">{$t.ftpSub}</span>
@@ -667,38 +674,38 @@
             <div class="flex items-center gap-xs">
               <input id="ftp" type="number" bind:value={ftp} min="0" max="600" step="1" placeholder="280"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid #d4d4d8;padding:0 14px;background:#fff;"
+                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">W</span>
             </div>
           </div>
 
           <!-- Units -->
-          <div class="flex items-center justify-between py-lg gap-md flex-wrap" style="border-top:1px solid #ececee;">
+          <div class="flex items-center justify-between py-lg gap-md flex-wrap" style="border-top:1px solid var(--c-border);">
             <span class="text-caption-md font-bold text-[--color-ink]">{$t.units}</span>
-            <div style="display:flex;border-radius:14px;border:1px solid #d4d4d8;overflow:hidden;background:#f4f4f5;">
+            <div style="display:flex;border-radius:14px;border:1px solid var(--c-border-input);overflow:hidden;background:var(--c-surface-seg);">
               <button
-                style="{!imperial ? 'background:#09090b;color:#ffffff;' : 'background:transparent;color:#71717a;'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                style="{!imperial ? 'background:var(--c-seg-active);color:var(--c-seg-active-text);' : 'background:transparent;color:var(--c-on-surface-2);'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
                 on:click={() => { if (imperial) toggleImperial(); }}>{$t.kmKg}</button>
               <button
-                style="{imperial ? 'background:#09090b;color:#ffffff;' : 'background:transparent;color:#71717a;'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                style="{imperial ? 'background:var(--c-seg-active);color:var(--c-seg-active-text);' : 'background:transparent;color:var(--c-on-surface-2);'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
                 on:click={() => { if (!imperial) toggleImperial(); }}>{$t.miLbs}</button>
             </div>
           </div>
 
           <!-- Sweat Rate -->
-          <div class="flex items-center justify-between py-lg gap-md" style="border-top:1px solid #ececee;">
+          <div class="flex items-center justify-between py-lg gap-md" style="border-top:1px solid var(--c-border);">
             <div class="flex-shrink-0">
               <span class="text-caption-md font-bold text-[--color-ink] block">{$t.sweatRate}</span>
               <span class="text-caption-sm text-[--color-mute]">
                 {sweatRate === 'light' ? $t.sweatLight : sweatRate === 'heavy' ? $t.sweatHeavy : $t.sweatBaseline}
               </span>
             </div>
-            <div style="display:flex;border-radius:14px;border:1px solid #d4d4d8;overflow:hidden;background:#f4f4f5;flex-shrink:0;">
+            <div style="display:flex;border-radius:14px;border:1px solid var(--c-border-input);overflow:hidden;background:var(--c-surface-seg);flex-shrink:0;">
               {#each SWEAT_LEVELS as { value, drops }}
                 <button
                   class="flex items-center gap-[2px]"
-                  style="{sweatRate === value ? 'background:#09090b;color:#ffffff;' : 'background:transparent;color:#71717a;'}padding:8px 16px;transition:background 0.15s,color 0.15s;"
+                  style="{sweatRate === value ? 'background:var(--c-seg-active);color:var(--c-seg-active-text);' : 'background:transparent;color:var(--c-on-surface-2);'}padding:8px 16px;transition:background 0.15s,color 0.15s;"
                   aria-label="{value === 'light' ? $t.sweatLightAria : value === 'moderate' ? $t.sweatModerateAria : $t.sweatHeavyAria}"
                   aria-pressed={sweatRate === value}
                   on:click={() => (sweatRate = value)}>
@@ -735,7 +742,7 @@
             <button
               on:click|stopPropagation={resetInputs}
               class="flex items-center justify-center flex-shrink-0"
-              style="width:28px;height:28px;border-radius:50%;background:#f4f4f5;"
+              style="width:28px;height:28px;border-radius:50%;background:var(--c-surface-soft);"
               aria-label="Reset ride inputs">
               <RotateCcw class="w-3.5 h-3.5 text-[--color-ink]" />
             </button>
@@ -756,14 +763,14 @@
             <div class="flex items-center gap-xs">
               <input id="distance" type="number" bind:value={distance} min="1" max="500" step="1" placeholder="0"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid #d4d4d8;padding:0 14px;background:#fff;"
+                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">{imperial ? 'mi' : 'km'}</span>
             </div>
           </div>
 
           <!-- Duration -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid #ececee;">
+          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--c-border);">
             <div>
               <label for="duration" class="text-caption-md font-bold text-[--color-ink] block">{$t.durationLabel}</label>
               <p class="text-utility-xs text-[--color-stone] mt-xxs">{$t.durationHint}</p>
@@ -772,14 +779,14 @@
               <input id="duration" type="text" inputmode="decimal" bind:value={durationRaw}
                 placeholder="1:30"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid #d4d4d8;padding:0 14px;background:#fff;"
+                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">h</span>
             </div>
           </div>
 
           <!-- Power -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid #ececee;">
+          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--c-border);">
             <div>
               <label for="power" class="text-caption-md font-bold text-[--color-ink] block">{$t.ridePower}</label>
               <span class="text-caption-sm text-[--color-mute]">{$t.ridePowerSub}</span>
@@ -787,18 +794,18 @@
             <div class="flex items-center gap-xs">
               <input id="power" type="number" bind:value={power} min="0" max="600" step="1" placeholder="200"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid #d4d4d8;padding:0 14px;background:#fff;"
+                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">W</span>
             </div>
           </div>
 
           <!-- Zone (derived) -->
-          <div class="flex items-center justify-between py-md" style="border-top:1px solid #ececee;">
+          <div class="flex items-center justify-between py-md" style="border-top:1px solid var(--c-border);">
             <span class="text-caption-md font-bold text-[--color-ink]">{$t.zoneLabel}</span>
             <div class="flex items-center">
-              {#if powerDerived && zoneLabel}
-                <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}%</span>
+              {#if intensityFactor > 0 && zoneLabel}
+                <span class="badge" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}%</span>
               {:else if !(ftp > 0)}
                 <button class="text-caption-sm flex items-center gap-xxs text-[--color-mute]"
                   on:click={() => { profileOpen = true; rideOpen = false; }}>
@@ -811,7 +818,7 @@
           </div>
 
           <!-- Temperature -->
-          <div class="py-lg" style="border-top:1px solid #ececee;">
+          <div class="py-lg" style="border-top:1px solid var(--c-border);">
             <div class="flex items-center justify-between mb-sm">
               <label for="temperature" class="text-caption-md font-bold text-[--color-ink]">{$t.temperature}</label>
               <!-- °C intentional — heat formula is Celsius-based regardless of unit preference -->
@@ -852,9 +859,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-3">
 
       <!-- Carbs card -->
-      <div class="p-lg" style="background:#ffffff;border-radius:36px;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.04) 0px 4px 12px 0px;">
+      <div class="p-lg" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);">
         <div class="flex items-start gap-md mb-lg">
-          <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:#ececee;border-radius:14px;">
+          <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:var(--c-surface-soft);border-radius:14px;">
             <Wheat class="w-7 h-7 text-[--color-ink]" />
           </div>
           <div class="min-w-0">
@@ -865,13 +872,13 @@
         <div class="mb-sm">
           <div class="flex items-baseline gap-sm">
             {#key carbsPerHour}
-              <span class="text-7xl md:text-8xl font-extra-bold {carbsPerHour > 0 ? 'num-flash' : ''}" style="color:{carbsPerHour > 0 ? 'var(--color-ink)' : '#d4d4d8'};transition:color 0.3s ease;">{Math.round($animatedCarbs)}</span>
+              <span class="text-7xl md:text-8xl font-extra-bold {carbsPerHour > 0 ? 'num-flash' : ''}" style="color:{carbsPerHour > 0 ? 'var(--color-ink)' : 'var(--c-num-empty)'};transition:color 0.3s ease;">{Math.round($animatedCarbs)}</span>
             {/key}
             <span class="text-3xl text-[--color-mute]">g/h</span>
           </div>
         </div>
         <p class="text-caption-md text-[--color-charcoal]">
-          {#if powerDerived}
+          {#if intensityFactor > 0}
             {$t.carbsFromPower(power, Math.round(intensityFactor * 100))}
           {:else}
             {$t.carbsEstimated}
@@ -883,9 +890,9 @@
       </div>
 
       <!-- Fluids card -->
-      <div class="p-lg" style="background:#ffffff;border-radius:36px;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.04) 0px 4px 12px 0px;">
+      <div class="p-lg" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);">
         <div class="flex items-start gap-md mb-lg">
-          <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:#ececee;border-radius:14px;">
+          <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:var(--c-surface-soft);border-radius:14px;">
             <Droplet class="w-7 h-7 text-[--color-ink]" />
           </div>
           <div class="min-w-0">
@@ -896,7 +903,7 @@
         <div class="mb-sm">
           <div class="flex items-baseline gap-sm">
             {#key fluidPerHour}
-              <span class="text-7xl md:text-8xl font-extra-bold {fluidPerHour > 0 ? 'num-flash' : ''}" style="color:{fluidPerHour > 0 ? 'var(--color-ink)' : '#d4d4d8'};transition:color 0.3s ease;">{$animatedFluid.toFixed(1)}</span>
+              <span class="text-7xl md:text-8xl font-extra-bold {fluidPerHour > 0 ? 'num-flash' : ''}" style="color:{fluidPerHour > 0 ? 'var(--color-ink)' : 'var(--c-num-empty)'};transition:color 0.3s ease;">{$animatedFluid.toFixed(1)}</span>
             {/key}
             <span class="text-3xl text-[--color-mute]">L/h</span>
           </div>
@@ -912,9 +919,9 @@
     </div>
 
     <!-- Results Row 2: Power (+ speed when available) -->
-    <div class="p-lg mb-lg card-enter card-enter-4" style="background:#ffffff;border-radius:36px;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.04) 0px 4px 12px 0px;">
+    <div class="p-lg mb-lg card-enter card-enter-4" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);">
       <div class="flex items-start gap-md mb-lg">
-        <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:#ececee;border-radius:14px;">
+        <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:var(--c-surface-soft);border-radius:14px;">
           <Zap class="w-7 h-7 text-[--color-ink]" />
         </div>
         <div class="min-w-0">
@@ -924,27 +931,27 @@
       </div>
       <div class="mb-md">
         <div class="flex items-baseline gap-sm">
-          <span class="text-7xl md:text-8xl font-extra-bold" style="color:{power > 0 ? 'var(--color-ink)' : '#d4d4d8'};transition:color 0.3s ease;">{power ?? 0}</span>
+          <span class="text-7xl md:text-8xl font-extra-bold" style="color:{power > 0 ? 'var(--c-on-surface)' : 'var(--c-num-empty)'};transition:color 0.3s ease;">{power ?? 0}</span>
           <span class="text-3xl text-[--color-mute]">W</span>
         </div>
       </div>
-      {#if powerDerived}
+      {#if intensityFactor > 0}
         <div class="flex items-center gap-sm flex-wrap">
-          <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}% FTP</span>
-          <span class="badge-black" style="background:var(--color-accent);color:#ffffff;">~{Math.round($animatedKcalPerHour)} kcal/h</span>
+          <span class="badge" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}% FTP</span>
+          <span class="badge" style="background:var(--color-accent);color:#ffffff;">~{Math.round($animatedKcalPerHour)} kcal/h</span>
         </div>
       {:else}
         <p class="text-caption-sm text-[--color-mute]">{$t.powerEnterHint}</p>
       {/if}
       {#if speedKmh > 0}
-        <div class="flex items-center justify-between mt-md pt-md" style="border-top:1px solid #ececee;">
+        <div class="flex items-center justify-between mt-md pt-md" style="border-top:1px solid var(--c-border);">
           <div class="flex items-baseline gap-sm">
             <span class="text-heading-md font-bold text-[--color-ink]">{Math.round($animatedSpeed)}</span>
             <span class="text-caption-md text-[--color-mute]">{speedUnit}</span>
           </div>
           {#if speedSloganText}
             <a href={speedSloganUrl} target="_blank" rel="noopener noreferrer">
-              <span class="badge-black inline-flex items-center gap-xs">
+              <span class="badge inline-flex items-center gap-xs">
                 {speedSloganText}
                 <ExternalLink class="w-3 h-3" />
               </span>
@@ -981,7 +988,7 @@
           </div>
           <div class="rounded-md p-md text-center">
             <div class="text-4xl md:text-5xl font-extra-bold mb-xs flex items-center justify-center" style="color:#ffffff;min-height:1.2em;">
-              {powerDerived ? Math.round($animatedTotalKcal) : '—'}
+              {intensityFactor > 0 ? Math.round($animatedTotalKcal) : '—'}
             </div>
             <div class="text-caption-sm" style="color:rgba(255,255,255,0.70);">{$t.kcal}</div>
           </div>
@@ -1123,7 +1130,7 @@
     {/if}
 
     <!-- Footer -->
-    <div style="border-top:1px solid #ececee;padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 24px));">
+    <div style="border-top:1px solid var(--c-border);padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 24px));">
       <div class="flex items-center justify-between flex-wrap gap-xs" style="padding:12px 0;">
         <span class="text-caption-sm" style="color:var(--color-stone);padding:4px 0;">© 2026 Daniel Muschinski</span>
         <div class="flex items-center flex-wrap">
@@ -1150,37 +1157,37 @@
       on:click={() => showAboutSheet = false} role="presentation"
       transition:fade={{ duration: 300 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:#ffffff;color:#18181b;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.12) 0px -4px 24px 0px;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showAboutSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 500, duration: 420, easing: quintOut }}
       out:fly={{ y: 500, duration: 240, easing: cubicIn }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#d4d4d8;"></div>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:var(--c-drag-handle);"></div>
 
       <!-- App identity -->
       <div class="flex items-center gap-md mb-lg">
         <img src="/favicon.svg" alt="" class="w-10 h-10 flex-shrink-0" style="border-radius:18%;" />
         <div>
-          <p class="text-heading-md font-extra-bold" style="color:#18181b;"><span style="font-style:italic;">bonk</span><span style="color:#f73b20;">proof!</span></p>
-          <p class="text-caption-sm" style="color:#71717a;">v{VERSION}</p>
+          <p class="text-heading-md font-extra-bold" style="color:var(--c-on-surface);"><span style="font-style:italic;">bonk</span><span style="color:#f73b20;">proof!</span></p>
+          <p class="text-caption-sm" style="color:var(--c-on-surface-2);">v{VERSION}</p>
         </div>
       </div>
 
-      <p class="text-body-md mb-lg" style="color:#52525b;">{$t.aboutDesc}</p>
+      <p class="text-body-md mb-lg" style="color:var(--c-on-surface-3);">{$t.aboutDesc}</p>
 
-      <div style="border-radius:14px;overflow:hidden;border:1px solid #ececee;margin-bottom:24px;">
-        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid #ececee;">
-          <span style="color:#71717a;font-size:14px;">{$t.dataStorage}</span>
-          <span style="color:#18181b;font-weight:600;font-size:14px;">{$t.dataStorageVal}</span>
+      <div style="border-radius:14px;overflow:hidden;border:1px solid var(--c-border);margin-bottom:24px;">
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid var(--c-border);">
+          <span style="color:var(--c-on-surface-2);font-size:14px;">{$t.dataStorage}</span>
+          <span style="color:var(--c-on-surface);font-weight:600;font-size:14px;">{$t.dataStorageVal}</span>
         </div>
-        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid #ececee;">
-          <span style="color:#71717a;font-size:14px;">{$t.serverRequests}</span>
-          <span style="color:#18181b;font-weight:600;font-size:14px;">{$t.serverRequestsVal}</span>
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid var(--c-border);">
+          <span style="color:var(--c-on-surface-2);font-size:14px;">{$t.serverRequests}</span>
+          <span style="color:var(--c-on-surface);font-weight:600;font-size:14px;">{$t.serverRequestsVal}</span>
         </div>
         <div class="flex items-center justify-between px-lg py-md">
-          <span style="color:#71717a;font-size:14px;">{$t.worksOffline}</span>
-          <span style="color:#18181b;font-weight:600;font-size:14px;">{$t.worksOfflineVal}</span>
+          <span style="color:var(--c-on-surface-2);font-size:14px;">{$t.worksOffline}</span>
+          <span style="color:var(--c-on-surface);font-weight:600;font-size:14px;">{$t.worksOfflineVal}</span>
         </div>
       </div>
 
@@ -1192,7 +1199,7 @@
         </a>
         <button on:click={() => showAboutSheet = false}
           class="flex-1 py-3 rounded-full text-button-md font-extra-bold"
-          style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
+          style="background:var(--c-surface-soft);color:var(--c-on-surface);border:1px solid var(--c-border-input);">
           {$t.close}
         </button>
       </div>
@@ -1205,18 +1212,18 @@
       on:click={dismissInstallSheet} role="presentation" transition:fade={{ duration: 300 }}>
     </div>
     <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:#ffffff;color:#18181b;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.12) 0px -4px 24px 0px;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, dismissInstallSheet)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 500, duration: 420, easing: quintOut }}
       out:fly={{ y: 500, duration: 240, easing: cubicIn }}>
       <!-- Drag handle -->
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#d4d4d8;"></div>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:var(--c-drag-handle);"></div>
 
       <div class="mb-4">
-        <p class="text-heading-md font-extra-bold" style="color:#18181b;">{$t.installTitle}</p>
-        <p class="text-caption-md mt-1" style="color:#71717a;">{$t.installSub}</p>
+        <p class="text-heading-md font-extra-bold" style="color:var(--c-on-surface);">{$t.installTitle}</p>
+        <p class="text-caption-md mt-1" style="color:var(--c-on-surface-2);">{$t.installSub}</p>
       </div>
 
       {#if installPlatform === 'ios'}
@@ -1234,7 +1241,7 @@
             <span>{@html $t.iosStep3}</span>
           </li>
         </ol>
-        <p class="text-caption-sm mt-4" style="color:#71717a;">{$t.iosSafariNote}</p>
+        <p class="text-caption-sm mt-4" style="color:var(--c-on-surface-2);">{$t.iosSafariNote}</p>
       {:else}
         {#if deferredInstallPrompt}
           <button on:click={triggerInstall}
@@ -1253,13 +1260,13 @@
               <span>{@html $t.androidStep2}</span>
             </li>
           </ol>
-          <p class="text-caption-sm mt-4" style="color:#71717a;">{$t.androidNote}</p>
+          <p class="text-caption-sm mt-4" style="color:var(--c-on-surface-2);">{$t.androidNote}</p>
         {/if}
       {/if}
 
       <button on:click={dismissInstallSheet}
         class="mt-6 w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
+        style="background:var(--c-surface-soft);color:var(--c-on-surface);border:1px solid var(--c-border-input);">
         {$t.notNow}
       </button>
     </div>
@@ -1281,34 +1288,34 @@
       on:click={() => showImpressumSheet = false} role="presentation"
       transition:fade={{ duration: 300 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:#ffffff;color:#18181b;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.12) 0px -4px 24px 0px;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showImpressumSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 500, duration: 420, easing: quintOut }}
       out:fly={{ y: 500, duration: 240, easing: cubicIn }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#d4d4d8;"></div>
-      <p class="text-heading-md font-extra-bold mb-lg" style="color:#18181b;">{$t.impressum}</p>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:var(--c-drag-handle);"></div>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:var(--c-on-surface);">{$t.impressum}</p>
 
-      <p class="text-caption-sm mb-xs" style="color:#71717a;">{$t.impressumSub}</p>
-      <div style="border-radius:14px;overflow:hidden;border:1px solid #ececee;margin-bottom:20px;">
-        <div class="px-lg py-md" style="border-bottom:1px solid #ececee;">
-          <p style="color:#18181b;font-size:14px;font-weight:600;">Daniel Muschinski</p>
-          <p style="color:#71717a;font-size:13px;margin-top:2px;">Freudenbegrstraße 4, 28213 Bremen</p>
+      <p class="text-caption-sm mb-xs" style="color:var(--c-on-surface-2);">{$t.impressumSub}</p>
+      <div style="border-radius:14px;overflow:hidden;border:1px solid var(--c-border);margin-bottom:20px;">
+        <div class="px-lg py-md" style="border-bottom:1px solid var(--c-border);">
+          <p style="color:var(--c-on-surface);font-size:14px;font-weight:600;">Daniel Muschinski</p>
+          <p style="color:var(--c-on-surface-2);font-size:13px;margin-top:2px;">Freudenbegrstraße 4, 28213 Bremen</p>
         </div>
-        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid #ececee;">
-          <span style="color:#71717a;font-size:14px;">{$t.impressumContact}</span>
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid var(--c-border);">
+          <span style="color:var(--c-on-surface-2);font-size:14px;">{$t.impressumContact}</span>
           <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
-            style="color:#18181b;font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
+            style="color:var(--c-on-surface);font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
         </div>
         <div class="px-lg py-md">
-          <p style="color:#71717a;font-size:13px;line-height:1.5;">{$t.impressumNote}</p>
+          <p style="color:var(--c-on-surface-2);font-size:13px;line-height:1.5;">{$t.impressumNote}</p>
         </div>
       </div>
 
       <button on:click={() => showImpressumSheet = false}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
+        style="background:var(--c-surface-soft);color:var(--c-on-surface);border:1px solid var(--c-border-input);">
         {$t.close}
       </button>
     </div>
@@ -1320,37 +1327,37 @@
       on:click={() => showMathSheet = false} role="presentation"
       transition:fade={{ duration: 300 }}></div>
     <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:#ffffff;color:#18181b;box-shadow:rgb(228,228,231) 0px 1px 0px 0px inset,rgba(0,0,0,0.12) 0px -4px 24px 0px;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showMathSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
       in:fly={{ y: 500, duration: 420, easing: quintOut }}
       out:fly={{ y: 500, duration: 240, easing: cubicIn }}>
-      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#d4d4d8;"></div>
-      <p class="text-heading-md font-extra-bold mb-lg" style="color:#18181b;">{$t.howMathWorks}</p>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:var(--c-drag-handle);"></div>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:var(--c-on-surface);">{$t.howMathWorks}</p>
 
-      <div class="mb-lg" style="border-radius:14px;overflow:hidden;border:1px solid #ececee;">
-        <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:16px 1fr 68px 88px;background:#f4f4f5;padding:8px 14px;gap:8px;color:#71717a;letter-spacing:0.05em;">
+      <div class="mb-lg" style="border-radius:14px;overflow:hidden;border:1px solid var(--c-border);">
+        <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:16px 1fr 68px 88px;background:var(--c-surface-soft);padding:8px 14px;gap:8px;color:var(--c-on-surface-2);letter-spacing:0.05em;">
           <span></span><span>{$t.zoneCol}</span><span class="text-right">{$t.ftpCol}</span><span class="text-right">{$t.carbsCol}</span>
         </div>
         {#each $t.mathZones as row, i}
           {@const dotColor = i === 0 ? '#a1a1aa' : i < 3 ? '#3f3f46' : '#f73b20'}
-          <div class="grid text-caption-sm items-center" style="grid-template-columns:16px 1fr 68px 88px;padding:10px 14px;gap:8px;border-top:1px solid #ececee;">
+          <div class="grid text-caption-sm items-center" style="grid-template-columns:16px 1fr 68px 88px;padding:10px 14px;gap:8px;border-top:1px solid var(--c-border);">
             <span style="width:8px;height:8px;border-radius:50%;background:{dotColor};display:block;flex-shrink:0;"></span>
-            <span style="color:#18181b;font-weight:500;">{row.zone}</span>
-            <span class="text-right" style="color:#71717a;">{row.ftp}</span>
-            <span class="text-right" style="color:#52525b;font-weight:600;">{row.carbs}</span>
+            <span style="color:var(--c-on-surface);font-weight:500;">{row.zone}</span>
+            <span class="text-right" style="color:var(--c-on-surface-2);">{row.ftp}</span>
+            <span class="text-right" style="color:var(--c-on-surface-3);font-weight:600;">{row.carbs}</span>
           </div>
         {/each}
       </div>
 
-      <p class="text-caption-sm mb-sm" style="color:#71717a;">{$t.mathFluidNote}</p>
-      <p class="text-caption-sm mb-sm" style="color:#71717a;">{$t.mathHeatNote}</p>
-      <p class="text-caption-sm mb-lg" style="color:#71717a;">{$t.mathElectroNote}</p>
+      <p class="text-caption-sm mb-sm" style="color:var(--c-on-surface-2);">{$t.mathFluidNote}</p>
+      <p class="text-caption-sm mb-sm" style="color:var(--c-on-surface-2);">{$t.mathHeatNote}</p>
+      <p class="text-caption-sm mb-lg" style="color:var(--c-on-surface-2);">{$t.mathElectroNote}</p>
 
       <button on:click={() => showMathSheet = false}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
-        style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
+        style="background:var(--c-surface-soft);color:var(--c-on-surface);border:1px solid var(--c-border-input);">
         {$t.close}
       </button>
     </div>

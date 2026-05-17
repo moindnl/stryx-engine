@@ -38,16 +38,71 @@
 }
 
 @layer base {
+  /* Semantic colour tokens — light mode defaults */
+  :root {
+    --c-bg:              #f4f4f5;
+    --c-surface:         #ffffff;
+    --c-surface-soft:    #ececee;
+    --c-surface-input:   #ffffff;
+    --c-surface-seg:     #f4f4f5;
+    --c-on-surface:      #18181b;
+    --c-on-surface-2:    #71717a;
+    --c-on-surface-3:    #52525b;
+    --c-border:          #ececee;
+    --c-border-input:    #d4d4d8;
+    --c-seg-active:      #09090b;
+    --c-seg-active-text: #ffffff;
+    --c-num-empty:       #d4d4d8;
+    --c-drag-handle:     #d4d4d8;
+    --c-slider-track:    #d4d4d8;
+    --c-shadow-card:     rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.04) 0px 4px 12px 0px;
+    --c-shadow-card-hover: rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.08) 0px 8px 24px 0px;
+    --c-shadow-sheet:    rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.12) 0px -4px 24px 0px;
+  }
+
+  /* Dark mode overrides */
+  [data-theme="dark"] {
+    /* Override Tailwind @theme tokens so text-[--color-ink] etc. adapt */
+    --color-ink:          #f4f4f5;
+    --color-charcoal:     #d4d4d8;
+    --color-mute:         #a1a1aa;
+    --color-stone:        #a1a1aa;
+    --color-steel:        #a1a1aa;
+    --color-hairline:     #27272a;
+    --color-hairline-soft: #1c1c1f;
+    --color-canvas:       #1c1c1f;
+
+    --c-bg:              #0f0f12;
+    --c-surface:         #1c1c1f;
+    --c-surface-soft:    #252528;
+    --c-surface-input:   #18181b;
+    --c-surface-seg:     #18181b;
+    --c-on-surface:      #f4f4f5;
+    --c-on-surface-2:    #a1a1aa;
+    --c-on-surface-3:    #71717a;
+    --c-border:          #27272a;
+    --c-border-input:    #3f3f46;
+    --c-seg-active:      #f4f4f5;
+    --c-seg-active-text: #09090b;
+    --c-num-empty:       #3f3f46;
+    --c-drag-handle:     #3f3f46;
+    --c-slider-track:    #3f3f46;
+    --c-shadow-card:     rgba(255,255,255,0.04) 0px 1px 0px 0px inset, rgba(0,0,0,0.3) 0px 4px 12px 0px;
+    --c-shadow-card-hover: rgba(255,255,255,0.04) 0px 1px 0px 0px inset, rgba(0,0,0,0.5) 0px 8px 24px 0px;
+    --c-shadow-sheet:    rgba(255,255,255,0.04) 0px 1px 0px 0px inset, rgba(0,0,0,0.4) 0px -4px 24px 0px;
+  }
+
   html {
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    color-scheme: light dark;
   }
 
   body {
     @apply min-h-screen;
-    background: #f4f4f5;
-    color: #18181b;
+    background: var(--c-bg);
+    color: var(--c-on-surface);
   }
 
   /* Wordmark sequence: icon → bonk → proof crash → bonk wobble + icon bounce */
@@ -112,9 +167,9 @@
 
   /* Number flash on value change */
   @keyframes numFlash {
-    0%   { color: #18181b; }
+    0%   { color: var(--c-on-surface); }
     30%  { color: #34c771; }
-    100% { color: #18181b; }
+    100% { color: var(--c-on-surface); }
   }
   .num-flash {
     animation: numFlash 0.6s ease-out forwards;
@@ -163,7 +218,7 @@
   /* Focus states */
   input:focus, select:focus {
     outline: none;
-    border-color: #09090b !important;
+    border-color: var(--c-on-surface) !important;
   }
 }
 
@@ -243,57 +298,50 @@
 
   /* Filter Chip — outlined pill (secondary action) */
   .filter-chip {
-    background: #ffffff;
-    color: #3f3f46;
+    background: var(--c-surface);
+    color: var(--c-on-surface);
     padding: 10px 20px;
     border-radius: 9999px;
     font-size: 14px;
     font-weight: 500;
-    border: 1px solid #3f3f46;
+    border: 1px solid var(--c-border-input);
     cursor: pointer;
     transition: all 0.2s ease;
   }
   .filter-chip:hover {
-    background: #f4f4f5;
+    background: var(--c-surface-soft);
   }
 
   /* White card — primary surface */
   .card {
-    background: #ffffff;
+    background: var(--c-surface);
     border-radius: 36px;
-    box-shadow: rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.04) 0px 4px 12px 0px;
+    box-shadow: var(--c-shadow-card);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   .card:hover {
     transform: translateY(-2px);
-    box-shadow: rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.08) 0px 8px 24px 0px;
+    box-shadow: var(--c-shadow-card-hover);
   }
 
   /* Muted card — secondary surface */
   .card-soft {
-    background: #ececee;
+    background: var(--c-surface-soft);
     border-radius: 28px;
   }
 
-  /* Dark card */
+  /* Dark card — stays near-obsidian in both modes */
   .card-campaign {
     background: #09090b;
     color: #ffffff;
     border-radius: 36px;
   }
 
-  /* Awesomic white card utility (alias for liquid-glass replacement) */
+  /* Awesomic white card utility */
   .awesomic-card {
-    background: #ffffff;
+    background: var(--c-surface);
     border-radius: 36px;
-    box-shadow: rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.04) 0px 4px 12px 0px;
-  }
-
-  /* Dark panel utility (alias for liquid-glass-dark replacement) */
-  .awesomic-dark {
-    background: #09090b;
-    border-radius: 36px;
-    color: #ffffff;
+    box-shadow: var(--c-shadow-card);
   }
 
   /* Badge — dark filled */
@@ -308,21 +356,8 @@
     align-items: center;
     gap: 4px;
   }
-
-  /* Badge — same dark filled (black variant kept as alias) */
-  .badge-black {
-    background: #3f3f46;
-    color: #fafafa;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
   @media (max-width: 768px) {
-    .badge-black {
+    .badge {
       padding: 2px 8px;
       font-size: 11px;
     }
@@ -363,8 +398,8 @@
     border-radius: 2px;
     background: linear-gradient(
       to right,
-      var(--temp-color, #09090b) var(--fill),
-      #d4d4d8 var(--fill)
+      var(--temp-color, var(--c-on-surface)) var(--fill),
+      var(--c-slider-track) var(--fill)
     );
     outline: none;
     cursor: pointer;
@@ -374,8 +409,8 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #ffffff;
-    border: 1.5px solid #3f3f46;
+    background: var(--c-surface);
+    border: 1.5px solid var(--c-border-input);
     box-shadow: 0 1px 4px rgba(0,0,0,0.12);
     cursor: pointer;
   }
@@ -383,24 +418,12 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #ffffff;
-    border: 1.5px solid #3f3f46;
+    background: var(--c-surface);
+    border: 1.5px solid var(--c-border-input);
     box-shadow: 0 1px 4px rgba(0,0,0,0.12);
     cursor: pointer;
   }
   .temp-slider::-webkit-slider-runnable-track { border-radius: 2px; }
   .temp-slider::-moz-range-track { border-radius: 2px; }
 
-  /* Legacy glass classes — replaced with flat Awesomic cards */
-  .liquid-glass-dark {
-    background: #09090b;
-    border-radius: 36px;
-    color: #ffffff;
-  }
-
-  .liquid-glass {
-    background: #ffffff;
-    border-radius: 36px;
-    box-shadow: rgb(228,228,231) 0px 1px 0px 0px inset, rgba(0,0,0,0.04) 0px 4px 12px 0px;
-  }
 }

@@ -314,10 +314,9 @@
     tadejMode
       ? 'background:#f0c000;color:#111111;transition:background 0.35s ease,color 0.35s ease'
       : `background:${
-          intensityFactor < 0.55 ? '#4b4b4d' :
-          intensityFactor < 0.75 ? '#477ee9' :
-          intensityFactor < 0.90 ? '#34c771' :
-          intensityFactor < 1.05 ? '#f73b20' : '#fb2d54'
+          intensityFactor < 0.55 ? '#a1a1aa' :
+          intensityFactor < 0.90 ? '#3f3f46' :
+          '#f73b20'
         };color:#ffffff;transition:background 0.35s ease,color 0.35s ease`;
 
 
@@ -543,8 +542,7 @@
       <!-- Mobile: horizontal swipe cards -->
       <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;" tabindex="0" role="region" aria-label="Result cards">
         {#each HOW_TO_STEPS as step, i}
-          <div class="snap-center shrink-0 w-[78%] overflow-hidden shimmer-once flex" style="background:#ececee;border-radius:28px;"
-            style="--shimmer-delay:{0.5 + i * 0.1}s"
+          <div class="snap-center shrink-0 w-[78%] overflow-hidden shimmer-once flex" style="background:#ececee;border-radius:28px;--shimmer-delay:{0.5 + i * 0.1}s"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
             <div class="flex items-center justify-center flex-shrink-0" style="background:#09090b;min-width:56px;padding:0 18px 0 14px;clip-path:polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);">
               <span class="text-lg font-bold" style="color:#ffffff;">{step.n}</span>

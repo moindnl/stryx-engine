@@ -122,6 +122,7 @@
 
   // UI state
   let showMathSheet = false;
+  let showImpressumSheet = false;
   let profileOpen = !(weight > 0 || ftp > 0); // auto-open on first visit
   let rideOpen = false;
   let rideAutoCollapsed = false;
@@ -199,6 +200,7 @@
         if (installPlatform) dismissInstallSheet();
         else if (showAboutSheet) showAboutSheet = false;
         else if (showChangelogSheet) dismissChangelog();
+        else if (showImpressumSheet) showImpressumSheet = false;
         else if (showMathSheet) showMathSheet = false;
         sheetDragOffsetY = 0;
       }, 260);
@@ -1112,13 +1114,14 @@
     {/if}
 
     <!-- Footer -->
-    <div class="flex justify-center items-center gap-md -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-top:1.25rem;padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));">
+    <div class="flex flex-wrap justify-center items-center gap-x-lg gap-y-sm -mx-sm md:-mx-md lg:-mx-lg px-sm md:px-md lg:px-lg" style="background:var(--color-soft-cloud);padding-top:1.25rem;padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 32px));">
+      <span class="text-caption-sm text-[--color-stone]">© 2026 BananaSprocket</span>
       <button on:click={() => showMathSheet = true}
-        class="text-caption-sm text-[--color-mute]"
-        style="padding:6px 16px;border-radius:9999px;border:1px solid var(--color-hairline);transition:background 0.2s ease;">How the math works</button>
+        class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">How the math works</button>
+      <button on:click={() => showImpressumSheet = true}
+        class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">Impressum</button>
       <button on:click={() => showAboutSheet = true}
-        class="text-caption-sm text-[--color-mute]"
-        style="padding:6px 16px;border-radius:9999px;border:1px solid var(--color-hairline);transition:background 0.2s ease;">About · v{VERSION}</button>
+        class="text-caption-sm text-[--color-mute] underline-offset-2 hover:underline">About · v{VERSION}</button>
     </div>
 
   </div>
@@ -1278,6 +1281,44 @@
       <p style="font-size:clamp(14px,3vw,18px);font-weight:700;color:#ffffff;text-align:center;max-width:420px;padding:0 24px;line-height:1.6;opacity:0;animation:neuralizer-text 2.9s ease forwards;">
         Hm? There was no ride. You've been watching Netflix. Have a nice day.
       </p>
+    </div>
+  {/if}
+
+  <!-- Impressum sheet -->
+  {#if showImpressumSheet}
+    <div class="fixed inset-0 z-[990] bg-black/40" style="backdrop-filter:blur(2px);"
+      on:click={() => showImpressumSheet = false} role="presentation"
+      transition:fade={{ duration: 200 }}></div>
+    <div class="fixed bottom-0 left-0 right-0 z-[991] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
+      style="background:rgba(17,17,17,0.93);color:#ffffff;transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.25s ease'};"
+      on:touchstart={onSheetDragStart}
+      on:touchmove|preventDefault={onSheetDragMove}
+      on:touchend={onSheetDragEnd}
+      transition:fly={{ duration: 300, y: 80 }}>
+      <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:rgba(255,255,255,0.25);"></div>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:#ffffff;">Impressum</p>
+
+      <p class="text-caption-sm mb-xs" style="color:rgba(255,255,255,0.45);">Angaben gemäß § 5 TMG</p>
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);margin-bottom:20px;">
+        <div class="px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
+          <p style="color:#ffffff;font-size:14px;font-weight:600;">Daniel Muschinski</p>
+          <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:2px;">[Straße, PLZ Ort]</p>
+        </div>
+        <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.08);">
+          <span style="color:rgba(255,255,255,0.55);font-size:14px;">Kontakt</span>
+          <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
+            style="color:#FFD700;font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
+        </div>
+        <div class="px-lg py-md">
+          <p style="color:rgba(255,255,255,0.55);font-size:13px;line-height:1.5;">Privates, nicht-kommerzielles Projekt. Es werden keine personenbezogenen Daten erhoben oder an Dritte weitergegeben.</p>
+        </div>
+      </div>
+
+      <button on:click={() => showImpressumSheet = false}
+        class="w-full py-3 rounded-full text-button-md font-extra-bold"
+        style="background:rgba(255,255,255,0.12);color:#ffffff;">
+        Schließen
+      </button>
     </div>
   {/if}
 

@@ -576,11 +576,8 @@
     </div>
     {/if}
 
-    <!-- Input section -->
-    <div class="mb-lg card-enter card-enter-2">
-
     <!-- Unified setup card -->
-    <div class="liquid-glass rounded-sm mb-lg">
+    <div class="liquid-glass rounded-sm mb-lg card-enter card-enter-2">
 
     <!-- Rider Profile -->
     <div>
@@ -795,8 +792,6 @@
     </div>
 
     </div><!-- /Unified setup card -->
-
-    </div><!-- /Input section -->
 
     {#if duration > 0 && (weight > 0)}
 

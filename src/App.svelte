@@ -691,7 +691,7 @@
           </div>
           <div class="flex items-center gap-xs px-lg pt-xl pb-lg">
             <Lock class="w-3 h-3 text-[--color-stone] flex-shrink-0" />
-            <p class="text-caption-sm text-[--color-stone]">Saved locally on this device. Nothing sent to any server.</p>
+            <p class="text-caption-sm text-[--color-stone]">Stored locally. No server.</p>
           </div>
         </div>
       {/if}
@@ -1109,7 +1109,7 @@
     <!-- Results empty state -->
     <div class="card p-xl text-center mb-xl card-enter card-enter-3"
       transition:fade={{ duration: 200 }}>
-      <p class="text-caption-md text-[--color-mute]">Add duration and body weight above to see your nutrition plan.</p>
+      <p class="text-caption-md text-[--color-mute]">Enter duration and weight to see results.</p>
     </div>
     {/if}
 

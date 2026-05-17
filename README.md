@@ -9,6 +9,7 @@ Precision carbohydrate and fluid targets for endurance cyclists, calculated from
 - **Weight-scaled fluids** — larger athletes sweat more; fluid targets scale accordingly
 - **Sweat rate modifier** — light (−20%), moderate, heavy (+30%) fluid adjustment
 - **Heat adjustment** — +0.3 L/h per 5°C above 20°C
+- **Internationalisation** — English / German with browser language auto-detect; toggle in header persists to `localStorage`
 - **Imperial / metric** — toggle converts all displayed values in place
 - **Energy expenditure** — kcal/h via `power × 3.6` (cycling mechanical efficiency standard)
 - **Speed + animal badge** — average pace with Wikipedia-linked animal comparison
@@ -18,7 +19,7 @@ Precision carbohydrate and fluid targets for endurance cyclists, calculated from
 - **Collapsible input cards** — Rider Profile and Ride accordion; ride auto-collapses when all fields filled
 - **Natural duration entry** — accepts `1:30`, `1.30`, `1,30`, or `1.5` (all parse to 1h 30min)
 - **Privacy** — profile data stored in `localStorage` (weight, FTP, unit preference). No server, no tracking.
-- **Liquid glass UI** — iOS 26-inspired frosted glass cards over a fixed gradient background
+- **Awesomic design system** — neutral dark-on-mist palette, 36px card radius, obsidian pill header
 - **WCAG 2.1 AA** — all text and UI components meet contrast requirements
 - **Mobile scroll-to-input** — tapping any input field scrolls it into view above the keyboard
 - **PWA** — installable on phone, full offline support via Workbox service worker
@@ -36,7 +37,7 @@ Precision carbohydrate and fluid targets for endurance cyclists, calculated from
 ## Tech Stack
 
 - **Framework**: Svelte 5 + Vite (plain, no SvelteKit)
-- **Styling**: Tailwind CSS v4 with Jeton Design System tokens
+- **Styling**: Tailwind CSS v4 with Awesomic design tokens
 - **Font**: DM Sans (Google Fonts)
 - **Icons**: Lucide Svelte
 - **Animations**: `svelte/motion` tweened stores, CSS keyframes
@@ -123,7 +124,8 @@ Once installed, the app works fully **offline** — all assets are precached on 
 │   └── gen-icons.mjs             # Playwright icon generator
 ├── src/
 │   ├── App.svelte                # Single-component app
-│   ├── app.css                   # Jeton design tokens + animations + liquid glass
+│   ├── app.css                   # Awesomic design tokens + animations
+│   ├── i18n.ts                   # EN/DE translations + lang store
 │   ├── main.js                   # Entry point
 │   └── vite-env.d.ts             # Vite global type declarations
 ├── vite.config.js                # Vite + PWA plugin config

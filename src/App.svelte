@@ -5,6 +5,7 @@
   import { fly, fade, slide } from 'svelte/transition';
   import { onMount, onDestroy } from 'svelte';
   import { registerSW } from 'virtual:pwa-register';
+  import { t, lang } from './i18n';
 
   const VERSION = '1.0';
 
@@ -304,12 +305,12 @@
 
 
   $: zoneLabel = intensityFactor === 0 ? '' :
-    tadejMode ? 'ARE YOU OKAY?!' :
-    intensityFactor < 0.55 ? 'Recovery' :
-    intensityFactor < 0.75 ? 'Endurance' :
-    intensityFactor < 0.90 ? 'Tempo' :
-    intensityFactor < 1.05 ? 'Threshold' :
-    'VO₂max+';
+    tadejMode ? $t.zoneTadej :
+    intensityFactor < 0.55 ? $t.zoneRecovery :
+    intensityFactor < 0.75 ? $t.zoneEndurance :
+    intensityFactor < 0.90 ? $t.zoneTempo :
+    intensityFactor < 1.05 ? $t.zoneThreshold :
+    $t.zoneVO2;
 
   $: zoneBadgeStyle = intensityFactor === 0 ? '' :
     tadejMode
@@ -366,31 +367,45 @@
   $: animatedTotalKcal.set(totalKcal);
   $: animatedKcalPerHour.set(kcalPerHour);
 
-  const animalLinks: Record<string, string> = {
-    'Turtle pace':            'https://en.wikipedia.org/wiki/Turtle',
-    'Penguin cruise':         'https://en.wikipedia.org/wiki/Penguin',
-    'Gazelle pace':           'https://en.wikipedia.org/wiki/Gazelle',
-    'Cheetah chase':          'https://en.wikipedia.org/wiki/Cheetah',
-    'Falcon flight':          'https://en.wikipedia.org/wiki/Falcon',
-    'Peregrine speed':        'https://en.wikipedia.org/wiki/Peregrine_falcon',
-    'Greyhound sprint':       'https://en.wikipedia.org/wiki/Greyhound',
-    // 🥚 Easter egg E: beyond greyhound
-    'Downhill record':    'https://en.wikipedia.org/wiki/%C3%89ric_Barone',
-    'Motorcycle territory': 'https://en.wikipedia.org/wiki/Motorcycle',
-    'Please call an ambulance': 'https://en.wikipedia.org/wiki/Ambulance',
+  const SPEED_LEVELS = [
+    { minKmh: 0,   maxKmh: 10,  key: 'turtle',      wikiSlug: 'Turtle' },
+    { minKmh: 10,  maxKmh: 15,  key: 'penguin',     wikiSlug: 'Penguin' },
+    { minKmh: 15,  maxKmh: 20,  key: 'gazelle',     wikiSlug: 'Gazelle' },
+    { minKmh: 20,  maxKmh: 25,  key: 'cheetah',     wikiSlug: 'Cheetah' },
+    { minKmh: 25,  maxKmh: 30,  key: 'falcon',      wikiSlug: 'Falcon' },
+    { minKmh: 30,  maxKmh: 40,  key: 'peregrine',   wikiSlug: 'Peregrine_falcon' },
+    { minKmh: 40,  maxKmh: 55,  key: 'greyhound',   wikiSlug: 'Greyhound' },
+    { minKmh: 55,  maxKmh: 75,  key: 'downhill',    wikiSlug: '%C3%89ric_Barone' },
+    { minKmh: 75,  maxKmh: 100, key: 'motorcycle',  wikiSlug: 'Motorcycle' },
+    { minKmh: 100, maxKmh: Infinity, key: 'ambulance', wikiSlug: 'Ambulance' },
+  ] as const;
+
+  type SpeedKey = typeof SPEED_LEVELS[number]['key'];
+
+  const speedWikiUrls: Record<SpeedKey, string> = {
+    turtle:     'https://en.wikipedia.org/wiki/Turtle',
+    penguin:    'https://en.wikipedia.org/wiki/Penguin',
+    gazelle:    'https://en.wikipedia.org/wiki/Gazelle',
+    cheetah:    'https://en.wikipedia.org/wiki/Cheetah',
+    falcon:     'https://en.wikipedia.org/wiki/Falcon',
+    peregrine:  'https://en.wikipedia.org/wiki/Peregrine_falcon',
+    greyhound:  'https://en.wikipedia.org/wiki/Greyhound',
+    downhill:   'https://en.wikipedia.org/wiki/%C3%89ric_Barone',
+    motorcycle: 'https://en.wikipedia.org/wiki/Motorcycle',
+    ambulance:  'https://en.wikipedia.org/wiki/Ambulance',
   };
 
-  $: speedSlogan = speedKmh === 0 ? '' :
-    speedKmh < 10 ? 'Turtle pace' :
-    speedKmh < 15 ? 'Penguin cruise' :
-    speedKmh < 20 ? 'Gazelle pace' :
-    speedKmh < 25 ? 'Cheetah chase' :
-    speedKmh < 30 ? 'Falcon flight' :
-    speedKmh < 40 ? 'Peregrine speed' :
-    speedKmh < 55 ? 'Greyhound sprint' :
-    speedKmh < 75 ? 'Downhill record' :
-    speedKmh < 100 ? 'Motorcycle territory' :
-    'Please call an ambulance';
+  $: speedLevel = speedKmh === 0 ? null :
+    SPEED_LEVELS.find(s => speedKmh < s.maxKmh) ?? SPEED_LEVELS[SPEED_LEVELS.length - 1];
+
+  $: speedSloganText = speedLevel ? ({
+    turtle: $t.turtlePace, penguin: $t.penguinCruise, gazelle: $t.gazellePace,
+    cheetah: $t.cheetahChase, falcon: $t.falconFlight, peregrine: $t.peregrineSpeed,
+    greyhound: $t.greyhoundSprint, downhill: $t.downhillRecord,
+    motorcycle: $t.motorcycleTerritory, ambulance: $t.callAmbulance,
+  } as Record<SpeedKey, string>)[speedLevel.key] : '';
+
+  $: speedSloganUrl = speedLevel ? speedWikiUrls[speedLevel.key] : '';
 
   $: multiCarbNote = intensityFactor >= 0.90;
 
@@ -426,19 +441,19 @@
     if (totalSolidUnits > 0) {
       const withEmergency = duration >= 2;
       const count = withEmergency ? totalSolidUnits + 1 : totalSolidUnits;
-      const suffix = withEmergency ? ', +1 emergency' : '';
-      items.push({ id: 'fuel', label: `${count} × ${solidLabel} (${activeSolid.carbs}g each${suffix})` });
+      const suffix = withEmergency ? $t.packItemEmergency : '';
+      items.push({ id: 'fuel', label: $t.packItemSolid(count, solidLabel, activeSolid.carbs, suffix) });
     }
     if (bottleCount > 0)
-      items.push({ id: 'bottles', label: `${bottleCount} × bottle (${bottleSize}ml)` });
+      items.push({ id: 'bottles', label: $t.packItemBottle(bottleCount, bottleSize) });
     if (drinkProduct !== 'water' && bottleCount > 0)
-      items.push({ id: 'carbdrink', label: `${activeDrink.label} mix — ${bottleCount} serving${bottleCount > 1 ? 's' : ''}` });
+      items.push({ id: 'carbdrink', label: $t.packItemCarbDrink(activeDrink.label, bottleCount) });
     if (temperature >= 28)
-      items.push({ id: 'electrolytes', label: 'Electrolyte tabs / salt caps' });
+      items.push({ id: 'electrolytes', label: $t.packItemElectrolytes });
     if (duration >= 3)
-      items.push({ id: 'cash', label: 'Cash or card (café stop / emergency)' });
-    items.push({ id: 'computer', label: 'Bike computer charged' });
-    items.push({ id: 'phone', label: 'Phone charged' });
+      items.push({ id: 'cash', label: $t.packItemCash });
+    items.push({ id: 'computer', label: $t.packItemComputer });
+    items.push({ id: 'phone', label: $t.packItemPhone });
     return items;
   })();
   // Prune checked state for items that no longer exist
@@ -472,10 +487,10 @@
   }
 
 
-  const HOW_TO_STEPS = [
-    { n: '1', title: 'Set up your profile', body: 'Enter weight, FTP, and your preferences once — they save automatically.' },
-    { n: '2', title: 'Enter your ride', body: 'Add distance, duration, and planned power for this specific ride.' },
-    { n: '3', title: 'Read results', body: 'Get precise carbohydrate and fluid targets based on your power output.' },
+  $: HOW_TO_STEPS = [
+    { n: '1', title: $t.step1Title, body: $t.step1Body },
+    { n: '2', title: $t.step2Title, body: $t.step2Body },
+    { n: '3', title: $t.step3Title, body: $t.step3Body },
   ];
 
   function tabStyle(tab: string, active: string): string {
@@ -493,7 +508,7 @@
         class="inline-flex items-center gap-sm rounded-full pointer-events-auto active:scale-95 transition-transform"
         style="background:#09090b;color:#ffffff;box-shadow:0 4px 20px rgba(0,0,0,0.35);padding:10px 20px 10px 16px;cursor:pointer;border:none;">
         <RefreshCw class="w-4 h-4 flex-shrink-0" style="color:rgba(255,255,255,0.55);" />
-        <span class="text-body-strong" style="color:#ffffff;">Update available — tap to install</span>
+        <span class="text-body-strong" style="color:#ffffff;">{$t.updateAvailable}</span>
       </button>
     </div>
   {/if}
@@ -513,12 +528,18 @@
           class="flex items-center justify-center"
           style="width:34px;height:34px;border-radius:50%;background:#ffffff;"
           on:click={() => { profileOpen = !profileOpen; if (profileOpen) { rideOpen = false; setTimeout(() => setupCard?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); } }}
-          aria-label="{weight > 0 && ftp > 0 ? 'Rider profile' : 'Set up rider profile'}">
+          aria-label="{weight > 0 && ftp > 0 ? $t.ariaRiderProfile : $t.ariaSetupProfile}">
           {#if weight > 0 && ftp > 0}
             <User class="w-4 h-4" style="color:#09090b;" />
           {:else}
             <UserX class="w-4 h-4" style="color:#09090b;" />
           {/if}
+        </button>
+        <button
+          on:click={() => lang.update(l => l === 'en' ? 'de' : 'en')}
+          style="height:34px;padding:0 12px;border-radius:9999px;background:rgba(255,255,255,0.12);color:#ffffff;font-size:13px;font-weight:600;letter-spacing:0.02em;border:none;cursor:pointer;transition:background 0.15s;"
+          aria-label="Switch language">
+          {$lang === 'en' ? 'DE' : 'EN'}
         </button>
       </div>
     </div>
@@ -573,14 +594,14 @@
         on:click={() => { profileOpen = !profileOpen; if (profileOpen) rideOpen = false; }}
         aria-expanded={profileOpen}
       >
-        <span class="text-heading-md font-bold text-[--color-ink]">Rider Profile</span>
+        <span class="text-heading-md font-bold text-[--color-ink]">{$t.riderProfile}</span>
         <div class="flex items-center gap-md">
           {#if !profileOpen}
             <span class="text-caption-sm text-[--color-mute]">
               {#if weight > 0 || ftp > 0}
                 {[weight ? `${weight} ${imperial ? 'lbs' : 'kg'}` : null, ftp ? `${ftp} W` : null].filter(Boolean).join(' · ')}
               {:else}
-                Not set
+                {$t.notSet}
               {/if}
             </span>
           {/if}
@@ -593,7 +614,7 @@
 
           <!-- Weight -->
           <div class="flex items-center justify-between py-lg">
-            <label for="weight" class="text-caption-md font-bold text-[--color-ink]">Body Weight</label>
+            <label for="weight" class="text-caption-md font-bold text-[--color-ink]">{$t.bodyWeight}</label>
             <div class="flex items-center gap-xs">
               <input id="weight" type="number" bind:value={weight} min="1" max="400" step="1" placeholder="75"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
@@ -606,8 +627,8 @@
           <!-- FTP -->
           <div class="flex items-center justify-between py-lg" style="border-top:1px solid #ececee;">
             <div>
-              <label for="ftp" class="text-caption-md font-bold text-[--color-ink] block">FTP</label>
-              <span class="text-caption-sm text-[--color-mute]">Max 1-hour power</span>
+              <label for="ftp" class="text-caption-md font-bold text-[--color-ink] block">{$t.ftpLabel}</label>
+              <span class="text-caption-sm text-[--color-mute]">{$t.ftpSub}</span>
             </div>
             <div class="flex items-center gap-xs">
               <input id="ftp" type="number" bind:value={ftp} min="0" max="600" step="1" placeholder="280"
@@ -620,23 +641,23 @@
 
           <!-- Units -->
           <div class="flex items-center justify-between py-lg gap-md flex-wrap" style="border-top:1px solid #ececee;">
-            <span class="text-caption-md font-bold text-[--color-ink]">Units</span>
+            <span class="text-caption-md font-bold text-[--color-ink]">{$t.units}</span>
             <div style="display:flex;border-radius:14px;border:1px solid #d4d4d8;overflow:hidden;background:#f4f4f5;">
               <button
                 style="{!imperial ? 'background:#09090b;color:#ffffff;' : 'background:transparent;color:#71717a;'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
-                on:click={() => { if (imperial) toggleImperial(); }}>km / kg</button>
+                on:click={() => { if (imperial) toggleImperial(); }}>{$t.kmKg}</button>
               <button
                 style="{imperial ? 'background:#09090b;color:#ffffff;' : 'background:transparent;color:#71717a;'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
-                on:click={() => { if (!imperial) toggleImperial(); }}>mi / lbs</button>
+                on:click={() => { if (!imperial) toggleImperial(); }}>{$t.miLbs}</button>
             </div>
           </div>
 
           <!-- Sweat Rate -->
           <div class="flex items-center justify-between py-lg gap-md" style="border-top:1px solid #ececee;">
             <div class="flex-shrink-0">
-              <span class="text-caption-md font-bold text-[--color-ink] block">Sweat Rate</span>
+              <span class="text-caption-md font-bold text-[--color-ink] block">{$t.sweatRate}</span>
               <span class="text-caption-sm text-[--color-mute]">
-                {sweatRate === 'light' ? '−20% fluid' : sweatRate === 'heavy' ? '+30% fluid' : 'Baseline'}
+                {sweatRate === 'light' ? $t.sweatLight : sweatRate === 'heavy' ? $t.sweatHeavy : $t.sweatBaseline}
               </span>
             </div>
             <div style="display:flex;border-radius:14px;border:1px solid #d4d4d8;overflow:hidden;background:#f4f4f5;flex-shrink:0;">
@@ -644,7 +665,7 @@
                 <button
                   class="flex items-center gap-[2px]"
                   style="{sweatRate === value ? 'background:#09090b;color:#ffffff;' : 'background:transparent;color:#71717a;'}padding:8px 16px;transition:background 0.15s,color 0.15s;"
-                  aria-label="{value.charAt(0).toUpperCase() + value.slice(1)} sweat rate"
+                  aria-label="{value === 'light' ? $t.sweatLightAria : value === 'moderate' ? $t.sweatModerateAria : $t.sweatHeavyAria}"
                   aria-pressed={sweatRate === value}
                   on:click={() => (sweatRate = value)}>
                   {#each { length: drops } as _}<Droplet class="w-3.5 h-3.5" />{/each}
@@ -665,14 +686,14 @@
         on:click={() => { rideOpen = !rideOpen; if (rideOpen) profileOpen = false; }}
         aria-expanded={rideOpen}
       >
-        <span class="text-heading-md font-bold text-[--color-ink]">Ride</span>
+        <span class="text-heading-md font-bold text-[--color-ink]">{$t.rideLabel}</span>
         <div class="flex items-center gap-md">
           {#if !rideOpen}
             <span class="text-caption-sm text-[--color-mute]">
               {#if duration > 0 || power > 0}
                 {[duration > 0 ? formatDuration(duration) : null, power > 0 ? `${power} W` : null, temperature !== 20 ? `${temperature}°C` : null].filter(Boolean).join(' · ')}
               {:else}
-                Not set
+                {$t.notSet}
               {/if}
             </span>
           {/if}
@@ -687,7 +708,7 @@
           <!-- Distance -->
           <div class="flex items-center justify-between py-lg">
             <label for="distance" class="text-caption-md font-bold text-[--color-ink]">
-              Distance <span class="text-caption-sm text-[--color-mute] font-normal">(optional)</span>
+              {$t.distance} <span class="text-caption-sm text-[--color-mute] font-normal">{$t.distanceOptional}</span>
             </label>
             <div class="flex items-center gap-xs">
               <input id="distance" type="number" bind:value={distance} min="1" max="500" step="1" placeholder="0"
@@ -701,8 +722,8 @@
           <!-- Duration -->
           <div class="flex items-center justify-between py-lg" style="border-top:1px solid #ececee;">
             <div>
-              <label for="duration" class="text-caption-md font-bold text-[--color-ink] block">Duration</label>
-              <p class="text-utility-xs text-[--color-stone] mt-xxs">e.g. 1:30 or 1.5 for 1h 30min</p>
+              <label for="duration" class="text-caption-md font-bold text-[--color-ink] block">{$t.durationLabel}</label>
+              <p class="text-utility-xs text-[--color-stone] mt-xxs">{$t.durationHint}</p>
             </div>
             <div class="flex items-center gap-xs">
               <input id="duration" type="text" inputmode="decimal" bind:value={durationRaw}
@@ -717,8 +738,8 @@
           <!-- Power -->
           <div class="flex items-center justify-between py-lg" style="border-top:1px solid #ececee;">
             <div>
-              <label for="power" class="text-caption-md font-bold text-[--color-ink] block">Ride Power</label>
-              <span class="text-caption-sm text-[--color-mute]">Planned average</span>
+              <label for="power" class="text-caption-md font-bold text-[--color-ink] block">{$t.ridePower}</label>
+              <span class="text-caption-sm text-[--color-mute]">{$t.ridePowerSub}</span>
             </div>
             <div class="flex items-center gap-xs">
               <input id="power" type="number" bind:value={power} min="0" max="600" step="1" placeholder="200"
@@ -731,17 +752,17 @@
 
           <!-- Zone (derived) -->
           <div class="flex items-center justify-between py-md" style="border-top:1px solid #ececee;">
-            <span class="text-caption-md font-bold text-[--color-ink]">Zone</span>
+            <span class="text-caption-md font-bold text-[--color-ink]">{$t.zoneLabel}</span>
             <div class="flex items-center">
               {#if powerDerived && zoneLabel}
                 <span class="badge-black" style={zoneBadgeStyle}>{zoneLabel} · {Math.round(intensityFactor * 100)}%</span>
               {:else if !(ftp > 0)}
                 <button class="text-caption-sm flex items-center gap-xxs text-[--color-mute]"
                   on:click={() => { profileOpen = true; rideOpen = false; }}>
-                  Set FTP first <ChevronRight class="w-3 h-3" />
+                  {$t.setFtpFirst} <ChevronRight class="w-3 h-3" />
                 </button>
               {:else}
-                <span class="text-caption-sm text-[--color-mute]">Enter power</span>
+                <span class="text-caption-sm text-[--color-mute]">{$t.enterPower}</span>
               {/if}
             </div>
           </div>
@@ -749,7 +770,7 @@
           <!-- Temperature -->
           <div class="py-lg" style="border-top:1px solid #ececee;">
             <div class="flex items-center justify-between mb-sm">
-              <label for="temperature" class="text-caption-md font-bold text-[--color-ink]">Temperature</label>
+              <label for="temperature" class="text-caption-md font-bold text-[--color-ink]">{$t.temperature}</label>
               <!-- °C intentional — heat formula is Celsius-based regardless of unit preference -->
               <span class="text-caption-md font-bold text-[--color-ink]">{temperature}°C</span>
             </div>
@@ -757,7 +778,7 @@
               class="temp-slider w-full"
               style="--fill:{(temperature / 45 * 100).toFixed(1)}%" />
             <p class="text-caption-sm mt-md {heatBonus > 0 ? 'text-[--color-sale]' : 'text-[--color-mute]'}">
-              {heatBonus > 0 ? `+${heatBonus.toFixed(1)} L/h heat adjustment` : 'Heat adjustment activates above 20°C'}
+              {heatBonus > 0 ? $t.heatActive(heatBonus.toFixed(1)) : $t.heatInactive}
             </p>
           </div>
 
@@ -770,7 +791,7 @@
               style="touch-action:manipulation;user-select:none;-webkit-user-select:none;"
               aria-label="Reset ride inputs">
               <RotateCcw class="w-4 h-4" />
-              Reset ride
+              {$t.resetRide}
             </button>
           </div>
 
@@ -792,8 +813,8 @@
             <Wheat class="w-7 h-7 text-[--color-ink]" />
           </div>
           <div class="min-w-0">
-            <h2 class="text-heading-lg font-bold text-[--color-ink]">Carbohydrates</h2>
-            <p class="text-caption-sm text-[--color-mute]">Per hour for optimal performance</p>
+            <h2 class="text-heading-lg font-bold text-[--color-ink]">{$t.carbohydrates}</h2>
+            <p class="text-caption-sm text-[--color-mute]">{$t.carbsSub}</p>
           </div>
         </div>
         <div class="mb-sm">
@@ -806,13 +827,13 @@
         </div>
         <p class="text-caption-md text-[--color-charcoal]">
           {#if powerDerived}
-            From {power}W at {Math.round(intensityFactor * 100)}% FTP
+            {$t.carbsFromPower(power, Math.round(intensityFactor * 100))}
           {:else}
-            Estimated from intensity level
+            {$t.carbsEstimated}
           {/if}
         </p>
         {#if multiCarbNote}
-          <p class="text-caption-sm text-[--color-mute] mt-sm">Requires glucose+fructose blend (2:1). Single carbs max ~60 g/h.</p>
+          <p class="text-caption-sm text-[--color-mute] mt-sm">{$t.carbsMultiNote}</p>
         {/if}
       </div>
 
@@ -823,8 +844,8 @@
             <Droplet class="w-7 h-7 text-[--color-ink]" />
           </div>
           <div class="min-w-0">
-            <h2 class="text-heading-lg font-bold text-[--color-ink]">Fluids</h2>
-            <p class="text-caption-sm text-[--color-mute]">Per hour for hydration</p>
+            <h2 class="text-heading-lg font-bold text-[--color-ink]">{$t.fluids}</h2>
+            <p class="text-caption-sm text-[--color-mute]">{$t.fluidsSub}</p>
           </div>
         </div>
         <div class="mb-sm">
@@ -835,12 +856,12 @@
             <span class="text-3xl text-[--color-mute]">L/h</span>
           </div>
         </div>
-        <p class="text-caption-md text-[--color-charcoal]">Based on weight, sweat rate, and duration</p>
+        <p class="text-caption-md text-[--color-charcoal]">{$t.fluidsBased}</p>
         {#if sweatRate !== 'moderate'}
-          <p class="text-caption-sm text-[--color-mute] mt-xs">{sweatRate === 'light' ? '−20%' : '+30%'} for {sweatRate} sweater</p>
+          <p class="text-caption-sm text-[--color-mute] mt-xs">{sweatRate === 'light' ? $t.fluidsLightNote('−20%') : $t.fluidsHeavyNote('+30%')}</p>
         {/if}
         {#if heatBonus > 0}
-          <p class="text-caption-sm text-[--color-sale] mt-xs">+{heatBonus.toFixed(1)} L/h for {temperature}°C heat</p>
+          <p class="text-caption-sm text-[--color-sale] mt-xs">{$t.fluidsHeatNote(heatBonus.toFixed(1), temperature)}</p>
         {/if}
       </div>
     </div>
@@ -852,8 +873,8 @@
           <Zap class="w-7 h-7 text-[--color-ink]" />
         </div>
         <div class="min-w-0">
-          <h2 class="text-heading-lg font-bold text-[--color-ink]">Power</h2>
-          <p class="text-caption-sm text-[--color-mute]">Ride intensity based on your FTP</p>
+          <h2 class="text-heading-lg font-bold text-[--color-ink]">{$t.powerLabel}</h2>
+          <p class="text-caption-sm text-[--color-mute]">{$t.powerSub}</p>
         </div>
       </div>
       <div class="mb-md">
@@ -868,7 +889,7 @@
           <span class="badge-black" style="background:var(--color-accent);color:#ffffff;">~{Math.round($animatedKcalPerHour)} kcal/h</span>
         </div>
       {:else}
-        <p class="text-caption-sm text-[--color-mute]">Enter FTP and ride power to see zone</p>
+        <p class="text-caption-sm text-[--color-mute]">{$t.powerEnterHint}</p>
       {/if}
       {#if speedKmh > 0}
         <div class="flex items-center justify-between mt-md pt-md" style="border-top:1px solid #ececee;">
@@ -876,10 +897,10 @@
             <span class="text-heading-md font-bold text-[--color-ink]">{Math.round($animatedSpeed)}</span>
             <span class="text-caption-md text-[--color-mute]">{speedUnit}</span>
           </div>
-          {#if speedSlogan}
-            <a href={animalLinks[speedSlogan]} target="_blank" rel="noopener noreferrer">
+          {#if speedSloganText}
+            <a href={speedSloganUrl} target="_blank" rel="noopener noreferrer">
               <span class="badge-black inline-flex items-center gap-xs">
-                {speedSlogan}
+                {speedSloganText}
                 <ExternalLink class="w-3 h-3" />
               </span>
             </a>
@@ -895,33 +916,33 @@
       <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:20px;padding:3px;">
         <button
           style={tabStyle('summary', totalsTab)}
-          on:click={() => switchTab('summary')}>Totals</button>
+          on:click={() => switchTab('summary')}>{$t.tabTotals}</button>
         <button
           style={tabStyle('schedule', totalsTab)}
-          on:click={() => switchTab('schedule')}>Schedule</button>
+          on:click={() => switchTab('schedule')}>{$t.tabSchedule}</button>
         <button
           style={tabStyle('pack', totalsTab)}
-          on:click={() => switchTab('pack')}>Pack</button>
+          on:click={() => switchTab('pack')}>{$t.tabPack}</button>
       </div>
 
       <!-- Totals tab -->
       {#if totalsTab === 'summary'}
         <div in:fade={{ duration: 250 }}>
-        <h2 class="text-caption-md mb-lg text-[--color-on-primary]">Total needs for {formatDuration(duration)}</h2>
+        <h2 class="text-caption-md mb-lg text-[--color-on-primary]">{$t.totalNeeds(formatDuration(duration))}</h2>
         <div class="grid grid-cols-3 gap-md">
           <div class="rounded-md p-md text-center">
             <div class="text-4xl md:text-5xl font-extra-bold mb-xs" style="color:#ffffff;">{Math.round($animatedTotalCarbs)}g</div>
-            <div class="text-caption-sm" style="color:rgba(255,255,255,0.70);">Carbs</div>
+            <div class="text-caption-sm" style="color:rgba(255,255,255,0.70);">{$t.carbsLabel}</div>
           </div>
           <div class="rounded-md p-md text-center">
             <div class="text-4xl md:text-5xl font-extra-bold mb-xs flex items-center justify-center" style="color:#ffffff;min-height:1.2em;">
               {powerDerived ? Math.round($animatedTotalKcal) : '—'}
             </div>
-            <div class="text-caption-sm" style="color:rgba(255,255,255,0.70);">kcal</div>
+            <div class="text-caption-sm" style="color:rgba(255,255,255,0.70);">{$t.kcal}</div>
           </div>
           <div class="rounded-md p-md text-center">
             <div class="text-4xl md:text-5xl font-extra-bold mb-xs" style="color:#ffffff;">{$animatedTotalFluid.toFixed(1)}L</div>
-            <div class="text-caption-sm" style="color:rgba(255,255,255,0.70);">Fluids</div>
+            <div class="text-caption-sm" style="color:rgba(255,255,255,0.70);">{$t.fluidsLabel}</div>
           </div>
         </div>
         </div>
@@ -931,7 +952,7 @@
         <div in:fade={{ duration: 250 }}>
         <!-- Solid product picker -->
         <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
-          <span style="color:rgba(255,255,255,0.7);font-size:13px;">Solid food</span>
+          <span style="color:rgba(255,255,255,0.7);font-size:13px;">{$t.solidFood}</span>
           <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
             {#each SOLID_PRODUCTS as p}
               <button
@@ -941,9 +962,9 @@
           </div>
         </div>
         {#if fuelingEvents.length === 0}
-          <p style="color:rgba(255,255,255,0.70);font-size:14px;">Ride too short for a fueling schedule.</p>
+          <p style="color:rgba(255,255,255,0.70);font-size:14px;">{$t.rideTooShort}</p>
         {:else if fuelingEvents[0].carbs === 0}
-          <p style="color:rgba(255,255,255,0.70);font-size:14px;">No solid food needed — drink covers all carbs.</p>
+          <p style="color:rgba(255,255,255,0.70);font-size:14px;">{$t.drinkCoversAll}</p>
         {:else}
           <div style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);">
             {#each fuelingEvents as event, i}
@@ -956,11 +977,11 @@
             {/each}
           </div>
           <div class="flex items-center justify-between mt-md">
-            <p style="color:rgba(255,255,255,0.70);font-size:12px;">First fuel at 20 min · every 20 min after</p>
-            <p style="color:rgba(255,255,255,0.70);font-size:12px;font-weight:600;">{totalSolidUnits} {solidLabel}s total</p>
+            <p style="color:rgba(255,255,255,0.70);font-size:12px;">{$t.firstFuel}</p>
+            <p style="color:rgba(255,255,255,0.70);font-size:12px;font-weight:600;">{$t.solidUnitsTotal(totalSolidUnits, solidLabel)}</p>
           </div>
           {#if drinkCarbsPerHour > 0}
-            <p style="color:rgba(255,255,255,0.70);font-size:11px;margin-top:6px;">↑ reduced by {drinkCarbsPerHour}g/h from drink</p>
+            <p style="color:rgba(255,255,255,0.70);font-size:11px;margin-top:6px;">{$t.reducedByDrink(drinkCarbsPerHour)}</p>
           {/if}
         {/if}
         </div>
@@ -969,11 +990,11 @@
       {:else if totalsTab === 'pack'}
         <div in:fade={{ duration: 250 }}>
         {#if bottleCount === 0}
-          <p style="color:rgba(255,255,255,0.70);font-size:14px;">No bottles needed at this intensity.</p>
+          <p style="color:rgba(255,255,255,0.70);font-size:14px;">{$t.noBottles}</p>
         {:else}
           <!-- Drink product picker -->
           <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
-            <span style="color:rgba(255,255,255,0.7);font-size:13px;">Drink type</span>
+            <span style="color:rgba(255,255,255,0.7);font-size:13px;">{$t.drinkType}</span>
             <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
               {#each DRINK_PRODUCTS as p}
                 <button
@@ -984,7 +1005,7 @@
           </div>
           <!-- Bottle size selector -->
           <div class="flex items-center justify-between mb-lg flex-wrap gap-sm">
-            <span style="color:rgba(255,255,255,0.7);font-size:13px;">Bottle size</span>
+            <span style="color:rgba(255,255,255,0.7);font-size:13px;">{$t.bottleSize}</span>
             <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
               <button style="{bottleSize === 500 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 500)}>500ml</button>
               <button style="{bottleSize === 750 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 750)}>750ml</button>
@@ -993,37 +1014,37 @@
           </div>
           <div style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);">
             <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.12);">
-              <span style="color:rgba(255,255,255,0.6);font-size:14px;">Bottles needed</span>
+              <span style="color:rgba(255,255,255,0.6);font-size:14px;">{$t.bottlesNeeded}</span>
               <span style="color:#fff;font-weight:700;font-size:15px;">{bottleCount}</span>
             </div>
             <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.12);">
-              <span style="color:rgba(255,255,255,0.6);font-size:14px;">Fluid per bottle</span>
+              <span style="color:rgba(255,255,255,0.6);font-size:14px;">{$t.fluidPerBottle}</span>
               <span style="color:#fff;font-weight:700;font-size:15px;">{mlPerBottle} ml</span>
             </div>
             {#if drinkCarbsPerBottle > 0}
               <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid rgba(255,255,255,0.12);">
-                <span style="color:rgba(255,255,255,0.6);font-size:14px;">Carbs from drink</span>
+                <span style="color:rgba(255,255,255,0.6);font-size:14px;">{$t.carbsFromDrink}</span>
                 <span style="color:#fff;font-weight:700;font-size:15px;">{drinkCarbsPerBottle} g/bottle</span>
               </div>
             {/if}
             <div class="flex items-center justify-between px-lg py-md">
-              <span style="color:rgba(255,255,255,0.6);font-size:14px;">Extra solid carbs</span>
+              <span style="color:rgba(255,255,255,0.6);font-size:14px;">{$t.extraSolidCarbs}</span>
               <span style="color:#fff;font-weight:700;font-size:15px;">{Math.max(0, carbsPerBottle)} g/bottle</span>
             </div>
           </div>
           {#if drinkCarbsPerHour > 0}
-            <p style="color:rgba(255,255,255,0.70);font-size:11px;margin-top:10px;">Drink covers {drinkCarbsPerHour}g/h → less solid food needed. Check Schedule tab.</p>
+            <p style="color:rgba(255,255,255,0.70);font-size:11px;margin-top:10px;">{$t.drinkCoversCarbs(drinkCarbsPerHour)}</p>
           {:else}
-            <p style="color:rgba(255,255,255,0.70);font-size:12px;margin-top:10px;">Water only — all carbs from solid food.</p>
+            <p style="color:rgba(255,255,255,0.70);font-size:12px;margin-top:10px;">{$t.waterOnly}</p>
           {/if}
 
           <!-- Pack checklist -->
           {#if packItems.length > 0}
             <div style="margin-top:20px;border-top:1px solid rgba(255,255,255,0.12);padding-top:16px;">
               <div class="flex items-center justify-between mb-md">
-                <span style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">Pack list</span>
+                <span style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">{$t.packList}</span>
                 {#if checkedPack.size > 0}
-                  <button style="color:rgba(255,255,255,0.70);font-size:11px;" on:click={resetPack}>Reset</button>
+                  <button style="color:rgba(255,255,255,0.70);font-size:11px;" on:click={resetPack}>{$t.reset}</button>
                 {/if}
               </div>
               <div style="display:flex;flex-direction:column;gap:10px;">
@@ -1052,7 +1073,7 @@
     <!-- Results empty state -->
     <div class="awesomic-card rounded-sm py-md px-lg text-center mb-xl card-enter card-enter-3"
       transition:fade={{ duration: 200 }}>
-      <p class="text-caption-md text-[--color-mute]">Enter duration and weight to see results.</p>
+      <p class="text-caption-md text-[--color-mute]">{$t.emptyState}</p>
     </div>
     {/if}
 
@@ -1063,15 +1084,15 @@
         <div class="flex items-center flex-wrap">
           <button on:click={() => showMathSheet = true}
             class="text-caption-sm text-[--color-mute] hover:text-[--color-ink]"
-            style="padding:8px 10px;transition:color 0.15s;">How it works</button>
+            style="padding:8px 10px;transition:color 0.15s;">{$t.howItWorks}</button>
           <span style="color:var(--color-hairline);user-select:none;">·</span>
           <button on:click={() => showAboutSheet = true}
             class="text-caption-sm text-[--color-mute] hover:text-[--color-ink]"
-            style="padding:8px 10px;transition:color 0.15s;">About</button>
+            style="padding:8px 10px;transition:color 0.15s;">{$t.about}</button>
           <span style="color:var(--color-hairline);user-select:none;">·</span>
           <button on:click={() => showImpressumSheet = true}
             class="text-caption-sm text-[--color-mute] hover:text-[--color-ink]"
-            style="padding:8px 10px;transition:color 0.15s;">Legal</button>
+            style="padding:8px 10px;transition:color 0.15s;">{$t.legal}</button>
         </div>
       </div>
     </div>
@@ -1101,20 +1122,20 @@
         </div>
       </div>
 
-      <p class="text-body-md mb-lg" style="color:#52525b;">Precision carbohydrate and fluid targets for cyclists — calculated from your FTP and planned ride power.</p>
+      <p class="text-body-md mb-lg" style="color:#52525b;">{$t.aboutDesc}</p>
 
       <div style="border-radius:14px;overflow:hidden;border:1px solid #ececee;margin-bottom:24px;">
         <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid #ececee;">
-          <span style="color:#71717a;font-size:14px;">Data storage</span>
-          <span style="color:#18181b;font-weight:600;font-size:14px;">Device only</span>
+          <span style="color:#71717a;font-size:14px;">{$t.dataStorage}</span>
+          <span style="color:#18181b;font-weight:600;font-size:14px;">{$t.dataStorageVal}</span>
         </div>
         <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid #ececee;">
-          <span style="color:#71717a;font-size:14px;">Server requests</span>
-          <span style="color:#18181b;font-weight:600;font-size:14px;">None</span>
+          <span style="color:#71717a;font-size:14px;">{$t.serverRequests}</span>
+          <span style="color:#18181b;font-weight:600;font-size:14px;">{$t.serverRequestsVal}</span>
         </div>
         <div class="flex items-center justify-between px-lg py-md">
-          <span style="color:#71717a;font-size:14px;">Works offline</span>
-          <span style="color:#18181b;font-weight:600;font-size:14px;">Yes</span>
+          <span style="color:#71717a;font-size:14px;">{$t.worksOffline}</span>
+          <span style="color:#18181b;font-weight:600;font-size:14px;">{$t.worksOfflineVal}</span>
         </div>
       </div>
 
@@ -1127,7 +1148,7 @@
         <button on:click={() => showAboutSheet = false}
           class="flex-1 py-3 rounded-full text-button-md font-extra-bold"
           style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
-          Close
+          {$t.close}
         </button>
       </div>
     </div>
@@ -1149,52 +1170,52 @@
       <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#d4d4d8;"></div>
 
       <div class="mb-4">
-        <p class="text-heading-md font-extra-bold" style="color:#18181b;">Works offline</p>
-        <p class="text-caption-md mt-1" style="color:#71717a;">Save to home screen for instant access.</p>
+        <p class="text-heading-md font-extra-bold" style="color:#18181b;">{$t.installTitle}</p>
+        <p class="text-caption-md mt-1" style="color:#71717a;">{$t.installSub}</p>
       </div>
 
       {#if installPlatform === 'ios'}
         <ol class="space-y-3 text-body-md">
           <li class="flex items-start gap-3">
             <span class="badge text-xs shrink-0 mt-0.5">1</span>
-            <span>Tap the <strong>Share</strong> button at the bottom of Safari</span>
+            <span>{@html $t.iosStep1}</span>
           </li>
           <li class="flex items-start gap-3">
             <span class="badge text-xs shrink-0 mt-0.5">2</span>
-            <span>Scroll down and tap <strong>Add to Home Screen</strong></span>
+            <span>{@html $t.iosStep2}</span>
           </li>
           <li class="flex items-start gap-3">
             <span class="badge text-xs shrink-0 mt-0.5">3</span>
-            <span>Tap <strong>Add</strong> — done</span>
+            <span>{@html $t.iosStep3}</span>
           </li>
         </ol>
-        <p class="text-caption-sm mt-4" style="color:#71717a;">Safari only. Chrome and Firefox on iOS cannot install PWAs.</p>
+        <p class="text-caption-sm mt-4" style="color:#71717a;">{$t.iosSafariNote}</p>
       {:else}
         {#if deferredInstallPrompt}
           <button on:click={triggerInstall}
             class="w-full py-3 rounded-full text-button-md font-extra-bold mb-4"
             style="background:#09090b;color:#ffffff;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">
-            Install now
+            {$t.installNow}
           </button>
         {:else}
           <ol class="space-y-3 text-body-md">
             <li class="flex items-start gap-3">
               <span class="badge text-xs shrink-0 mt-0.5">1</span>
-              <span>Tap the <strong>⋮ menu</strong> in Chrome <span style="color:#71717a;">(top-right corner)</span></span>
+              <span>{@html $t.androidStep1}</span>
             </li>
             <li class="flex items-start gap-3">
               <span class="badge text-xs shrink-0 mt-0.5">2</span>
-              <span>Tap <strong>Add to Home screen</strong> → <strong>Add</strong></span>
+              <span>{@html $t.androidStep2}</span>
             </li>
           </ol>
-          <p class="text-caption-sm mt-4" style="color:#71717a;">Chrome may also show an install banner at the bottom automatically.</p>
+          <p class="text-caption-sm mt-4" style="color:#71717a;">{$t.androidNote}</p>
         {/if}
       {/if}
 
       <button on:click={dismissInstallSheet}
         class="mt-6 w-full py-3 rounded-full text-button-md font-extra-bold"
         style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
-        Not now
+        {$t.notNow}
       </button>
     </div>
   {/if}
@@ -1204,7 +1225,7 @@
     <div class="fixed inset-0 z-[999] flex flex-col items-center justify-center"
       style="background:rgba(0,0,0,0.88);animation:neuralizer-flash 2.9s ease forwards;">
       <p style="font-size:clamp(14px,3vw,18px);font-weight:700;color:#ffffff;text-align:center;max-width:420px;padding:0 24px;line-height:1.6;opacity:0;animation:neuralizer-text 2.9s ease forwards;">
-        Hm? There was no ride. You've been watching Netflix. Have a nice day.
+        {$t.neuralyzerText}
       </p>
     </div>
   {/if}
@@ -1222,28 +1243,28 @@
       in:fly={{ y: 420, duration: 380, easing: cubicOut }}
       out:fly={{ y: 420, duration: 260, easing: cubicIn }}>
       <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#d4d4d8;"></div>
-      <p class="text-heading-md font-extra-bold mb-lg" style="color:#18181b;">Impressum</p>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:#18181b;">{$t.impressum}</p>
 
-      <p class="text-caption-sm mb-xs" style="color:#71717a;">Legal disclosure · § 5 TMG</p>
+      <p class="text-caption-sm mb-xs" style="color:#71717a;">{$t.impressumSub}</p>
       <div style="border-radius:14px;overflow:hidden;border:1px solid #ececee;margin-bottom:20px;">
         <div class="px-lg py-md" style="border-bottom:1px solid #ececee;">
           <p style="color:#18181b;font-size:14px;font-weight:600;">Daniel Muschinski</p>
           <p style="color:#71717a;font-size:13px;margin-top:2px;">Freudenbegrstraße 4, 28213 Bremen</p>
         </div>
         <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid #ececee;">
-          <span style="color:#71717a;font-size:14px;">Contact</span>
+          <span style="color:#71717a;font-size:14px;">{$t.impressumContact}</span>
           <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
             style="color:#18181b;font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
         </div>
         <div class="px-lg py-md">
-          <p style="color:#71717a;font-size:13px;line-height:1.5;">Private, non-commercial project. No personal data is collected or shared with third parties.</p>
+          <p style="color:#71717a;font-size:13px;line-height:1.5;">{$t.impressumNote}</p>
         </div>
       </div>
 
       <button on:click={() => showImpressumSheet = false}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
         style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
-        Close
+        {$t.close}
       </button>
     </div>
   {/if}
@@ -1261,19 +1282,13 @@
       in:fly={{ y: 420, duration: 380, easing: cubicOut }}
       out:fly={{ y: 420, duration: 260, easing: cubicIn }}>
       <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#d4d4d8;"></div>
-      <p class="text-heading-md font-extra-bold mb-lg" style="color:#18181b;">How the math works</p>
+      <p class="text-heading-md font-extra-bold mb-lg" style="color:#18181b;">{$t.howMathWorks}</p>
 
       <div class="mb-lg" style="border-radius:14px;overflow:hidden;border:1px solid #ececee;">
         <div class="grid text-caption-sm font-extra-bold uppercase" style="grid-template-columns:1fr auto auto;background:#f4f4f5;padding:8px 14px;color:#71717a;letter-spacing:0.05em;">
-          <span>Zone</span><span class="text-right pr-4">% FTP</span><span class="text-right">Carbs</span>
+          <span>{$t.zoneCol}</span><span class="text-right pr-4">{$t.ftpCol}</span><span class="text-right">{$t.carbsCol}</span>
         </div>
-        {#each [
-          { zone: 'Recovery',  ftp: '<55%',    carbs: '0–20 g/h' },
-          { zone: 'Endurance', ftp: '55–75%',  carbs: '20–40 g/h' },
-          { zone: 'Tempo',     ftp: '75–90%',  carbs: '40–60 g/h' },
-          { zone: 'Threshold', ftp: '90–105%', carbs: '60–90 g/h' },
-          { zone: 'VO₂max+',   ftp: '>105%',   carbs: '90–120 g/h' },
-        ] as row, i}
+        {#each $t.mathZones as row, i}
           <div class="grid text-caption-sm" style="grid-template-columns:1fr auto auto;padding:10px 14px;{i % 2 === 1 ? 'background:#f4f4f5;' : ''}border-top:1px solid #ececee;">
             <span style="color:#18181b;">{row.zone}</span>
             <span class="text-right pr-4" style="color:#71717a;">{row.ftp}</span>
@@ -1282,14 +1297,14 @@
         {/each}
       </div>
 
-      <p class="text-caption-sm mb-sm" style="color:#71717a;">Fluids scale with body weight — sweat modifier adjusts ±20–30%.</p>
-      <p class="text-caption-sm mb-sm" style="color:#71717a;">Heat: +0.3 L/h per 5°C above 20°C added to fluid target.</p>
-      <p class="text-caption-sm mb-lg" style="color:#71717a;">Rides &gt;2h: add electrolytes — plain water dilutes sodium balance on long efforts.</p>
+      <p class="text-caption-sm mb-sm" style="color:#71717a;">{$t.mathFluidNote}</p>
+      <p class="text-caption-sm mb-sm" style="color:#71717a;">{$t.mathHeatNote}</p>
+      <p class="text-caption-sm mb-lg" style="color:#71717a;">{$t.mathElectroNote}</p>
 
       <button on:click={() => showMathSheet = false}
         class="w-full py-3 rounded-full text-button-md font-extra-bold"
         style="background:#f4f4f5;color:#3f3f46;border:1px solid #d4d4d8;">
-        Close
+        {$t.close}
       </button>
     </div>
   {/if}

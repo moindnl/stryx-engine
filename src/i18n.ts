@@ -1,0 +1,353 @@
+import { writable, derived } from 'svelte/store';
+
+export type Lang = 'en' | 'de';
+
+const translations = {
+  en: {
+    updateAvailable: 'Update available — tap to install',
+
+    ariaRiderProfile: 'Rider profile',
+    ariaSetupProfile: 'Set up rider profile',
+
+    step1Title: 'Set up your profile',
+    step1Body: 'Enter weight, FTP, and your preferences once — they save automatically.',
+    step2Title: 'Enter your ride',
+    step2Body: 'Add distance, duration, and planned power for this specific ride.',
+    step3Title: 'Read results',
+    step3Body: 'Get precise carbohydrate and fluid targets based on your power output.',
+
+    riderProfile: 'Rider Profile',
+    notSet: 'Not set',
+    bodyWeight: 'Body Weight',
+    ftpLabel: 'FTP',
+    ftpSub: 'Max 1-hour power',
+    units: 'Units',
+    kmKg: 'km / kg',
+    miLbs: 'mi / lbs',
+    sweatRate: 'Sweat Rate',
+    sweatLight: '−20% fluid',
+    sweatHeavy: '+30% fluid',
+    sweatBaseline: 'Baseline',
+    sweatLightAria: 'Light sweat rate',
+    sweatModerateAria: 'Moderate sweat rate',
+    sweatHeavyAria: 'Heavy sweat rate',
+
+    rideLabel: 'Ride',
+    distance: 'Distance',
+    distanceOptional: '(optional)',
+    durationLabel: 'Duration',
+    durationHint: 'e.g. 1:30 or 1.5 for 1h 30min',
+    ridePower: 'Ride Power',
+    ridePowerSub: 'Planned average',
+    zoneLabel: 'Zone',
+    setFtpFirst: 'Set FTP first',
+    enterPower: 'Enter power',
+    temperature: 'Temperature',
+    heatInactive: 'Heat adjustment activates above 20°C',
+    resetRide: 'Reset ride',
+
+    zoneRecovery: 'Recovery',
+    zoneEndurance: 'Endurance',
+    zoneTempo: 'Tempo',
+    zoneThreshold: 'Threshold',
+    zoneVO2: 'VO₂max+',
+    zoneTadej: 'ARE YOU OKAY?!',
+
+    carbohydrates: 'Carbohydrates',
+    carbsSub: 'Per hour for optimal performance',
+    carbsEstimated: 'Estimated from intensity level',
+    carbsMultiNote: 'Requires glucose+fructose blend (2:1). Single carbs max ~60 g/h.',
+    fluids: 'Fluids',
+    fluidsSub: 'Per hour for hydration',
+    fluidsBased: 'Based on weight, sweat rate, and duration',
+    powerLabel: 'Power',
+    powerSub: 'Ride intensity based on your FTP',
+    powerEnterHint: 'Enter FTP and ride power to see zone',
+
+    tabTotals: 'Totals',
+    tabSchedule: 'Schedule',
+    tabPack: 'Pack',
+
+    carbsLabel: 'Carbs',
+    kcal: 'kcal',
+    fluidsLabel: 'Fluids',
+
+    solidFood: 'Solid food',
+    rideTooShort: 'Ride too short for a fueling schedule.',
+    drinkCoversAll: 'No solid food needed — drink covers all carbs.',
+    firstFuel: 'First fuel at 20 min · every 20 min after',
+
+    noBottles: 'No bottles needed at this intensity.',
+    drinkType: 'Drink type',
+    bottleSize: 'Bottle size',
+    bottlesNeeded: 'Bottles needed',
+    fluidPerBottle: 'Fluid per bottle',
+    carbsFromDrink: 'Carbs from drink',
+    extraSolidCarbs: 'Extra solid carbs',
+    waterOnly: 'Water only — all carbs from solid food.',
+    packList: 'Pack list',
+    reset: 'Reset',
+
+    packItemEmergency: ', +1 emergency',
+    packItemElectrolytes: 'Electrolyte tabs / salt caps',
+    packItemCash: 'Cash or card (café stop / emergency)',
+    packItemComputer: 'Bike computer charged',
+    packItemPhone: 'Phone charged',
+
+    emptyState: 'Enter duration and weight to see results.',
+
+    howItWorks: 'How it works',
+    about: 'About',
+    legal: 'Legal',
+
+    dataStorage: 'Data storage',
+    dataStorageVal: 'Device only',
+    serverRequests: 'Server requests',
+    serverRequestsVal: 'None',
+    worksOffline: 'Works offline',
+    worksOfflineVal: 'Yes',
+    aboutDesc: 'Precision carbohydrate and fluid targets for cyclists — calculated from your FTP and planned ride power.',
+    close: 'Close',
+
+    installTitle: 'Works offline',
+    installSub: 'Save to home screen for instant access.',
+    iosStep1: 'Tap the <strong>Share</strong> button at the bottom of Safari',
+    iosStep2: 'Scroll down and tap <strong>Add to Home Screen</strong>',
+    iosStep3: 'Tap <strong>Add</strong> — done',
+    iosSafariNote: 'Safari only. Chrome and Firefox on iOS cannot install PWAs.',
+    androidStep1: 'Tap the <strong>⋮ menu</strong> in Chrome <span style="color:#71717a;">(top-right corner)</span>',
+    androidStep2: 'Tap <strong>Add to Home screen</strong> → <strong>Add</strong>',
+    androidNote: 'Chrome may also show an install banner at the bottom automatically.',
+    installNow: 'Install now',
+    notNow: 'Not now',
+
+    impressum: 'Impressum',
+    impressumSub: 'Legal disclosure · § 5 TMG',
+    impressumContact: 'Contact',
+    impressumNote: 'Private, non-commercial project. No personal data is collected or shared with third parties.',
+
+    howMathWorks: 'How the math works',
+    zoneCol: 'Zone',
+    ftpCol: '% FTP',
+    carbsCol: 'Carbs',
+    mathFluidNote: 'Fluids scale with body weight — sweat modifier adjusts ±20–30%.',
+    mathHeatNote: 'Heat: +0.3 L/h per 5°C above 20°C added to fluid target.',
+    mathElectroNote: 'Rides >2h: add electrolytes — plain water dilutes sodium balance on long efforts.',
+
+    neuralyzerText: "Hm? There was no ride. You've been watching Netflix. Have a nice day.",
+
+    turtlePace: 'Turtle pace',
+    penguinCruise: 'Penguin cruise',
+    gazellePace: 'Gazelle pace',
+    cheetahChase: 'Cheetah chase',
+    falconFlight: 'Falcon flight',
+    peregrineSpeed: 'Peregrine speed',
+    greyhoundSprint: 'Greyhound sprint',
+    downhillRecord: 'Downhill record',
+    motorcycleTerritory: 'Motorcycle territory',
+    callAmbulance: 'Please call an ambulance',
+
+    mathZones: [
+      { zone: 'Recovery',  ftp: '<55%',    carbs: '0–20 g/h' },
+      { zone: 'Endurance', ftp: '55–75%',  carbs: '20–40 g/h' },
+      { zone: 'Tempo',     ftp: '75–90%',  carbs: '40–60 g/h' },
+      { zone: 'Threshold', ftp: '90–105%', carbs: '60–90 g/h' },
+      { zone: 'VO₂max+',   ftp: '>105%',   carbs: '90–120 g/h' },
+    ],
+
+    // Interpolated function strings
+    carbsFromPower: (w: number, pct: number) => `From ${w}W at ${pct}% FTP`,
+    heatActive: (bonus: string) => `+${bonus} L/h heat adjustment`,
+    fluidsLightNote: (pct: string) => `${pct} for light sweater`,
+    fluidsHeavyNote: (pct: string) => `${pct} for heavy sweater`,
+    fluidsHeatNote: (bonus: string, temp: number) => `+${bonus} L/h for ${temp}°C heat`,
+    totalNeeds: (dur: string) => `Total needs for ${dur}`,
+    solidUnitsTotal: (n: number, label: string) => `${n} ${label}s total`,
+    reducedByDrink: (g: number) => `↑ reduced by ${g}g/h from drink`,
+    drinkCoversCarbs: (g: number) => `Drink covers ${g}g/h → less solid food needed. Check Schedule tab.`,
+    packItemSolid: (n: number, label: string, g: number, suffix: string) => `${n} × ${label} (${g}g each${suffix})`,
+    packItemCarbDrink: (label: string, n: number) => `${label} mix — ${n} serving${n > 1 ? 's' : ''}`,
+    packItemBottle: (n: number, ml: number) => `${n} × bottle (${ml}ml)`,
+  },
+  de: {
+    updateAvailable: 'Update verfügbar — tippen zum Installieren',
+
+    ariaRiderProfile: 'Fahrerprofil',
+    ariaSetupProfile: 'Fahrerprofil einrichten',
+
+    step1Title: 'Profil einrichten',
+    step1Body: 'Gewicht, FTP und Einstellungen einmalig eingeben — werden automatisch gespeichert.',
+    step2Title: 'Fahrt eingeben',
+    step2Body: 'Distanz, Dauer und geplante Leistung für diese Fahrt eintragen.',
+    step3Title: 'Ergebnisse lesen',
+    step3Body: 'Genaue Kohlenhydrat- und Flüssigkeitsziele basierend auf deiner Leistung.',
+
+    riderProfile: 'Fahrerprofil',
+    notSet: 'Nicht gesetzt',
+    bodyWeight: 'Körpergewicht',
+    ftpLabel: 'FTP',
+    ftpSub: 'Max. 1-Stunden-Leistung',
+    units: 'Einheiten',
+    kmKg: 'km / kg',
+    miLbs: 'mi / lbs',
+    sweatRate: 'Schweißrate',
+    sweatLight: '−20% Flüssigkeit',
+    sweatHeavy: '+30% Flüssigkeit',
+    sweatBaseline: 'Standard',
+    sweatLightAria: 'Geringe Schweißrate',
+    sweatModerateAria: 'Mittlere Schweißrate',
+    sweatHeavyAria: 'Hohe Schweißrate',
+
+    rideLabel: 'Fahrt',
+    distance: 'Distanz',
+    distanceOptional: '(optional)',
+    durationLabel: 'Dauer',
+    durationHint: 'z.B. 1:30 oder 1.5 für 1h 30min',
+    ridePower: 'Fahrleistung',
+    ridePowerSub: 'Geplanter Durchschnitt',
+    zoneLabel: 'Zone',
+    setFtpFirst: 'Zuerst FTP setzen',
+    enterPower: 'Leistung eingeben',
+    temperature: 'Temperatur',
+    heatInactive: 'Hitzeanpassung ab 20°C aktiv',
+    resetRide: 'Fahrt zurücksetzen',
+
+    zoneRecovery: 'Erholung',
+    zoneEndurance: 'Ausdauer',
+    zoneTempo: 'Tempo',
+    zoneThreshold: 'Schwelle',
+    zoneVO2: 'VO₂max+',
+    zoneTadej: 'GEHT ES DIR GUT?!',
+
+    carbohydrates: 'Kohlenhydrate',
+    carbsSub: 'Pro Stunde für optimale Leistung',
+    carbsEstimated: 'Geschätzt aus Intensitätsniveau',
+    carbsMultiNote: 'Glukose+Fruktose-Mix (2:1) erforderlich. Einzelzucker max. ~60 g/h.',
+    fluids: 'Flüssigkeit',
+    fluidsSub: 'Pro Stunde zur Hydration',
+    fluidsBased: 'Basierend auf Gewicht, Schweißrate und Dauer',
+    powerLabel: 'Leistung',
+    powerSub: 'Fahrintensität basierend auf deinem FTP',
+    powerEnterHint: 'FTP und Leistung eingeben für Zone',
+
+    tabTotals: 'Gesamt',
+    tabSchedule: 'Zeitplan',
+    tabPack: 'Packliste',
+
+    carbsLabel: 'Kohlenhydrate',
+    kcal: 'kcal',
+    fluidsLabel: 'Flüssigkeit',
+
+    solidFood: 'Feste Nahrung',
+    rideTooShort: 'Fahrt zu kurz für Ernährungsplan.',
+    drinkCoversAll: 'Keine feste Nahrung nötig — Drink deckt alle Kohlenhydrate.',
+    firstFuel: 'Erste Aufnahme bei 20 min · alle 20 min danach',
+
+    noBottles: 'Keine Flaschen bei dieser Intensität nötig.',
+    drinkType: 'Getränk',
+    bottleSize: 'Flaschengröße',
+    bottlesNeeded: 'Benötigte Flaschen',
+    fluidPerBottle: 'Flüssigkeit pro Flasche',
+    carbsFromDrink: 'Kohlenhydrate aus Drink',
+    extraSolidCarbs: 'Extra Kohlenhydrate (fest)',
+    waterOnly: 'Nur Wasser — alle Kohlenhydrate aus fester Nahrung.',
+    packList: 'Packliste',
+    reset: 'Zurücksetzen',
+
+    packItemEmergency: ', +1 Notfall',
+    packItemElectrolytes: 'Elektrolyttabletten / Salzkapseln',
+    packItemCash: 'Bargeld oder Karte (Café-Stopp / Notfall)',
+    packItemComputer: 'Radcomputer aufgeladen',
+    packItemPhone: 'Handy aufgeladen',
+
+    emptyState: 'Dauer und Gewicht eingeben für Ergebnisse.',
+
+    howItWorks: 'So funktioniert\'s',
+    about: 'Über die App',
+    legal: 'Impressum',
+
+    dataStorage: 'Datenspeicherung',
+    dataStorageVal: 'Nur auf dem Gerät',
+    serverRequests: 'Serveranfragen',
+    serverRequestsVal: 'Keine',
+    worksOffline: 'Offline nutzbar',
+    worksOfflineVal: 'Ja',
+    aboutDesc: 'Präzise Kohlenhydrat- und Flüssigkeitsziele für Radfahrer — berechnet aus deinem FTP und geplanter Fahrleistung.',
+    close: 'Schließen',
+
+    installTitle: 'Offline verfügbar',
+    installSub: 'Zum Startbildschirm hinzufügen für sofortigen Zugriff.',
+    iosStep1: 'Auf das <strong>Teilen</strong>-Symbol am unteren Safari-Rand tippen',
+    iosStep2: 'Nach unten scrollen und <strong>Zum Home-Bildschirm</strong> tippen',
+    iosStep3: '<strong>Hinzufügen</strong> tippen — fertig',
+    iosSafariNote: 'Nur Safari. Chrome und Firefox auf iOS können keine PWAs installieren.',
+    androidStep1: 'Auf das <strong>⋮ Menü</strong> in Chrome tippen <span style="color:#71717a;">(oben rechts)</span>',
+    androidStep2: '<strong>Zum Startbildschirm hinzufügen</strong> → <strong>Hinzufügen</strong>',
+    androidNote: 'Chrome zeigt möglicherweise automatisch ein Installations-Banner an.',
+    installNow: 'Jetzt installieren',
+    notNow: 'Nicht jetzt',
+
+    impressum: 'Impressum',
+    impressumSub: 'Pflichtangaben · § 5 TMG',
+    impressumContact: 'Kontakt',
+    impressumNote: 'Privates, nicht-kommerzielles Projekt. Es werden keine personenbezogenen Daten erhoben oder an Dritte weitergegeben.',
+
+    howMathWorks: 'So funktioniert die Berechnung',
+    zoneCol: 'Zone',
+    ftpCol: '% FTP',
+    carbsCol: 'Kohlenhydrate',
+    mathFluidNote: 'Flüssigkeit skaliert mit Körpergewicht — Schweißmodifikator ±20–30%.',
+    mathHeatNote: 'Hitze: +0,3 L/h pro 5°C über 20°C zum Flüssigkeitsziel.',
+    mathElectroNote: 'Fahrten >2h: Elektrolyte hinzufügen — reines Wasser verdünnt die Natriumbalance bei langen Ausfahrten.',
+
+    neuralyzerText: 'Hm? Es gab keine Fahrt. Du hast Netflix geschaut. Schönen Tag noch.',
+
+    turtlePace: 'Schildkröten-Tempo',
+    penguinCruise: 'Pinguin-Fahrt',
+    gazellePace: 'Gazellen-Tempo',
+    cheetahChase: 'Geparden-Jagd',
+    falconFlight: 'Falken-Flug',
+    peregrineSpeed: 'Wanderfalken-Speed',
+    greyhoundSprint: 'Windhund-Sprint',
+    downhillRecord: 'Downhill-Rekord',
+    motorcycleTerritory: 'Motorrad-Bereich',
+    callAmbulance: 'Bitte ruf einen Krankenwagen',
+
+    mathZones: [
+      { zone: 'Erholung',  ftp: '<55%',    carbs: '0–20 g/h' },
+      { zone: 'Ausdauer',  ftp: '55–75%',  carbs: '20–40 g/h' },
+      { zone: 'Tempo',     ftp: '75–90%',  carbs: '40–60 g/h' },
+      { zone: 'Schwelle',  ftp: '90–105%', carbs: '60–90 g/h' },
+      { zone: 'VO₂max+',   ftp: '>105%',   carbs: '90–120 g/h' },
+    ],
+
+    // Interpolated function strings
+    carbsFromPower: (w: number, pct: number) => `Aus ${w}W bei ${pct}% FTP`,
+    heatActive: (bonus: string) => `+${bonus} L/h Hitzeanpassung`,
+    fluidsLightNote: (pct: string) => `${pct} für wenig Schwitzende`,
+    fluidsHeavyNote: (pct: string) => `${pct} für stark Schwitzende`,
+    fluidsHeatNote: (bonus: string, temp: number) => `+${bonus} L/h bei ${temp}°C Hitze`,
+    totalNeeds: (dur: string) => `Gesamtbedarf für ${dur}`,
+    solidUnitsTotal: (n: number, label: string) => `${n} ${label}s gesamt`,
+    reducedByDrink: (g: number) => `↑ um ${g}g/h durch Drink reduziert`,
+    drinkCoversCarbs: (g: number) => `Drink deckt ${g}g/h → weniger feste Nahrung nötig. Zeitplan prüfen.`,
+    packItemSolid: (n: number, label: string, g: number, suffix: string) => `${n} × ${label} (${g}g${suffix})`,
+    packItemCarbDrink: (label: string, n: number) => `${label} — ${n} Portion${n > 1 ? 'en' : ''}`,
+    packItemBottle: (n: number, ml: number) => `${n} × Flasche (${ml}ml)`,
+  },
+} as const;
+
+export type Translations = typeof translations.en;
+
+function detectLang(): Lang {
+  try {
+    const saved = localStorage.getItem('bp-lang') as Lang;
+    if (saved === 'en' || saved === 'de') return saved;
+  } catch {}
+  return navigator.language?.startsWith('de') ? 'de' : 'en';
+}
+
+export const lang = writable<Lang>(detectLang());
+lang.subscribe(l => { try { localStorage.setItem('bp-lang', l); } catch {} });
+
+export const t = derived(lang, $lang => translations[$lang]);

@@ -305,11 +305,11 @@
   .gap-xl { gap: 24px; }
   .gap-xxl { gap: 30px; }
 
-  /* Border Radius (Awesomic) */
+  /* Border Radius (iOS-calibrated) */
   .rounded-none { border-radius: 0; }
-  .rounded-sm { border-radius: 28px; }
-  .rounded-md { border-radius: 36px; }
-  .rounded-lg { border-radius: 36px; }
+  .rounded-sm { border-radius: 16px; }
+  .rounded-md { border-radius: 12px; }
+  .rounded-lg { border-radius: 16px; }
   .rounded-full { border-radius: 9999px; }
 
   /* Filter Chip — outlined pill (secondary action) */
@@ -331,7 +331,7 @@
   /* White card — primary surface */
   .card {
     background: var(--c-surface);
-    border-radius: 36px;
+    border-radius: 16px;
     box-shadow: var(--c-shadow-card);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
@@ -343,20 +343,20 @@
   /* Muted card — secondary surface */
   .card-soft {
     background: var(--c-surface-soft);
-    border-radius: 28px;
+    border-radius: 12px;
   }
 
   /* Dark card — stays near-obsidian in both modes */
   .card-campaign {
     background: #09090b;
     color: #ffffff;
-    border-radius: 36px;
+    border-radius: 16px;
   }
 
   /* Awesomic white card utility */
   .awesomic-card {
     background: var(--c-surface);
-    border-radius: 36px;
+    border-radius: 16px;
     box-shadow: var(--c-shadow-card);
   }
 

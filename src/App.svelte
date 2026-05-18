@@ -616,7 +616,7 @@
       <!-- Mobile: horizontal swipe cards -->
       <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;" tabindex="0" role="region" aria-label="Result cards">
         {#each HOW_TO_STEPS as step, i}
-          <div class="snap-center shrink-0 w-[78%] overflow-hidden shimmer-once flex" style="background:var(--c-surface-soft);border-radius:28px;--shimmer-delay:{0.5 + i * 0.1}s"
+          <div class="snap-center shrink-0 w-[78%] overflow-hidden shimmer-once flex" style="background:var(--c-surface-soft);border-radius:12px;--shimmer-delay:{0.5 + i * 0.1}s"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
             <div class="flex items-center justify-center flex-shrink-0" style="background:var(--c-seg-active);min-width:56px;padding:0 18px 0 14px;clip-path:polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);">
               <span class="text-lg font-bold" style="color:var(--c-seg-active-text);">{step.n}</span>
@@ -629,7 +629,7 @@
         {/each}
       </div>
       <!-- Desktop: 3-column grid -->
-      <div class="hidden md:grid grid-cols-3 gap-lg overflow-hidden" style="background:var(--c-surface-soft);border-radius:28px;">
+      <div class="hidden md:grid grid-cols-3 gap-lg overflow-hidden" style="background:var(--c-surface-soft);border-radius:12px;">
         {#each HOW_TO_STEPS as step, i}
           <div class="flex flex-col"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
@@ -647,7 +647,7 @@
     {/if}
 
     <!-- Unified setup card -->
-    <div bind:this={setupCard} class="mb-lg card-enter card-enter-2" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);overflow:hidden;">
+    <div bind:this={setupCard} class="mb-lg card-enter card-enter-2" style="background:var(--c-surface);border-radius:16px;box-shadow:var(--c-shadow-card);overflow:hidden;">
 
     <!-- Rider Profile -->
     <div>
@@ -872,7 +872,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-3">
 
       <!-- Carbs card -->
-      <div class="p-lg" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);">
+      <div class="p-lg" style="background:var(--c-surface);border-radius:16px;box-shadow:var(--c-shadow-card);">
         <div class="flex items-start gap-md mb-lg">
           <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:var(--c-surface-soft);border-radius:14px;">
             <Wheat class="w-7 h-7 text-[--color-ink]" />
@@ -903,7 +903,7 @@
       </div>
 
       <!-- Fluids card -->
-      <div class="p-lg" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);">
+      <div class="p-lg" style="background:var(--c-surface);border-radius:16px;box-shadow:var(--c-shadow-card);">
         <div class="flex items-start gap-md mb-lg">
           <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:var(--c-surface-soft);border-radius:14px;">
             <Droplet class="w-7 h-7 text-[--color-ink]" />
@@ -932,7 +932,7 @@
     </div>
 
     <!-- Results Row 2: Power (+ speed when available) -->
-    <div class="p-lg mb-lg card-enter card-enter-4" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);">
+    <div class="p-lg mb-lg card-enter card-enter-4" style="background:var(--c-surface);border-radius:16px;box-shadow:var(--c-shadow-card);">
       <div class="flex items-start gap-md mb-lg">
         <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:var(--c-surface-soft);border-radius:14px;">
           <Zap class="w-7 h-7 text-[--color-ink]" />

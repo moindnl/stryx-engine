@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Zap, Droplet, ChevronDown, ChevronRight, RotateCcw, User, UserX, Wheat, Check, RefreshCw, ExternalLink, Moon, Sun } from 'lucide-svelte';
+  import { Zap, Droplet, ChevronDown, ChevronRight, X, User, UserX, Wheat, Check, RefreshCw, ExternalLink, Moon, Sun } from 'lucide-svelte';
   import { tweened } from 'svelte/motion';
   import { linear, cubicOut, cubicIn, quintOut } from 'svelte/easing';
   import { fly, fade, slide } from 'svelte/transition';
@@ -761,13 +761,16 @@
               {/if}
             </span>
           {/if}
-          {#if !rideOpen && (duration > 0 || distance > 0 || power > 0)}
+          {#if duration > 0 || distance > 0 || power > 0}
             <button
               on:click|stopPropagation={resetInputs}
+              on:mousedown={startHold} on:mouseup={cancelHold} on:mouseleave={cancelHold}
+              on:touchstart|preventDefault={startHold} on:touchend={cancelHold} on:touchcancel={cancelHold}
+              on:contextmenu|preventDefault
               class="flex items-center justify-center flex-shrink-0"
-              style="width:28px;height:28px;border-radius:50%;background:var(--c-surface-soft);"
+              style="width:28px;height:28px;border-radius:50%;background:var(--c-surface-soft);touch-action:manipulation;user-select:none;-webkit-user-select:none;"
               aria-label="Reset ride inputs">
-              <RotateCcw class="w-3.5 h-3.5 text-[--color-ink]" />
+              <X class="w-3.5 h-3.5 text-[--color-ink]" />
             </button>
           {/if}
           <ChevronDown class="w-4 h-4 text-[--color-ink] transition-transform duration-300 ease-out {rideOpen ? 'rotate-180' : ''}" />
@@ -855,19 +858,6 @@
             <p class="text-caption-sm mt-md {heatBonus > 0 ? 'text-[--color-sale]' : 'text-[--color-mute]'}">
               {heatBonus > 0 ? $t.heatActive(heatBonus.toFixed(1)) : $t.heatInactive}
             </p>
-          </div>
-
-          <!-- Reset -->
-          <div class="flex justify-end pt-sm">
-            <button class="filter-chip flex items-center gap-xs" on:click={resetInputs}
-              on:mousedown={startHold} on:mouseup={cancelHold} on:mouseleave={cancelHold}
-              on:touchstart|preventDefault={startHold} on:touchend={cancelHold} on:touchcancel={cancelHold}
-              on:contextmenu|preventDefault
-              style="touch-action:manipulation;user-select:none;-webkit-user-select:none;"
-              aria-label="Reset ride inputs">
-              <RotateCcw class="w-4 h-4" />
-              {$t.resetRide}
-            </button>
           </div>
 
         </div>

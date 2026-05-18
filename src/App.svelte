@@ -731,12 +731,12 @@
                 {sweatRate === 'light' ? $t.sweatLight : sweatRate === 'heavy' ? $t.sweatHeavy : $t.sweatBaseline}
               </span>
             </div>
-            <div style="position:relative;display:flex;border-radius:14px;border:1px solid var(--c-border-input);background:var(--c-surface-seg);padding:3px;flex-shrink:0;">
-              <div style="position:absolute;top:3px;bottom:3px;width:calc((100% - 6px) / 3);border-radius:10px;background:var(--c-seg-active);box-shadow:0 1px 3px rgba(0,0,0,0.15);transform:translateX(calc({sweatIdx} * 100%));transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
+            <div style="position:relative;display:grid;grid-template-columns:repeat(3,1fr);border-radius:14px;border:1px solid var(--c-border-input);background:var(--c-surface-seg);padding:3px;flex-shrink:0;">
+              <div style="position:absolute;left:3px;top:3px;bottom:3px;width:calc((100% - 6px) / 3);border-radius:10px;background:var(--c-seg-active);box-shadow:0 1px 3px rgba(0,0,0,0.15);transform:translateX(calc({sweatIdx} * 100%));transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
               {#each SWEAT_LEVELS as { value, drops }, i}
                 <button
-                  class="flex items-center gap-[2px]"
-                  style="position:relative;padding:6px 16px;color:{sweatRate === value ? 'var(--c-seg-active-text)' : 'var(--c-on-surface-2)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
+                  class="flex items-center justify-center gap-[2px]"
+                  style="position:relative;padding:6px 12px;color:{sweatRate === value ? 'var(--c-seg-active-text)' : 'var(--c-on-surface-2)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
                   aria-label="{value === 'light' ? $t.sweatLightAria : value === 'moderate' ? $t.sweatModerateAria : $t.sweatHeavyAria}"
                   aria-pressed={sweatRate === value}
                   on:click={() => (sweatRate = value)}>

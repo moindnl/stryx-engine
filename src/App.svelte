@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Zap, Droplet, ChevronDown, ChevronRight, RotateCcw, User, UserX, Wheat, Check, RefreshCw, ExternalLink, Moon, Sun, Smartphone } from 'lucide-svelte';
+  import { Zap, Droplet, ChevronDown, ChevronRight, RotateCcw, User, UserX, Wheat, Check, RefreshCw, ExternalLink, Moon, Sun } from 'lucide-svelte';
   import { tweened } from 'svelte/motion';
   import { linear, cubicOut, cubicIn, quintOut } from 'svelte/easing';
   import { fly, fade, slide } from 'svelte/transition';
@@ -58,11 +58,6 @@
   function applyTheme(t: Theme) {
     localStorage.setItem('bp-theme', t);
     _resolveAndApply(t);
-  }
-  function cycleTheme() {
-    const order: Theme[] = ['system', 'light', 'dark'];
-    theme = order[(order.indexOf(theme) + 1) % order.length];
-    applyTheme(theme);
   }
   function _onSysChange(e: MediaQueryListEvent) {
     if (theme === 'system') { isDark = e.matches; document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light'); }
@@ -335,6 +330,7 @@
   $: speedUnit  = imperial ? 'mph' : 'km/h';
   $: heatBonus  = temperature > 20 ? Math.round((temperature - 20) / 5 * 0.3 * 10) / 10 : 0;
   $: sweatMultiplier = sweatRate === 'light' ? 0.8 : sweatRate === 'heavy' ? 1.3 : 1.0;
+  $: themeIdx = theme === 'light' ? 0 : theme === 'system' ? 1 : 2;
   $: sweatIdx = sweatRate === 'light' ? 0 : sweatRate === 'moderate' ? 1 : 2;
   $: tabIdx = totalsTab === 'summary' ? 0 : totalsTab === 'schedule' ? 1 : 2;
   $: solidIdx = SOLID_PRODUCTS.findIndex(p => p.id === solidProduct);
@@ -592,19 +588,13 @@
         </button>
         <!-- Divider -->
         <div style="width:1px;height:20px;background:rgba(255,255,255,0.2);flex-shrink:0;" aria-hidden="true"></div>
-        <!-- Theme toggle: cycles system → light → dark -->
-        <button
-          on:click={cycleTheme}
-          style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.12);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;"
-          aria-label="Theme: {theme}">
-          {#if theme === 'dark'}
-            <Moon class="w-4 h-4" style="color:#ffffff;" />
-          {:else if theme === 'light'}
-            <Sun class="w-4 h-4" style="color:#ffffff;" />
-          {:else}
-            <Smartphone class="w-4 h-4" style="color:#ffffff;" />
-          {/if}
-        </button>
+        <!-- Theme pill: ☀ · A · 🌙 -->
+        <div style="position:relative;display:grid;grid-template-columns:repeat(3,1fr);height:44px;border-radius:999px;background:rgba(255,255,255,0.1);padding:5px;" role="group" aria-label="Theme">
+          <div style="position:absolute;left:5px;top:5px;bottom:5px;width:calc((100% - 10px) / 3);border-radius:999px;background:rgba(255,255,255,0.22);box-shadow:0 1px 2px rgba(0,0,0,0.25);transform:translateX(calc({themeIdx} * 100%));transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
+          <button style="position:relative;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:{theme === 'light' ? '#ffffff' : 'rgba(255,255,255,0.4)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);" aria-label="Light theme" aria-pressed={theme === 'light'} on:click={() => { theme = 'light'; applyTheme('light'); }}><Sun class="w-3.5 h-3.5" /></button>
+          <button style="position:relative;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:{theme === 'system' ? '#ffffff' : 'rgba(255,255,255,0.4)'};font-size:11px;font-weight:700;letter-spacing:0.03em;transition:color 0.22s cubic-bezier(0.35,0,0.25,1);" aria-label="System theme" aria-pressed={theme === 'system'} on:click={() => { theme = 'system'; applyTheme('system'); }}>A</button>
+          <button style="position:relative;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:{theme === 'dark' ? '#ffffff' : 'rgba(255,255,255,0.4)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);" aria-label="Dark theme" aria-pressed={theme === 'dark'} on:click={() => { theme = 'dark'; applyTheme('dark'); }}><Moon class="w-3.5 h-3.5" /></button>
+        </div>
         <button
           on:click={toggleLang}
           on:animationend={() => langFlipping = false}

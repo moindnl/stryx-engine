@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Zap, Droplet, ChevronDown, ChevronRight, RotateCcw, User, UserX, Wheat, Check, RefreshCw, ExternalLink, Moon, Sun } from 'lucide-svelte';
+  import { Zap, Droplet, ChevronDown, ChevronRight, X, User, UserX, Wheat, Check, RefreshCw, ExternalLink, Moon, Sun } from 'lucide-svelte';
   import { tweened } from 'svelte/motion';
   import { linear, cubicOut, cubicIn, quintOut } from 'svelte/easing';
   import { fly, fade, slide } from 'svelte/transition';
@@ -43,13 +43,25 @@
     lang.update(l => l === 'en' ? 'de' : 'en');
   }
 
-  // Dark / light mode
-  let isDark: boolean = localStorage.getItem('bp-theme') === 'dark';
-  function applyTheme(dark: boolean) {
+  // Dark / light / system mode
+  type Theme = 'light' | 'dark' | 'system';
+  let theme: Theme = (localStorage.getItem('bp-theme') as Theme) || 'system';
+  let isDark: boolean = false; // reflects actual rendered state (used for tempColor)
+  let _sysMq: MediaQueryList | null = null;
+
+  function _resolveAndApply(t: Theme) {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const dark = t === 'dark' || (t === 'system' && prefersDark);
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-    localStorage.setItem('bp-theme', dark ? 'dark' : 'light');
+    isDark = dark;
   }
-  function toggleTheme() { isDark = !isDark; applyTheme(isDark); }
+  function applyTheme(t: Theme) {
+    localStorage.setItem('bp-theme', t);
+    _resolveAndApply(t);
+  }
+  function _onSysChange(e: MediaQueryListEvent) {
+    if (theme === 'system') { isDark = e.matches; document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light'); }
+  }
 
 
   // Piecewise linear carb oxidation by IF (Jeukendrup 2004 / ACSM guidelines)
@@ -222,8 +234,10 @@
   }
 
   onMount(() => {
-    // Apply persisted theme immediately (before paint if possible — also done inline for SSR safety)
-    applyTheme(isDark);
+    // Apply persisted theme and wire system-preference listener
+    applyTheme(theme);
+    _sysMq = window.matchMedia('(prefers-color-scheme: dark)');
+    _sysMq.addEventListener('change', _onSysChange);
 
     // Easter egg: console greeting
     console.log('bonkproof — Cycling Nutrition Planner\n\nPsst. You\'re looking at the source.\nWhy are you not riding your bike?\n\nBuilt by Daniel Muschinski\nhttps://github.com/moindnl');
@@ -243,6 +257,7 @@
   });
 
   onDestroy(() => {
+    if (_sysMq) _sysMq.removeEventListener('change', _onSysChange);
     if (installSheetTimer) clearTimeout(installSheetTimer);
     if (_saveTimer) clearTimeout(_saveTimer);
     if (holdTimer) clearTimeout(holdTimer);
@@ -315,12 +330,22 @@
   $: speedUnit  = imperial ? 'mph' : 'km/h';
   $: heatBonus  = temperature > 20 ? Math.round((temperature - 20) / 5 * 0.3 * 10) / 10 : 0;
   $: sweatMultiplier = sweatRate === 'light' ? 0.8 : sweatRate === 'heavy' ? 1.3 : 1.0;
+  $: themeIdx = theme === 'light' ? 0 : theme === 'system' ? 1 : 2;
+  $: sweatIdx = sweatRate === 'light' ? 0 : sweatRate === 'moderate' ? 1 : 2;
+  $: tabIdx = totalsTab === 'summary' ? 0 : totalsTab === 'schedule' ? 1 : 2;
+  $: solidIdx = SOLID_PRODUCTS.findIndex(p => p.id === solidProduct);
+  $: drinkIdx = DRINK_PRODUCTS.findIndex(p => p.id === drinkProduct);
+  $: bottleSizeIdx = bottleSize === 500 ? 0 : bottleSize === 750 ? 1 : 2;
 
   // Temperature slider: track fill color neutral → #f73b20 above 20°C
   function tempColor(t: number, dark: boolean): string {
     if (t <= 20) return dark ? '#f4f4f5' : '#09090b';
     const p = Math.min((t - 20) / 25, 1);
-    return `rgb(${Math.round(9 + 238 * p)},${Math.round(9 + 50 * p)},${Math.round(11 + 21 * p)})`;
+    // Light: near-black → bright red. Dark: visible red → bright red (same endpoint).
+    const r0 = dark ? 160 : 9;
+    const g0 = dark ?  40 : 9;
+    const b0 = dark ?  30 : 11;
+    return `rgb(${Math.round(r0 + (247 - r0) * p)},${Math.round(g0 + (59 - g0) * p)},${Math.round(b0 + (32 - b0) * p)})`;
   }
   $: tempFillColor = tempColor(temperature, isDark);
 
@@ -412,23 +437,23 @@
   $: animatedKcalPerHour.set(kcalPerHour);
 
   const SPEED_LEVELS = [
-    { minKmh: 0,   maxKmh: 10,  key: 'turtle',      tKey: 'turtlePace',        wikiSlug: 'Turtle' },
-    { minKmh: 10,  maxKmh: 15,  key: 'penguin',     tKey: 'penguinCruise',     wikiSlug: 'Penguin' },
-    { minKmh: 15,  maxKmh: 20,  key: 'gazelle',     tKey: 'gazellePace',       wikiSlug: 'Gazelle' },
-    { minKmh: 20,  maxKmh: 25,  key: 'cheetah',     tKey: 'cheetahChase',      wikiSlug: 'Cheetah' },
-    { minKmh: 25,  maxKmh: 30,  key: 'falcon',      tKey: 'falconFlight',      wikiSlug: 'Falcon' },
-    { minKmh: 30,  maxKmh: 40,  key: 'peregrine',   tKey: 'peregrineSpeed',    wikiSlug: 'Peregrine_falcon' },
-    { minKmh: 40,  maxKmh: 55,  key: 'greyhound',   tKey: 'greyhoundSprint',   wikiSlug: 'Greyhound' },
-    { minKmh: 55,  maxKmh: 75,  key: 'downhill',    tKey: 'downhillRecord',    wikiSlug: '%C3%89ric_Barone' },
-    { minKmh: 75,  maxKmh: 100, key: 'motorcycle',  tKey: 'motorcycleTerritory', wikiSlug: 'Motorcycle' },
-    { minKmh: 100, maxKmh: Infinity, key: 'ambulance', tKey: 'callAmbulance',  wikiSlug: 'Ambulance' },
+    { minKmh: 0,   maxKmh: 10,  key: 'turtle',      tKey: 'turtlePace',        wikiSlug: 'Turtle',           wikiSlugDe: 'Landschildkröten' },
+    { minKmh: 10,  maxKmh: 15,  key: 'penguin',     tKey: 'penguinCruise',     wikiSlug: 'Penguin',          wikiSlugDe: 'Pinguine' },
+    { minKmh: 15,  maxKmh: 20,  key: 'gazelle',     tKey: 'gazellePace',       wikiSlug: 'Gazelle',          wikiSlugDe: 'Gazellen' },
+    { minKmh: 20,  maxKmh: 25,  key: 'cheetah',     tKey: 'cheetahChase',      wikiSlug: 'Cheetah',          wikiSlugDe: 'Gepard' },
+    { minKmh: 25,  maxKmh: 30,  key: 'falcon',      tKey: 'falconFlight',      wikiSlug: 'Falcon',           wikiSlugDe: 'Falken' },
+    { minKmh: 30,  maxKmh: 40,  key: 'peregrine',   tKey: 'peregrineSpeed',    wikiSlug: 'Peregrine_falcon', wikiSlugDe: 'Wanderfalke' },
+    { minKmh: 40,  maxKmh: 55,  key: 'greyhound',   tKey: 'greyhoundSprint',   wikiSlug: 'Greyhound',        wikiSlugDe: 'Greyhound' },
+    { minKmh: 55,  maxKmh: 75,  key: 'downhill',    tKey: 'downhillRecord',    wikiSlug: '%C3%89ric_Barone', wikiSlugDe: '%C3%89ric_Barone' },
+    { minKmh: 75,  maxKmh: 100, key: 'motorcycle',  tKey: 'motorcycleTerritory', wikiSlug: 'Motorcycle',     wikiSlugDe: 'Motorrad' },
+    { minKmh: 100, maxKmh: Infinity, key: 'ambulance', tKey: 'callAmbulance',  wikiSlug: 'Ambulance',        wikiSlugDe: 'Krankenwagen' },
   ] as const;
 
   $: speedLevel = speedKmh === 0 ? null :
     SPEED_LEVELS.find(s => speedKmh < s.maxKmh) ?? SPEED_LEVELS[SPEED_LEVELS.length - 1];
 
   $: speedSloganText = speedLevel ? ($t[speedLevel.tKey] as string) : '';
-  $: speedSloganUrl  = speedLevel ? `https://en.wikipedia.org/wiki/${speedLevel.wikiSlug}` : '';
+  $: speedSloganUrl  = speedLevel ? `https://${$lang === 'de' ? 'de' : 'en'}.wikipedia.org/wiki/${$lang === 'de' ? speedLevel.wikiSlugDe : speedLevel.wikiSlug}` : '';
 
   $: multiCarbNote = intensityFactor >= 0.90;
 
@@ -521,9 +546,7 @@
     { n: '3', tTitle: 'step3Title', tBody: 'step3Body' },
   ] as const;
 
-  function tabStyle(tab: string, active: string): string {
-    return `${active === tab ? 'background:#ffffff;color:#09090b;' : 'background:transparent;color:rgba(255,255,255,0.65);'}flex:1;padding:6px 10px;border-radius:18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;`;
-  }
+
 </script>
 
 <main class="min-h-screen">
@@ -544,18 +567,18 @@
   <!-- App Header — floating bar -->
   <header class="w-full" style="padding:calc(env(safe-area-inset-top) + 12px) 16px 0;position:sticky;top:0;z-index:995;background:var(--c-bg);">
     <div style="max-width:640px;margin:0 auto;height:52px;background:#09090b;border-radius:9999px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">
-      <!-- Logo -->
-      <div class="flex items-center gap-sm">
+      <!-- Logo — tappable, opens About sheet -->
+      <button class="flex items-center gap-sm" style="background:transparent;border:none;padding:0;cursor:pointer;" on:click={() => showAboutSheet = true} aria-label="About bonkproof!">
         <img src="/favicon.svg" alt="" class="icon-anim" style="width:34px;height:34px;display:block;flex-shrink:0;border-radius:24%;box-shadow:0 0 0 2px #f73b20;" />
         <h1 style="margin:0;font-size:17px;font-weight:700;letter-spacing:-0.02em;line-height:1;"><span class="bonk-nudge" style="color:#ffffff;font-style:italic;font-size:17px;font-weight:700;vertical-align:baseline;">bonk</span><span class="proof-crash" style="color:#f73b20;font-size:17px;font-weight:700;vertical-align:baseline;">proof!</span></h1>
-      </div>
+      </button>
       <!-- Right -->
       <div class="flex items-center gap-sm">
         <!-- Profile icon: User when set, UserX when empty -->
         <button
           class="flex items-center justify-center"
           style="width:44px;height:44px;border-radius:50%;background:#ffffff;"
-          on:click={() => { profileOpen = !profileOpen; if (profileOpen) { rideOpen = false; setTimeout(() => setupCard?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); } }}
+          on:click={(e) => { profileOpen = !profileOpen; if (profileOpen) { rideOpen = false; setTimeout(() => setupCard?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); } else { (e.currentTarget as HTMLButtonElement).blur(); } }}
           aria-label="{weight > 0 && ftp > 0 ? $t.ariaRiderProfile : $t.ariaSetupProfile}">
           {#if weight > 0 && ftp > 0}
             <User class="w-4 h-4" style="color:#09090b;" />
@@ -565,17 +588,13 @@
         </button>
         <!-- Divider -->
         <div style="width:1px;height:20px;background:rgba(255,255,255,0.2);flex-shrink:0;" aria-hidden="true"></div>
-        <!-- Theme toggle -->
-        <button
-          on:click={toggleTheme}
-          style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.12);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;"
-          aria-label="Toggle dark mode">
-          {#if isDark}
-            <Sun class="w-4 h-4" style="color:#ffffff;" />
-          {:else}
-            <Moon class="w-4 h-4" style="color:#ffffff;" />
-          {/if}
-        </button>
+        <!-- Theme pill: ☀ · A · 🌙 -->
+        <div style="position:relative;display:grid;grid-template-columns:repeat(3,1fr);height:44px;border-radius:999px;background:rgba(255,255,255,0.1);padding:5px;" role="group" aria-label="Theme">
+          <div style="position:absolute;left:5px;top:5px;bottom:5px;width:calc((100% - 10px) / 3);border-radius:999px;background:rgba(255,255,255,0.22);box-shadow:0 1px 2px rgba(0,0,0,0.25);transform:translateX(calc({themeIdx} * 100%));transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
+          <button style="position:relative;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:{theme === 'light' ? '#ffffff' : 'rgba(255,255,255,0.4)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);" aria-label="Light theme" aria-pressed={theme === 'light'} on:click={() => { theme = 'light'; applyTheme('light'); }}><Sun class="w-3.5 h-3.5" /></button>
+          <button style="position:relative;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:{theme === 'system' ? '#ffffff' : 'rgba(255,255,255,0.4)'};font-size:11px;font-weight:700;letter-spacing:0.03em;transition:color 0.22s cubic-bezier(0.35,0,0.25,1);" aria-label="System theme" aria-pressed={theme === 'system'} on:click={() => { theme = 'system'; applyTheme('system'); }}>A</button>
+          <button style="position:relative;display:flex;align-items:center;justify-content:center;background:transparent;border:none;color:{theme === 'dark' ? '#ffffff' : 'rgba(255,255,255,0.4)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);" aria-label="Dark theme" aria-pressed={theme === 'dark'} on:click={() => { theme = 'dark'; applyTheme('dark'); }}><Moon class="w-3.5 h-3.5" /></button>
+        </div>
         <button
           on:click={toggleLang}
           on:animationend={() => langFlipping = false}
@@ -597,10 +616,10 @@
       <!-- Mobile: horizontal swipe cards -->
       <div class="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-sm pb-sm -mx-sm px-sm" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;" tabindex="0" role="region" aria-label="Result cards">
         {#each HOW_TO_STEPS as step, i}
-          <div class="snap-center shrink-0 w-[78%] overflow-hidden shimmer-once flex" style="background:var(--c-surface-soft);border-radius:28px;--shimmer-delay:{0.5 + i * 0.1}s"
+          <div class="snap-center shrink-0 w-[78%] overflow-hidden shimmer-once flex" style="background:var(--c-surface-soft);border-radius:12px;--shimmer-delay:{0.5 + i * 0.1}s"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
-            <div class="flex items-center justify-center flex-shrink-0" style="background:#09090b;min-width:56px;padding:0 18px 0 14px;clip-path:polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);">
-              <span class="text-lg font-bold" style="color:#ffffff;">{step.n}</span>
+            <div class="flex items-center justify-center flex-shrink-0" style="background:var(--c-seg-active);min-width:56px;padding:0 18px 0 14px;clip-path:polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);">
+              <span class="text-lg font-bold" style="color:var(--c-seg-active-text);">{step.n}</span>
             </div>
             <div class="p-lg space-y-xs">
               <h2 class="text-body-strong font-bold text-[--color-ink]">{$t[step.tTitle]}</h2>
@@ -610,12 +629,12 @@
         {/each}
       </div>
       <!-- Desktop: 3-column grid -->
-      <div class="hidden md:grid grid-cols-3 gap-lg overflow-hidden" style="background:var(--c-surface-soft);border-radius:28px;">
+      <div class="hidden md:grid grid-cols-3 gap-lg overflow-hidden" style="background:var(--c-surface-soft);border-radius:12px;">
         {#each HOW_TO_STEPS as step, i}
           <div class="flex flex-col"
             in:fly={{ y: 18, duration: 320, delay: 80 + i * 70, easing: cubicOut }}>
-            <div class="flex items-center justify-center py-md" style="background:#09090b;">
-              <span class="text-lg font-bold" style="color:#ffffff;">{step.n}</span>
+            <div class="flex items-center justify-center py-md" style="background:var(--c-seg-active);">
+              <span class="text-lg font-bold" style="color:var(--c-seg-active-text);">{step.n}</span>
             </div>
             <div class="p-lg space-y-xs flex-1">
               <h2 class="text-body-strong font-bold text-[--color-ink]">{$t[step.tTitle]}</h2>
@@ -628,7 +647,7 @@
     {/if}
 
     <!-- Unified setup card -->
-    <div bind:this={setupCard} class="mb-lg card-enter card-enter-2" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);overflow:hidden;">
+    <div bind:this={setupCard} class="mb-lg card-enter card-enter-2" style="background:var(--c-surface);border-radius:16px;box-shadow:var(--c-shadow-card);overflow:hidden;">
 
     <!-- Rider Profile -->
     <div>
@@ -653,61 +672,63 @@
       </button>
 
       {#if profileOpen}
-        <div in:slide={{ duration: 320, easing: quintOut }} out:slide={{ duration: 200, easing: cubicIn }} class="px-lg" style="padding-bottom:24px;">
+        <div in:slide={{ duration: 300, easing: quintOut, delay: 80 }} out:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;">
 
           <!-- Weight -->
-          <div class="flex items-center justify-between py-lg">
+          <div class="flex items-center justify-between py-sm">
             <label for="weight" class="text-caption-md font-bold text-[--color-ink]">{$t.bodyWeight}</label>
             <div class="flex items-center gap-xs">
-              <input id="weight" type="number" bind:value={weight} min="1" max="400" step="1" placeholder="75"
+              <input id="weight" type="number" inputmode="decimal" bind:value={weight} min="1" max="400" step="1" placeholder="75"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
+                style="height:44px;border-radius:14px;padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">{imperial ? 'lbs' : 'kg'}</span>
             </div>
           </div>
 
           <!-- FTP -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--c-border);">
+          <div class="flex items-center justify-between py-sm row-sep">
             <div>
               <label for="ftp" class="text-caption-md font-bold text-[--color-ink] block">{$t.ftpLabel}</label>
               <span class="text-caption-sm text-[--color-mute]">{$t.ftpSub}</span>
             </div>
             <div class="flex items-center gap-xs">
-              <input id="ftp" type="number" bind:value={ftp} min="0" max="600" step="1" placeholder="280"
+              <input id="ftp" type="number" inputmode="numeric" bind:value={ftp} min="0" max="600" step="1" placeholder="280"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
+                style="height:44px;border-radius:14px;padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">W</span>
             </div>
           </div>
 
           <!-- Units -->
-          <div class="flex items-center justify-between py-lg gap-md flex-wrap" style="border-top:1px solid var(--c-border);">
+          <div class="flex items-center justify-between py-md gap-md flex-wrap row-sep">
             <span class="text-caption-md font-bold text-[--color-ink]">{$t.units}</span>
-            <div style="display:flex;border-radius:14px;border:1px solid var(--c-border-input);overflow:hidden;background:var(--c-surface-seg);">
+            <div style="position:relative;display:flex;border-radius:14px;border:1px solid var(--c-border-input);background:var(--c-surface-seg);padding:3px;">
+              <div style="position:absolute;top:3px;bottom:3px;width:calc(50% - 3px);border-radius:10px;background:var(--c-seg-active);box-shadow:0 1px 3px rgba(0,0,0,0.15);transform:translateX({imperial ? 'calc(100% + 3px)' : '0'});transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
               <button
-                style="{!imperial ? 'background:var(--c-seg-active);color:var(--c-seg-active-text);' : 'background:transparent;color:var(--c-on-surface-2);'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                style="position:relative;flex:1;padding:6px 18px;font-size:13px;font-weight:500;white-space:nowrap;color:{!imperial ? 'var(--c-seg-active-text)' : 'var(--c-on-surface-2)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
                 on:click={() => { if (imperial) toggleImperial(); }}>{$t.kmKg}</button>
               <button
-                style="{imperial ? 'background:var(--c-seg-active);color:var(--c-seg-active-text);' : 'background:transparent;color:var(--c-on-surface-2);'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                style="position:relative;flex:1;padding:6px 18px;font-size:13px;font-weight:500;white-space:nowrap;color:{imperial ? 'var(--c-seg-active-text)' : 'var(--c-on-surface-2)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
                 on:click={() => { if (!imperial) toggleImperial(); }}>{$t.miLbs}</button>
             </div>
           </div>
 
           <!-- Sweat Rate -->
-          <div class="flex items-center justify-between py-lg gap-md" style="border-top:1px solid var(--c-border);">
+          <div class="flex items-center justify-between py-md gap-md row-sep">
             <div class="flex-shrink-0">
               <span class="text-caption-md font-bold text-[--color-ink] block">{$t.sweatRate}</span>
               <span class="text-caption-sm text-[--color-mute]">
                 {sweatRate === 'light' ? $t.sweatLight : sweatRate === 'heavy' ? $t.sweatHeavy : $t.sweatBaseline}
               </span>
             </div>
-            <div style="display:flex;border-radius:14px;border:1px solid var(--c-border-input);overflow:hidden;background:var(--c-surface-seg);flex-shrink:0;">
-              {#each SWEAT_LEVELS as { value, drops }}
+            <div style="position:relative;display:grid;grid-template-columns:repeat(3,1fr);border-radius:14px;border:1px solid var(--c-border-input);background:var(--c-surface-seg);padding:3px;flex-shrink:0;">
+              <div style="position:absolute;left:3px;top:3px;bottom:3px;width:calc((100% - 6px) / 3);border-radius:10px;background:var(--c-seg-active);box-shadow:0 1px 3px rgba(0,0,0,0.15);transform:translateX(calc({sweatIdx} * 100%));transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
+              {#each SWEAT_LEVELS as { value, drops }, i}
                 <button
-                  class="flex items-center gap-[2px]"
-                  style="{sweatRate === value ? 'background:var(--c-seg-active);color:var(--c-seg-active-text);' : 'background:transparent;color:var(--c-on-surface-2);'}padding:8px 16px;transition:background 0.15s,color 0.15s;"
+                  class="flex items-center justify-center gap-[2px]"
+                  style="position:relative;padding:6px 12px;color:{sweatRate === value ? 'var(--c-seg-active-text)' : 'var(--c-on-surface-2)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
                   aria-label="{value === 'light' ? $t.sweatLightAria : value === 'moderate' ? $t.sweatModerateAria : $t.sweatHeavyAria}"
                   aria-pressed={sweatRate === value}
                   on:click={() => (sweatRate = value)}>
@@ -740,13 +761,16 @@
               {/if}
             </span>
           {/if}
-          {#if !rideOpen && (duration > 0 || distance > 0 || power > 0)}
+          {#if duration > 0 || distance > 0 || power > 0}
             <button
               on:click|stopPropagation={resetInputs}
+              on:mousedown={startHold} on:mouseup={cancelHold} on:mouseleave={cancelHold}
+              on:touchstart|preventDefault={startHold} on:touchend={cancelHold} on:touchcancel={cancelHold}
+              on:contextmenu|preventDefault
               class="flex items-center justify-center flex-shrink-0"
-              style="width:28px;height:28px;border-radius:50%;background:var(--c-surface-soft);"
+              style="width:28px;height:28px;border-radius:50%;background:var(--c-surface-soft);touch-action:manipulation;user-select:none;-webkit-user-select:none;"
               aria-label="Reset ride inputs">
-              <RotateCcw class="w-3.5 h-3.5 text-[--color-ink]" />
+              <X class="w-3.5 h-3.5 text-[--color-ink]" />
             </button>
           {/if}
           <ChevronDown class="w-4 h-4 text-[--color-ink] transition-transform duration-300 ease-out {rideOpen ? 'rotate-180' : ''}" />
@@ -754,25 +778,25 @@
       </button>
 
       {#if rideOpen}
-        <div in:slide={{ duration: 320, easing: quintOut }} out:slide={{ duration: 200, easing: cubicIn }} class="px-lg" style="padding-bottom:24px;"
+        <div in:slide={{ duration: 300, easing: quintOut, delay: 80 }} out:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;"
           on:focusout={handleRideCardFocusOut}>
 
           <!-- Distance -->
-          <div class="flex items-center justify-between py-lg">
+          <div class="flex items-center justify-between py-sm">
             <label for="distance" class="text-caption-md font-bold text-[--color-ink]">
               {$t.distance} <span class="text-caption-sm text-[--color-mute] font-normal">{$t.distanceOptional}</span>
             </label>
             <div class="flex items-center gap-xs">
-              <input id="distance" type="number" bind:value={distance} min="1" max="500" step="1" placeholder="0"
+              <input id="distance" type="number" inputmode="numeric" bind:value={distance} min="1" max="500" step="1" placeholder="0"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
+                style="height:44px;border-radius:14px;padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">{imperial ? 'mi' : 'km'}</span>
             </div>
           </div>
 
           <!-- Duration -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--c-border);">
+          <div class="flex items-center justify-between py-sm row-sep">
             <div>
               <label for="duration" class="text-caption-md font-bold text-[--color-ink] block">{$t.durationLabel}</label>
               <p class="text-utility-xs text-[--color-stone] mt-xxs">{$t.durationHint}</p>
@@ -781,29 +805,29 @@
               <input id="duration" type="text" inputmode="decimal" bind:value={durationRaw}
                 placeholder="1:30"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
+                style="height:44px;border-radius:14px;padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">h</span>
             </div>
           </div>
 
           <!-- Power -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--c-border);">
+          <div class="flex items-center justify-between py-sm row-sep">
             <div>
               <label for="power" class="text-caption-md font-bold text-[--color-ink] block">{$t.ridePower}</label>
               <span class="text-caption-sm text-[--color-mute]">{$t.ridePowerSub}</span>
             </div>
             <div class="flex items-center gap-xs">
-              <input id="power" type="number" bind:value={power} min="0" max="600" step="1" placeholder="200"
+              <input id="power" type="number" inputmode="numeric" bind:value={power} min="0" max="600" step="1" placeholder="200"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
+                style="height:44px;border-radius:14px;padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">W</span>
             </div>
           </div>
 
           <!-- Zone (derived) -->
-          <div class="flex items-center justify-between py-md" style="border-top:1px solid var(--c-border);">
+          <div class="flex items-center justify-between py-md row-sep">
             <span class="text-caption-md font-bold text-[--color-ink]">{$t.zoneLabel}</span>
             <div class="flex items-center">
               {#if intensityFactor > 0 && zoneLabel}
@@ -820,7 +844,7 @@
           </div>
 
           <!-- Temperature -->
-          <div class="py-lg" style="border-top:1px solid var(--c-border);">
+          <div class="py-md row-sep">
             <div class="flex items-center justify-between mb-sm">
               <label for="temperature" class="text-caption-md font-bold text-[--color-ink]">{$t.temperature}</label>
               <!-- °C intentional — heat formula is Celsius-based regardless of unit preference -->
@@ -836,19 +860,6 @@
             </p>
           </div>
 
-          <!-- Reset -->
-          <div class="flex justify-end pt-sm">
-            <button class="filter-chip flex items-center gap-xs" on:click={resetInputs}
-              on:mousedown={startHold} on:mouseup={cancelHold} on:mouseleave={cancelHold}
-              on:touchstart|preventDefault={startHold} on:touchend={cancelHold} on:touchcancel={cancelHold}
-              on:contextmenu|preventDefault
-              style="touch-action:manipulation;user-select:none;-webkit-user-select:none;"
-              aria-label="Reset ride inputs">
-              <RotateCcw class="w-4 h-4" />
-              {$t.resetRide}
-            </button>
-          </div>
-
         </div>
       {/if}
     </div>
@@ -861,7 +872,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-lg mb-lg card-enter card-enter-3">
 
       <!-- Carbs card -->
-      <div class="p-lg" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);">
+      <div class="p-lg" style="background:var(--c-surface);border-radius:16px;box-shadow:var(--c-shadow-card);">
         <div class="flex items-start gap-md mb-lg">
           <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:var(--c-surface-soft);border-radius:14px;">
             <Wheat class="w-7 h-7 text-[--color-ink]" />
@@ -892,7 +903,7 @@
       </div>
 
       <!-- Fluids card -->
-      <div class="p-lg" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);">
+      <div class="p-lg" style="background:var(--c-surface);border-radius:16px;box-shadow:var(--c-shadow-card);">
         <div class="flex items-start gap-md mb-lg">
           <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:var(--c-surface-soft);border-radius:14px;">
             <Droplet class="w-7 h-7 text-[--color-ink]" />
@@ -921,7 +932,7 @@
     </div>
 
     <!-- Results Row 2: Power (+ speed when available) -->
-    <div class="p-lg mb-lg card-enter card-enter-4" style="background:var(--c-surface);border-radius:36px;box-shadow:var(--c-shadow-card);">
+    <div class="p-lg mb-lg card-enter card-enter-4" style="background:var(--c-surface);border-radius:16px;box-shadow:var(--c-shadow-card);">
       <div class="flex items-start gap-md mb-lg">
         <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="background:var(--c-surface-soft);border-radius:14px;">
           <Zap class="w-7 h-7 text-[--color-ink]" />
@@ -946,7 +957,7 @@
         <p class="text-caption-sm text-[--color-mute]">{$t.powerEnterHint}</p>
       {/if}
       {#if speedKmh > 0}
-        <div class="flex items-center justify-between mt-md pt-md" style="border-top:1px solid var(--c-border);">
+        <div class="flex items-center justify-between mt-md pt-md row-sep">
           <div class="flex items-baseline gap-sm">
             <span class="text-heading-md font-bold text-[--color-ink]">{Math.round($animatedSpeed)}</span>
             <span class="text-caption-md text-[--color-mute]">{speedUnit}</span>
@@ -967,15 +978,16 @@
     <div bind:this={tabCard} class="card-campaign rounded-sm p-lg md:p-xl mb-xl card-enter card-enter-5">
 
       <!-- Tab bar -->
-      <div style="display:flex;gap:3px;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:20px;padding:3px;">
+      <div style="position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-bottom:18px;background:rgba(255,255,255,0.08);border-radius:14px;border:1px solid rgba(255,255,255,0.12);padding:3px;">
+        <div style="position:absolute;left:3px;top:3px;bottom:3px;width:calc((100% - 6px) / 3);border-radius:10px;background:rgba(255,255,255,0.92);box-shadow:0 1px 3px rgba(0,0,0,0.3);transform:translateX(calc({tabIdx} * 100%));transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
         <button
-          style={tabStyle('summary', totalsTab)}
+          style="position:relative;flex:1;padding:6px 10px;border-radius:10px;font-size:13px;font-weight:500;white-space:nowrap;color:{totalsTab === 'summary' ? '#09090b' : 'rgba(255,255,255,0.55)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
           on:click={() => switchTab('summary')}>{$t.tabTotals}</button>
         <button
-          style={tabStyle('schedule', totalsTab)}
+          style="position:relative;flex:1;padding:6px 10px;border-radius:10px;font-size:13px;font-weight:500;white-space:nowrap;color:{totalsTab === 'schedule' ? '#09090b' : 'rgba(255,255,255,0.55)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
           on:click={() => switchTab('schedule')}>{$t.tabSchedule}</button>
         <button
-          style={tabStyle('pack', totalsTab)}
+          style="position:relative;flex:1;padding:6px 10px;border-radius:10px;font-size:13px;font-weight:500;white-space:nowrap;color:{totalsTab === 'pack' ? '#09090b' : 'rgba(255,255,255,0.55)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
           on:click={() => switchTab('pack')}>{$t.tabPack}</button>
       </div>
 
@@ -1007,10 +1019,11 @@
         <!-- Solid product picker -->
         <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
           <span style="color:rgba(255,255,255,0.7);font-size:13px;">{$t.solidFood}</span>
-          <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
+          <div style="position:relative;display:grid;grid-template-columns:repeat(3,1fr);border-radius:14px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);padding:3px;flex-shrink:0;">
+            <div style="position:absolute;left:3px;top:3px;bottom:3px;width:calc((100% - 6px) / 3);border-radius:10px;background:rgba(255,255,255,0.92);box-shadow:0 1px 3px rgba(0,0,0,0.3);transform:translateX(calc({solidIdx} * 100%));transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
             {#each SOLID_PRODUCTS as p}
               <button
-                style="{solidProduct === p.id ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;"
+                style="position:relative;padding:6px 10px;font-size:13px;font-weight:500;text-align:center;white-space:nowrap;color:{solidProduct === p.id ? '#09090b' : 'rgba(255,255,255,0.55)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
                 on:click={() => (solidProduct = p.id)}>{p.label} ({p.carbs}g)</button>
             {/each}
           </div>
@@ -1049,10 +1062,11 @@
           <!-- Drink product picker -->
           <div class="flex items-center justify-between mb-md flex-wrap gap-sm">
             <span style="color:rgba(255,255,255,0.7);font-size:13px;">{$t.drinkType}</span>
-            <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
+            <div style="position:relative;display:grid;grid-template-columns:repeat(3,1fr);border-radius:14px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);padding:3px;flex-shrink:0;">
+              <div style="position:absolute;left:3px;top:3px;bottom:3px;width:calc((100% - 6px) / 3);border-radius:10px;background:rgba(255,255,255,0.92);box-shadow:0 1px 3px rgba(0,0,0,0.3);transform:translateX(calc({drinkIdx} * 100%));transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
               {#each DRINK_PRODUCTS as p}
                 <button
-                  style="{drinkProduct === p.id ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 12px;font-size:12px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                  style="position:relative;padding:6px 10px;font-size:12px;font-weight:500;text-align:center;white-space:nowrap;color:{drinkProduct === p.id ? '#09090b' : 'rgba(255,255,255,0.55)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
                   on:click={() => (drinkProduct = p.id)}>{p.label}</button>
               {/each}
             </div>
@@ -1060,10 +1074,11 @@
           <!-- Bottle size selector -->
           <div class="flex items-center justify-between mb-lg flex-wrap gap-sm">
             <span style="color:rgba(255,255,255,0.7);font-size:13px;">{$t.bottleSize}</span>
-            <div style="display:flex;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;background:rgba(255,255,255,0.06);">
-              <button style="{bottleSize === 500 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 500)}>500ml</button>
-              <button style="{bottleSize === 750 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 750)}>750ml</button>
-              <button style="{bottleSize === 1000 ? 'background:rgba(255,255,255,0.9);color:#111;' : 'background:transparent;color:rgba(255,255,255,0.6);'}padding:6px 14px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;" on:click={() => (bottleSize = 1000)}>1L</button>
+            <div style="position:relative;display:grid;grid-template-columns:repeat(3,1fr);border-radius:14px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);padding:3px;flex-shrink:0;">
+              <div style="position:absolute;left:3px;top:3px;bottom:3px;width:calc((100% - 6px) / 3);border-radius:10px;background:rgba(255,255,255,0.92);box-shadow:0 1px 3px rgba(0,0,0,0.3);transform:translateX(calc({bottleSizeIdx} * 100%));transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
+              <button style="position:relative;padding:6px 14px;font-size:13px;font-weight:500;text-align:center;color:{bottleSize === 500 ? '#09090b' : 'rgba(255,255,255,0.55)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;" on:click={() => (bottleSize = 500)}>500ml</button>
+              <button style="position:relative;padding:6px 14px;font-size:13px;font-weight:500;text-align:center;color:{bottleSize === 750 ? '#09090b' : 'rgba(255,255,255,0.55)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;" on:click={() => (bottleSize = 750)}>750ml</button>
+              <button style="position:relative;padding:6px 14px;font-size:13px;font-weight:500;text-align:center;color:{bottleSize === 1000 ? '#09090b' : 'rgba(255,255,255,0.55)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;" on:click={() => (bottleSize = 1000)}>1L</button>
             </div>
           </div>
           <div style="border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);">
@@ -1131,25 +1146,8 @@
     </div>
     {/if}
 
-    <!-- Footer -->
-    <div style="border-top:1px solid var(--c-border);padding-bottom:max(56px, calc(env(safe-area-inset-bottom) + 24px));">
-      <div class="flex items-center justify-between flex-wrap gap-xs" style="padding:12px 0;">
-        <span class="text-caption-sm" style="color:var(--color-stone);padding:4px 0;">© 2026 Daniel Muschinski</span>
-        <div class="flex items-center flex-wrap">
-          <button on:click={() => showMathSheet = true}
-            class="text-caption-sm text-[--color-mute] hover:text-[--color-ink]"
-            style="padding:8px 10px;transition:color 0.15s;">{$t.howItWorks}</button>
-          <span style="color:var(--color-hairline);user-select:none;">·</span>
-          <button on:click={() => showAboutSheet = true}
-            class="text-caption-sm text-[--color-mute] hover:text-[--color-ink]"
-            style="padding:8px 10px;transition:color 0.15s;">{$t.about}</button>
-          <span style="color:var(--color-hairline);user-select:none;">·</span>
-          <button on:click={() => showImpressumSheet = true}
-            class="text-caption-sm text-[--color-mute] hover:text-[--color-ink]"
-            style="padding:8px 10px;transition:color 0.15s;">{$t.legal}</button>
-        </div>
-      </div>
-    </div>
+    <!-- bottom safe-area spacer -->
+    <div style="padding-bottom:max(24px, env(safe-area-inset-bottom));"></div>
 
   </div>
 
@@ -1158,8 +1156,8 @@
     <div class="fixed inset-0 z-[996] bg-black/55"
       on:click={() => showAboutSheet = false} role="presentation"
       transition:fade={{ duration: 300 }}></div>
-    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 max-w-lg mx-auto"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);padding-bottom:max(32px,calc(env(safe-area-inset-bottom,0px) + 16px));transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showAboutSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
@@ -1193,17 +1191,28 @@
         </div>
       </div>
 
+      <div style="border-radius:14px;overflow:hidden;border:1px solid var(--c-border);margin-bottom:16px;">
+        <button class="flex items-center justify-between w-full px-lg py-md" style="background:transparent;border:none;border-bottom:1px solid var(--c-border);" on:click={() => { showAboutSheet = false; setTimeout(() => showMathSheet = true, 60); }}>
+          <span style="color:var(--c-on-surface);font-size:15px;">{$t.howItWorks}</span>
+          <ChevronRight size={16} style="color:var(--c-on-surface-2);flex-shrink:0;" />
+        </button>
+        <button class="flex items-center justify-between w-full px-lg py-md" style="background:transparent;border:none;" on:click={() => { showAboutSheet = false; setTimeout(() => showImpressumSheet = true, 60); }}>
+          <span style="color:var(--c-on-surface);font-size:15px;">{$t.legal}</span>
+          <ChevronRight size={16} style="color:var(--c-on-surface-2);flex-shrink:0;" />
+        </button>
+      </div>
+
       <div class="flex gap-sm">
-        <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
-          class="flex-1 py-3 rounded-full text-button-md font-extra-bold text-center"
-          style="background:#09090b;color:#ffffff;text-decoration:none;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">
-          GitHub <ExternalLink size={14} style="display:inline;vertical-align:middle;margin-left:4px;" />
-        </a>
         <button on:click={() => showAboutSheet = false}
           class="flex-1 py-3 rounded-full text-button-md font-extra-bold"
           style="background:var(--c-surface-soft);color:var(--c-on-surface);border:1px solid var(--c-border-input);">
           {$t.close}
         </button>
+        <a href="mailto:moindnl@proton.me"
+          class="flex-1 py-3 rounded-full text-button-md font-extra-bold text-center"
+          style="background:var(--c-seg-active);color:var(--c-seg-active-text);text-decoration:none;">
+          E-Mail <ExternalLink size={14} style="display:inline;vertical-align:middle;margin-left:4px;" />
+        </a>
       </div>
     </div>
   {/if}
@@ -1213,8 +1222,8 @@
     <div class="fixed inset-0 z-[996] bg-black/55"
       on:click={dismissInstallSheet} role="presentation" transition:fade={{ duration: 300 }}>
     </div>
-    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 max-w-lg mx-auto"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);padding-bottom:max(32px,calc(env(safe-area-inset-bottom,0px) + 16px));transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, dismissInstallSheet)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
@@ -1248,7 +1257,7 @@
         {#if deferredInstallPrompt}
           <button on:click={triggerInstall}
             class="w-full py-3 rounded-full text-button-md font-extra-bold mb-4"
-            style="background:#09090b;color:#ffffff;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">
+            style="background:var(--c-seg-active);color:var(--c-seg-active-text);">
             {$t.installNow}
           </button>
         {:else}
@@ -1289,8 +1298,8 @@
     <div class="fixed inset-0 z-[996] bg-black/55"
       on:click={() => showImpressumSheet = false} role="presentation"
       transition:fade={{ duration: 300 }}></div>
-    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 max-w-lg mx-auto"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);padding-bottom:max(32px,calc(env(safe-area-inset-bottom,0px) + 16px));transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showImpressumSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
@@ -1307,8 +1316,8 @@
         </div>
         <div class="flex items-center justify-between px-lg py-md" style="border-bottom:1px solid var(--c-border);">
           <span style="color:var(--c-on-surface-2);font-size:14px;">{$t.impressumContact}</span>
-          <a href="https://github.com/moindnl" target="_blank" rel="noopener noreferrer"
-            style="color:var(--c-on-surface);font-size:14px;font-weight:600;text-decoration:none;">github.com/moindnl</a>
+          <a href="mailto:moindnl@proton.me"
+            style="color:var(--c-on-surface);font-size:14px;font-weight:600;text-decoration:none;">moindnl@proton.me</a>
         </div>
         <div class="px-lg py-md">
           <p style="color:var(--c-on-surface-2);font-size:13px;line-height:1.5;">{$t.impressumNote}</p>
@@ -1328,8 +1337,8 @@
     <div class="fixed inset-0 z-[996] bg-black/55"
       on:click={() => showMathSheet = false} role="presentation"
       transition:fade={{ duration: 300 }}></div>
-    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 max-w-lg mx-auto"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);padding-bottom:max(32px,calc(env(safe-area-inset-bottom,0px) + 16px));transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showMathSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}

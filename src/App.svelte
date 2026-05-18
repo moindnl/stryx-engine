@@ -680,7 +680,7 @@
             <div class="flex items-center gap-xs">
               <input id="weight" type="number" inputmode="decimal" bind:value={weight} min="1" max="400" step="1" placeholder="75"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
+                style="height:44px;border-radius:14px;padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">{imperial ? 'lbs' : 'kg'}</span>
             </div>
@@ -695,7 +695,7 @@
             <div class="flex items-center gap-xs">
               <input id="ftp" type="number" inputmode="numeric" bind:value={ftp} min="0" max="600" step="1" placeholder="280"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
+                style="height:44px;border-radius:14px;padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">W</span>
             </div>
@@ -786,7 +786,7 @@
             <div class="flex items-center gap-xs">
               <input id="distance" type="number" inputmode="numeric" bind:value={distance} min="1" max="500" step="1" placeholder="0"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
+                style="height:44px;border-radius:14px;padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">{imperial ? 'mi' : 'km'}</span>
             </div>
@@ -802,7 +802,7 @@
               <input id="duration" type="text" inputmode="decimal" bind:value={durationRaw}
                 placeholder="1:30"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
+                style="height:44px;border-radius:14px;padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">h</span>
             </div>
@@ -817,7 +817,7 @@
             <div class="flex items-center gap-xs">
               <input id="power" type="number" inputmode="numeric" bind:value={power} min="0" max="600" step="1" placeholder="200"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
-                style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
+                style="height:44px;border-radius:14px;padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
               <span class="text-caption-sm text-[--color-mute] w-5">W</span>
             </div>

@@ -43,7 +43,7 @@
     --c-bg:              #f4f4f5;
     --c-surface:         #ffffff;
     --c-surface-soft:    #ececee;
-    --c-surface-input:   #ffffff;
+    --c-surface-input:   #f0f0f3;
     --c-surface-seg:     #f4f4f5;
     --c-on-surface:      #18181b;
     --c-on-surface-2:    #71717a;
@@ -75,7 +75,7 @@
     --c-bg:              #0f0f12;
     --c-surface:         #1c1c1f;
     --c-surface-soft:    #252528;
-    --c-surface-input:   #18181b;
+    --c-surface-input:   #252528;
     --c-surface-seg:     #18181b;
     --c-on-surface:      #f4f4f5;
     --c-on-surface-2:    #a1a1aa;

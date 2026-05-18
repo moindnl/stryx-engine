@@ -675,7 +675,7 @@
         <div in:slide={{ duration: 300, easing: quintOut, delay: 80 }} out:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;">
 
           <!-- Weight -->
-          <div class="flex items-center justify-between py-lg">
+          <div class="flex items-center justify-between py-sm">
             <label for="weight" class="text-caption-md font-bold text-[--color-ink]">{$t.bodyWeight}</label>
             <div class="flex items-center gap-xs">
               <input id="weight" type="number" inputmode="decimal" bind:value={weight} min="1" max="400" step="1" placeholder="75"
@@ -687,7 +687,7 @@
           </div>
 
           <!-- FTP -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--c-border);">
+          <div class="flex items-center justify-between py-sm" style="border-top:1px solid var(--c-border);">
             <div>
               <label for="ftp" class="text-caption-md font-bold text-[--color-ink] block">{$t.ftpLabel}</label>
               <span class="text-caption-sm text-[--color-mute]">{$t.ftpSub}</span>
@@ -702,7 +702,7 @@
           </div>
 
           <!-- Units -->
-          <div class="flex items-center justify-between py-lg gap-md flex-wrap" style="border-top:1px solid var(--c-border);">
+          <div class="flex items-center justify-between py-md gap-md flex-wrap" style="border-top:1px solid var(--c-border);">
             <span class="text-caption-md font-bold text-[--color-ink]">{$t.units}</span>
             <div style="position:relative;display:flex;border-radius:14px;border:1px solid var(--c-border-input);background:var(--c-surface-seg);padding:3px;">
               <div style="position:absolute;top:3px;bottom:3px;width:calc(50% - 3px);border-radius:10px;background:var(--c-seg-active);box-shadow:0 1px 3px rgba(0,0,0,0.15);transform:translateX({imperial ? 'calc(100% + 3px)' : '0'});transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
@@ -716,7 +716,7 @@
           </div>
 
           <!-- Sweat Rate -->
-          <div class="flex items-center justify-between py-lg gap-md" style="border-top:1px solid var(--c-border);">
+          <div class="flex items-center justify-between py-md gap-md" style="border-top:1px solid var(--c-border);">
             <div class="flex-shrink-0">
               <span class="text-caption-md font-bold text-[--color-ink] block">{$t.sweatRate}</span>
               <span class="text-caption-sm text-[--color-mute]">
@@ -779,7 +779,7 @@
           on:focusout={handleRideCardFocusOut}>
 
           <!-- Distance -->
-          <div class="flex items-center justify-between py-lg">
+          <div class="flex items-center justify-between py-sm">
             <label for="distance" class="text-caption-md font-bold text-[--color-ink]">
               {$t.distance} <span class="text-caption-sm text-[--color-mute] font-normal">{$t.distanceOptional}</span>
             </label>
@@ -793,7 +793,7 @@
           </div>
 
           <!-- Duration -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--c-border);">
+          <div class="flex items-center justify-between py-sm" style="border-top:1px solid var(--c-border);">
             <div>
               <label for="duration" class="text-caption-md font-bold text-[--color-ink] block">{$t.durationLabel}</label>
               <p class="text-utility-xs text-[--color-stone] mt-xxs">{$t.durationHint}</p>
@@ -809,7 +809,7 @@
           </div>
 
           <!-- Power -->
-          <div class="flex items-center justify-between py-lg" style="border-top:1px solid var(--c-border);">
+          <div class="flex items-center justify-between py-sm" style="border-top:1px solid var(--c-border);">
             <div>
               <label for="power" class="text-caption-md font-bold text-[--color-ink] block">{$t.ridePower}</label>
               <span class="text-caption-sm text-[--color-mute]">{$t.ridePowerSub}</span>
@@ -841,7 +841,7 @@
           </div>
 
           <!-- Temperature -->
-          <div class="py-lg" style="border-top:1px solid var(--c-border);">
+          <div class="py-md" style="border-top:1px solid var(--c-border);">
             <div class="flex items-center justify-between mb-sm">
               <label for="temperature" class="text-caption-md font-bold text-[--color-ink]">{$t.temperature}</label>
               <!-- °C intentional — heat formula is Celsius-based regardless of unit preference -->

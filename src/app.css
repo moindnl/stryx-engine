@@ -215,6 +215,12 @@
     font-family: var(--font-sans);
   }
 
+  /* iOS: remove tap highlight, kill 300ms delay on all interactive elements */
+  button, a, [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   /* Focus states */
   input:focus, select:focus {
     outline: none;

@@ -335,6 +335,7 @@
   $: speedUnit  = imperial ? 'mph' : 'km/h';
   $: heatBonus  = temperature > 20 ? Math.round((temperature - 20) / 5 * 0.3 * 10) / 10 : 0;
   $: sweatMultiplier = sweatRate === 'light' ? 0.8 : sweatRate === 'heavy' ? 1.3 : 1.0;
+  $: sweatIdx = sweatRate === 'light' ? 0 : sweatRate === 'moderate' ? 1 : 2;
 
   // Temperature slider: track fill color neutral → #f73b20 above 20°C
   function tempColor(t: number, dark: boolean): string {
@@ -685,7 +686,7 @@
           <div class="flex items-center justify-between py-lg">
             <label for="weight" class="text-caption-md font-bold text-[--color-ink]">{$t.bodyWeight}</label>
             <div class="flex items-center gap-xs">
-              <input id="weight" type="number" bind:value={weight} min="1" max="400" step="1" placeholder="75"
+              <input id="weight" type="number" inputmode="decimal" bind:value={weight} min="1" max="400" step="1" placeholder="75"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
                 style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
@@ -700,7 +701,7 @@
               <span class="text-caption-sm text-[--color-mute]">{$t.ftpSub}</span>
             </div>
             <div class="flex items-center gap-xs">
-              <input id="ftp" type="number" bind:value={ftp} min="0" max="600" step="1" placeholder="280"
+              <input id="ftp" type="number" inputmode="numeric" bind:value={ftp} min="0" max="600" step="1" placeholder="280"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
                 style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
@@ -711,12 +712,13 @@
           <!-- Units -->
           <div class="flex items-center justify-between py-lg gap-md flex-wrap" style="border-top:1px solid var(--c-border);">
             <span class="text-caption-md font-bold text-[--color-ink]">{$t.units}</span>
-            <div style="display:flex;border-radius:14px;border:1px solid var(--c-border-input);overflow:hidden;background:var(--c-surface-seg);">
+            <div style="position:relative;display:flex;border-radius:14px;border:1px solid var(--c-border-input);background:var(--c-surface-seg);padding:3px;">
+              <div style="position:absolute;top:3px;bottom:3px;width:calc(50% - 3px);border-radius:10px;background:var(--c-seg-active);box-shadow:0 1px 3px rgba(0,0,0,0.15);transform:translateX({imperial ? 'calc(100% + 3px)' : '0'});transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
               <button
-                style="{!imperial ? 'background:var(--c-seg-active);color:var(--c-seg-active-text);' : 'background:transparent;color:var(--c-on-surface-2);'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                style="position:relative;flex:1;padding:6px 18px;font-size:13px;font-weight:500;white-space:nowrap;color:{!imperial ? 'var(--c-seg-active-text)' : 'var(--c-on-surface-2)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
                 on:click={() => { if (imperial) toggleImperial(); }}>{$t.kmKg}</button>
               <button
-                style="{imperial ? 'background:var(--c-seg-active);color:var(--c-seg-active-text);' : 'background:transparent;color:var(--c-on-surface-2);'}padding:8px 18px;font-size:13px;font-weight:500;transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                style="position:relative;flex:1;padding:6px 18px;font-size:13px;font-weight:500;white-space:nowrap;color:{imperial ? 'var(--c-seg-active-text)' : 'var(--c-on-surface-2)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
                 on:click={() => { if (!imperial) toggleImperial(); }}>{$t.miLbs}</button>
             </div>
           </div>
@@ -729,11 +731,12 @@
                 {sweatRate === 'light' ? $t.sweatLight : sweatRate === 'heavy' ? $t.sweatHeavy : $t.sweatBaseline}
               </span>
             </div>
-            <div style="display:flex;border-radius:14px;border:1px solid var(--c-border-input);overflow:hidden;background:var(--c-surface-seg);flex-shrink:0;">
-              {#each SWEAT_LEVELS as { value, drops }}
+            <div style="position:relative;display:flex;border-radius:14px;border:1px solid var(--c-border-input);background:var(--c-surface-seg);padding:3px;flex-shrink:0;">
+              <div style="position:absolute;top:3px;bottom:3px;width:calc((100% - 6px) / 3);border-radius:10px;background:var(--c-seg-active);box-shadow:0 1px 3px rgba(0,0,0,0.15);transform:translateX(calc({sweatIdx} * 100%));transition:transform 0.22s cubic-bezier(0.35,0,0.25,1);pointer-events:none;will-change:transform;"></div>
+              {#each SWEAT_LEVELS as { value, drops }, i}
                 <button
                   class="flex items-center gap-[2px]"
-                  style="{sweatRate === value ? 'background:var(--c-seg-active);color:var(--c-seg-active-text);' : 'background:transparent;color:var(--c-on-surface-2);'}padding:8px 16px;transition:background 0.15s,color 0.15s;"
+                  style="position:relative;padding:6px 16px;color:{sweatRate === value ? 'var(--c-seg-active-text)' : 'var(--c-on-surface-2)'};transition:color 0.22s cubic-bezier(0.35,0,0.25,1);background:transparent;border:none;"
                   aria-label="{value === 'light' ? $t.sweatLightAria : value === 'moderate' ? $t.sweatModerateAria : $t.sweatHeavyAria}"
                   aria-pressed={sweatRate === value}
                   on:click={() => (sweatRate = value)}>
@@ -789,7 +792,7 @@
               {$t.distance} <span class="text-caption-sm text-[--color-mute] font-normal">{$t.distanceOptional}</span>
             </label>
             <div class="flex items-center gap-xs">
-              <input id="distance" type="number" bind:value={distance} min="1" max="500" step="1" placeholder="0"
+              <input id="distance" type="number" inputmode="numeric" bind:value={distance} min="1" max="500" step="1" placeholder="0"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
                 style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />
@@ -820,7 +823,7 @@
               <span class="text-caption-sm text-[--color-mute]">{$t.ridePowerSub}</span>
             </div>
             <div class="flex items-center gap-xs">
-              <input id="power" type="number" bind:value={power} min="0" max="600" step="1" placeholder="200"
+              <input id="power" type="number" inputmode="numeric" bind:value={power} min="0" max="600" step="1" placeholder="200"
                 class="w-24 text-right text-body-strong text-[--color-ink] focus:outline-none"
                 style="height:44px;border-radius:14px;border:1px solid var(--c-border-input);padding:0 14px;background:var(--c-surface-input);"
                 on:focus={focusInput} />

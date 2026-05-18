@@ -679,7 +679,7 @@
       </button>
 
       {#if profileOpen}
-        <div in:slide={{ duration: 320, easing: quintOut }} out:slide={{ duration: 200, easing: cubicIn }} class="px-lg" style="padding-bottom:24px;">
+        <div in:slide={{ duration: 300, easing: quintOut, delay: 80 }} out:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;">
 
           <!-- Weight -->
           <div class="flex items-center justify-between py-lg">
@@ -780,7 +780,7 @@
       </button>
 
       {#if rideOpen}
-        <div in:slide={{ duration: 320, easing: quintOut }} out:slide={{ duration: 200, easing: cubicIn }} class="px-lg" style="padding-bottom:24px;"
+        <div in:slide={{ duration: 300, easing: quintOut, delay: 80 }} out:slide={{ duration: 260, easing: cubicOut }} class="px-lg" style="padding-bottom:24px;"
           on:focusout={handleRideCardFocusOut}>
 
           <!-- Distance -->

@@ -1193,8 +1193,8 @@
     <div class="fixed inset-0 z-[996] bg-black/55"
       on:click={() => showAboutSheet = false} role="presentation"
       transition:fade={{ duration: 300 }}></div>
-    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 max-w-lg mx-auto"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);padding-bottom:max(32px,calc(env(safe-area-inset-bottom,0px) + 16px));transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showAboutSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
@@ -1229,16 +1229,16 @@
       </div>
 
       <div class="flex gap-sm">
-        <a href="mailto:moindnl@proton.me"
-          class="flex-1 py-3 rounded-full text-button-md font-extra-bold text-center"
-          style="background:#09090b;color:#ffffff;text-decoration:none;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">
-          E-Mail <ExternalLink size={14} style="display:inline;vertical-align:middle;margin-left:4px;" />
-        </a>
         <button on:click={() => showAboutSheet = false}
           class="flex-1 py-3 rounded-full text-button-md font-extra-bold"
           style="background:var(--c-surface-soft);color:var(--c-on-surface);border:1px solid var(--c-border-input);">
           {$t.close}
         </button>
+        <a href="mailto:moindnl@proton.me"
+          class="flex-1 py-3 rounded-full text-button-md font-extra-bold text-center"
+          style="background:var(--c-seg-active);color:var(--c-seg-active-text);text-decoration:none;">
+          E-Mail <ExternalLink size={14} style="display:inline;vertical-align:middle;margin-left:4px;" />
+        </a>
       </div>
     </div>
   {/if}
@@ -1248,8 +1248,8 @@
     <div class="fixed inset-0 z-[996] bg-black/55"
       on:click={dismissInstallSheet} role="presentation" transition:fade={{ duration: 300 }}>
     </div>
-    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 max-w-lg mx-auto"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);padding-bottom:max(32px,calc(env(safe-area-inset-bottom,0px) + 16px));transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, dismissInstallSheet)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
@@ -1283,7 +1283,7 @@
         {#if deferredInstallPrompt}
           <button on:click={triggerInstall}
             class="w-full py-3 rounded-full text-button-md font-extra-bold mb-4"
-            style="background:#09090b;color:#ffffff;box-shadow:rgba(255,255,255,0.5) 0px 0.5px 0px 0px inset,rgba(117,123,133,0.4) 0px 9px 14px -5px inset,rgb(44,46,52) 0px 0px 0px 1.5px,rgba(0,0,0,0.14) 0px 4px 6px 0px;">
+            style="background:var(--c-seg-active);color:var(--c-seg-active-text);">
             {$t.installNow}
           </button>
         {:else}
@@ -1324,8 +1324,8 @@
     <div class="fixed inset-0 z-[996] bg-black/55"
       on:click={() => showImpressumSheet = false} role="presentation"
       transition:fade={{ duration: 300 }}></div>
-    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 max-w-lg mx-auto"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);padding-bottom:max(32px,calc(env(safe-area-inset-bottom,0px) + 16px));transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showImpressumSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
@@ -1363,8 +1363,8 @@
     <div class="fixed inset-0 z-[996] bg-black/55"
       on:click={() => showMathSheet = false} role="presentation"
       transition:fade={{ duration: 300 }}></div>
-    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 pb-8 max-w-lg mx-auto"
-      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
+    <div class="fixed bottom-0 left-0 right-0 z-[998] rounded-t-[28px] px-6 pt-5 max-w-lg mx-auto"
+      style="background:var(--c-surface);color:var(--c-on-surface);box-shadow:var(--c-shadow-sheet);padding-bottom:max(32px,calc(env(safe-area-inset-bottom,0px) + 16px));transform:translateY({sheetDragOffsetY}px);transition:{sheetIsDragging ? 'none' : 'transform 0.4s cubic-bezier(0.22,1,0.36,1)'};"
       on:touchstart={(e) => onSheetDragStart(e, () => showMathSheet = false)}
       on:touchmove|preventDefault={onSheetDragMove}
       on:touchend={onSheetDragEnd}
